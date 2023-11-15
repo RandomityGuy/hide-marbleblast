@@ -1,121 +1,126 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<meta charset="utf-8" />
 </head>
+
 <body>
-<link rel="stylesheet" type="text/css" href="libs/goldenlayout-base.css"/>
-<link rel="stylesheet" type="text/css" href="libs/goldenlayout-dark-theme.css"/>
-<link rel="stylesheet" type="text/css" href="style.css"/>
-<link rel="stylesheet" type="text/css" href="cdb.css"/>
-<link rel="stylesheet" type="text/css" href="libs/jstree/default-dark/style.css"/>
-<link rel="stylesheet" type="text/css" href="icons.css"/>
-<link rel="stylesheet" type="text/css" href="libs/spectrum.css"/>
-<link rel="stylesheet" type="text/css" href="libs/select2.css"/>
-<link rel="stylesheet" data-name="vs/editor/editor.main" href="libs/monaco/vs/editor/editor.main.css">
-<link rel="stylesheet" href="libs/jquery.contextMenu.css">
+	<link rel="stylesheet" type="text/css" href="libs/goldenlayout-base.css" />
+	<link rel="stylesheet" type="text/css" href="libs/goldenlayout-dark-theme.css" />
+	<link rel="stylesheet" type="text/css" href="style.css" />
+	<link rel="stylesheet" type="text/css" href="cdb.css" />
+	<link rel="stylesheet" type="text/css" href="libs/jstree/default-dark/style.css" />
+	<link rel="stylesheet" type="text/css" href="icons.css" />
+	<link rel="stylesheet" type="text/css" href="libs/spectrum.css" />
+	<link rel="stylesheet" type="text/css" href="libs/select2.css" />
+	<link rel="stylesheet" data-name="vs/editor/editor.main" href="libs/monaco/vs/editor/editor.main.css">
+	<link rel="stylesheet" href="libs/jquery.contextMenu.css">
 
-<script src="libs/jquery-3.2.1.js"></script>
-<script src="libs/jquery.contextMenu.js"></script>
-<script src="libs/jquery.ui.position.js"></script>
-<script src="libs/goldenlayout.js"></script>
-<script src="libs/jstree/jstree.js"></script>
-<script src="libs/spectrum.js"></script>
-<script src="libs/select2.js"></script>
+	<script src="libs/jquery-3.2.1.js"></script>
+	<script src="libs/jquery.contextMenu.js"></script>
+	<script src="libs/jquery.ui.position.js"></script>
+	<script src="libs/goldenlayout.js"></script>
+	<script src="libs/jstree/jstree.js"></script>
+	<script src="libs/spectrum.js"></script>
+	<script src="libs/select2.js"></script>
 
-<!-- Toggle the following line to enable webgl debugging at the cost of performance -->
-<!-- <script src="libs/webgl-debug.js"></script> -->
+	<!-- Toggle the following line to enable webgl debugging at the cost of performance -->
+	<!-- <script src="libs/webgl-debug.js"></script> -->
 
 
-<script>
-	// fix for Sys.programPath
-	__filename = process.argv[0];
-</script>
+	<script>
+		// fix for Sys.programPath
+		__filename = process.argv[0];
+	</script>
 
-<script>
-	var nodeRequire = require;
-	monaco = {};
-</script>
-<script src="libs/monaco/vs/loader.js"></script>
-<script>
-	var amdRequire = require;
-	require = nodeRequire;
-	require.nodeRequire = require;
-	amdRequire.config({ baseUrl: 'libs/monaco' });
-	amdRequire(['vs/editor/editor.main'], function() { });
-</script>
+	<script>
+		var nodeRequire = require;
+		monaco = {};
+	</script>
+	<script src="libs/monaco/vs/loader.js"></script>
+	<script>
+		var amdRequire = require;
+		require = nodeRequire;
+		require.nodeRequire = require;
+		amdRequire.config({ baseUrl: 'libs/monaco' });
+		amdRequire(['vs/editor/editor.main'], function () { });
+		// var spector = new SPECTOR.Spector();
+		// spector.displayUI();
+	</script>
 
-<xml id="mainmenu">
-	<menu label="Project" class="project">
-		<menu label="Open..." class="open"></menu>
-		<menu label="Recently opened">
-			<div class="recents">
-				<menu label="Empty" disabled="disabled"></menu>
+	<xml id="mainmenu">
+		<menu label="Project" class="project">
+			<menu label="Open..." class="open"></menu>
+			<menu label="Recently opened">
+				<div class="recents">
+					<menu label="Empty" disabled="disabled"></menu>
+				</div>
+				<separator></separator>
+				<menu label="Clear Recents" class="clear"></menu>
+			</menu>
+			<separator></separator>
+			<menu label="Renderer">
+				<div class="renderers">
+				</div>
+			</menu>
+			<separator></separator>
+			<menu label="Build Files" class="build-files"></menu>
+			<menu label="Clear profile" class="clear-local"></menu>
+			<menu label="Exit" class="exit"></menu>
+		</menu>
+		<menu label="View" class="view">
+			<menu label="Resources" component="hide.view.FileTree" state='{"path":""}'></menu>
+			<menu label="Directory" component="hide.view.FileTree"></menu>
+			<separator></separator>
+			<menu label="About" component="hide.view.About"></menu>
+			<menu label="Debug" class="debug"></menu>
+		</menu>
+		<menu label="Database" class="database" hidden>
+			<menu label="View" class="dbView"></menu>
+			<menu label="Custom Types" class="dbCustom"></menu>
+			<menu label="Formulas" class="dbFormulas"></menu>
+			<menu label="Diff">
+				<menu label="Create" class="dbCreateDiff"></menu>
+				<menu label="Load" class="dbLoadDiff"></menu>
+				<menu label="Close" class="dbCloseDiff"></menu>
+			</menu>
+			<menu label="Export Localized Texts" class="dbExport"></menu>
+			<menu label="Import Localized Texts" class="dbImport"></menu>
+			<menu label="Proofreading Mode" type="checkbox" class="dbProofread"></menu>
+			<menu label="Categories" class="dbCategories">
+				<menu label="Show All" class="dbCatShowAll"></menu>
+				<menu label="Hide All" class="dbCatHideAll"></menu>
+			</menu>
+			<separator></separator>
+			<menu label="Enable Compression" class="dbCompress" type="checkbox"></menu>
+		</menu>
+		<menu label="Layout" class="layout">
+			<div class="content">
 			</div>
 			<separator></separator>
-			<menu label="Clear Recents" class="clear"></menu>
+			<menu label="Keep on close" class="autosave" type="checkbox"></menu>
+			<menu label="Save" class="save"></menu>
+			<menu label="Save As..." class="saveas"></menu>
+			<menu label="Manage" class="manage" disabled="disabled"></menu>
 		</menu>
-		<separator></separator>
-		<menu label="Renderer">
-			<div class="renderers">
-			</div>
-		</menu>
-		<separator></separator>
-		<menu label="Build Files" class="build-files"></menu>
-		<menu label="Clear profile" class="clear-local"></menu>
-		<menu label="Exit" class="exit"></menu>
-	</menu>
-	<menu label="View" class="view">
-		<menu label="Resources" component="hide.view.FileTree" state='{"path":""}'></menu>
-		<menu label="Directory" component="hide.view.FileTree"></menu>
-		<separator></separator>
-		<menu label="About" component="hide.view.About"></menu>
-		<menu label="Debug" class="debug"></menu>
-	</menu>
-	<menu label="Database" class="database">
-		<menu label="View" class="dbView"></menu>
-		<menu label="Custom Types" class="dbCustom"></menu>
-		<menu label="Formulas" class="dbFormulas"></menu>
-		<menu label="Diff">
-			<menu label="Create" class="dbCreateDiff"></menu>
-			<menu label="Load" class="dbLoadDiff"></menu>
-			<menu label="Close" class="dbCloseDiff"></menu>
-		</menu>
-		<menu label="Export Localized Texts" class="dbExport"></menu>
-		<menu label="Import Localized Texts" class="dbImport"></menu>
-		<menu label="Proofreading Mode" type="checkbox" class="dbProofread"></menu>
-		<menu label="Categories" class="dbCategories">
-			<menu label="Show All" class="dbCatShowAll"></menu>
-			<menu label="Hide All" class="dbCatHideAll"></menu>
-		</menu>
-		<separator></separator>
-		<menu label="Enable Compression" class="dbCompress" type="checkbox"></menu>
-	</menu>
-	<menu label="Layout" class="layout">
-		<div class="content">
-		</div>
-		<separator></separator>
-		<menu label="Keep on close" class="autosave" type="checkbox"></menu>
-		<menu label="Save" class="save"></menu>
-		<menu label="Save As..." class="saveas"></menu>
-		<menu label="Manage" class="manage" disabled="disabled"></menu>
-	</menu>
-</xml>
-<script src="hide.js"></script>
+	</xml>
+	<script src="hide.js"></script>
 
 
-<script>
-  var path = './';
-  var fs = require('fs');
-  var reloadWatcher=fs.watch(path, function(_,file) {
-	var ext = file.split(".").pop().toLowerCase();
-	if( ext != "js" && ext != "css" ) return;
-	reloadWatcher.close();
-	setTimeout(function() {
-		hide.Ide.inst.reload();
-	},2000);
-  });
-</script>
+	<script>
+		var path = './';
+		var fs = require('fs');
+		var reloadWatcher = fs.watch(path, function (_, file) {
+			var ext = file.split(".").pop().toLowerCase();
+			if (ext != "js" && ext != "css") return;
+			reloadWatcher.close();
+			setTimeout(function () {
+				hide.Ide.inst.reload();
+			}, 2000);
+		});
+	</script>
 
 </body>
+
 </html>

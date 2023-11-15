@@ -15,3 +15,8 @@
 /bin/*.bin
 /bin/credits.html
 /bin/icudtl.dat
+.github
+.haxelib
+.vscode
+.idea
+bin/*

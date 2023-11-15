@@ -1,72 +1,59 @@
 {
 	// define location of animations in HMD files
-	"hmd.animPaths" : [],
-	"hmd.savePropsByAnimation" : false,
-
+	"hmd.animPaths": [],
+	"hmd.savePropsByAnimation": false,
 	// extra main menu content
-	"menu.extra" : "",
-
+	"menu.extra": "",
 	// path to js scripts containing hide plugins
-	"plugins" : [],
-
+	"plugins": [],
 	// custom renderers in the form of { "Name" : "MaterialSetupClassName" }
-	"renderers" : {},
-	"defaultRenderer" : "PBR",
-
+	"renderers": {},
+	"defaultRenderer": "Default",
 	// set default renderer setup
-	"scene.renderProps" : null,
-
+	"scene.renderProps": null,
 	// model names that are hidden when open in viewer
-	"scene.autoHide" : [],
+	"scene.autoHide": [],
 	// background color for 2D/3D viewer
-	"scene.backgroundColor" : "#111111",
+	"scene.backgroundColor": "#111111",
 	// default env map for PBR renderer
-	"scene.environment" : "${HIDE}/res/defaultEnv.jpg",
-
+	"scene.environment": "${HIDE}/res/defaultEnv.jpg",
 	// controls
-	"key.cancel" : "Escape",
-	"key.undo" : "Ctrl-Z",
-	"key.redo" : "Ctrl-Y",
-	"key.save" : "Ctrl-S",
-
-	"key.copy" : "Ctrl-C",
-	"key.cut" : "Ctrl-X",
-	"key.paste" : "Ctrl-V",
-	"key.duplicateInPlace" : "Ctrl-D",
-	"key.duplicate" : "Ctrl-Shift-D",
-	"key.delete" : "Delete",
-	"key.group" : "Ctrl-G",
-
-	"key.search" : "Ctrl-F",
-	"key.rename" : "F2",
-	"key.selectAll" : "Ctrl-A",
-	"key.playPause" : "Space",
-
+	"key.cancel": "Escape",
+	"key.undo": "Ctrl-Z",
+	"key.redo": "Ctrl-Y",
+	"key.save": "Ctrl-S",
+	"key.copy": "Ctrl-C",
+	"key.cut": "Ctrl-X",
+	"key.paste": "Ctrl-V",
+	"key.duplicateInPlace": "Ctrl-D",
+	"key.duplicate": "Ctrl-Shift-D",
+	"key.delete": "Delete",
+	"key.group": "Ctrl-G",
+	"key.search": "Ctrl-F",
+	"key.rename": "F2",
+	"key.selectAll": "Ctrl-A",
+	"key.playPause": "Space",
 	// view keys
-
-	"key.view.fullScreen" : "F11",
-	"key.view.refresh" : "F5",
-	"key.view.refreshApp" : "Ctrl-F5",
-
+	"key.view.fullScreen": "F11",
+	"key.view.refresh": "F5",
+	"key.view.refreshApp": "Ctrl-F5",
 	// File tree
 	"filetree.excludes": [
 		"(^|\/)\\.[^.]*$"
 	],
 	// allowed new extensions
-	"filetree.allowednew": ["*"],
-
+	"filetree.allowednew": [
+		"*"
+	],
 	// cdb keys
-
-	"key.cdb.showReferences" : "Ctrl-F12",
-	"key.cdb.gotoReference" : "F12",
-	"key.cdb.closeList" : "Escape",
-	"key.cdb.editCell" : "Enter",
-	"key.cdb.insertLine" : "Insert",
-	"key.cdb.moveBack" : "Alt-Left",
-	"key.cdb.moveAhead" : "Alt-Right",
-
-	"key.cdb.globalSeek" : "Ctrl-P",
-
+	"key.cdb.showReferences": "Ctrl-F12",
+	"key.cdb.gotoReference": "F12",
+	"key.cdb.closeList": "Escape",
+	"key.cdb.editCell": "Enter",
+	"key.cdb.insertLine": "Insert",
+	"key.cdb.moveBack": "Alt-Left",
+	"key.cdb.moveAhead": "Alt-Right",
+	"key.cdb.globalSeek": "Ctrl-P",
 	// Scene editor config
 	"key.sceneeditor.focus": "F",
 	"key.sceneeditor.lasso": "L",
@@ -75,7 +62,7 @@
 	"key.sceneeditor.isolate": "I",
 	"key.sceneeditor.selectParent": "Backspace",
 	"key.sceneeditor.reparent": "Ctrl-P",
-	"key.sceneeditor.editPivot" : "P",
+	"key.sceneeditor.editPivot": "P",
 	"key.sceneeditor.localTransformsToggle": "D",
 	"key.sceneeditor.gridToggle": "G",
 	"key.sceneeditor.toggleLayout": "Tab",
@@ -84,10 +71,9 @@
 	"key.sceneeditor.rotationMode": "E",
 	"key.sceneeditor.scalingMode": "R",
 	"key.sceneeditor.toggleSnap": "X",
-
 	// cdb config
-	"cdb.databaseFile" : "data.cdb",
-	"cdb.formulasFile" : "formulas.hx",
+	"cdb.databaseFile": "data.cdb",
+	"cdb.formulasFile": "formulas.hx",
 	"cdb": {
 		// When file column contains an image - controls whenever it should provide inline preview of the image instead of file path.
 		"inlineImageFiles": false
@@ -95,60 +81,85 @@
 	"cdb.filterIgnoreSublist": true,
 	// lines of these sheets will receive has-ref or no-ref html classes
 	"cdb.indicateRefs": [],
-
 	// will be removed once confidence in the new dropdown has grown
 	"cdb.useSelect2": false,
-
 	// It's possible to separately control CDB configurations per sheet and column with following keys:
 	// "cdb.mySheetName": { /* Applies to all File columns in sheet with mySheetName */ }
 	// "cdb.mySheetName.myColumnName": { /* Applies only to File column with name myColumnName, located in mySheetName */ }
 	// "cdb.mySheetName.mySubSheet.myColumnName": { /* Applies to colum in a subsheet (Properties/lists) */ }
-
 	// It's possible to run arbitrary commands at the root of the project when specific cdb sheets change
 	// "cdb.onChangeHooks": [{ "cmd": "touch done.txt", "sheets": [ "sheetName" ] }],
-
 	// script support
-	"script.api.files" : [],
-	"script.cdbPackage" : "",
-	"script.api" : {
-		"hx _or_ TableName.fieldName" : {
-			"globals" : { "this" : "ThisClass" },
-			"events" : "EventType",
-			"context" : "ContextClass",
-			"cdbEnums" : ["MyTable"]
+	"script.api.files": [],
+	"script.cdbPackage": "",
+	"script.api": {
+		"hx _or_ TableName.fieldName": {
+			"globals": {
+				"this": "ThisClass"
+			},
+			"events": "EventType",
+			"context": "ContextClass",
+			"cdbEnums": [
+				"MyTable"
+			]
 		}
 	},
-
 	// paths to look files/shaders into - relative to project root
-	"haxe.classPath" : ["src"],
-
+	"haxe.classPath": [
+		"src"
+	],
 	// Scene editor config
 	// Snap size when using grid snapping
-	"sceneeditor.gridSnapSteps": [0.1,0.25,0.5,1.0, 5.0, 10.0, 25.0],
-	"sceneeditor.rotateStepCoarses": [5,10,15,30,45],
+	"sceneeditor.gridSnapSteps": [
+		0.1,
+		0.25,
+		0.5,
+		1.0,
+		5.0,
+		10.0,
+		25.0
+	],
+	"sceneeditor.rotateStepCoarses": [
+		5,
+		10,
+		15,
+		30,
+		45
+	],
 	"sceneeditor.rotateStepFine": 15,
-
 	// Quantization steps (0 for none)
 	"sceneeditor.xyzPrecision": 0.01,
 	"sceneeditor.scalePrecision": 0.01,
 	"sceneeditor.rotatePrecision": 0.1,
-
-	"sceneeditor.newgroups" : ["2D|hrt.prefab.Object2D","3D|hrt.prefab.Object3D","RFX|hrt.prefab.rfx.RendererFX"],
-	"sceneeditor.recentsize" : 6,
-
-	"sceneeditor.icons" : {},
-	"sceneeditor.ranges" : {},
-	"sceneeditor.huds" : {},
-
+	"sceneeditor.newgroups": [
+		"2D|hrt.prefab.Object2D",
+		"3D|hrt.prefab.Object3D",
+		"RFX|hrt.prefab.rfx.RendererFX"
+	],
+	"sceneeditor.recentsize": 6,
+	"sceneeditor.icons": {},
+	"sceneeditor.ranges": {},
+	"sceneeditor.huds": {},
 	// l3d config
-	"sceneeditor.colors": {
-	},
-	"sceneeditor.filterTypes": ["terrain", "model", "polygon", "box", "instance", "light", "meshSpray"],
-	"sceneeditor.tags": [ { "id": "tag", "color": "#802000" } ],
+	"sceneeditor.colors": {},
+	"sceneeditor.filterTypes": [
+		"interiorinstance",
+		"staticshape",
+		"item",
+		"trigger",
+		"pathedinterior",
+		"path",
+		"marker"
+	],
+	"sceneeditor.tags": [
+		{
+			"id": "tag",
+			"color": "#802000"
+		}
+	],
 	"sceneeditor.camera.moveSpeed": 1.5,
 	"sceneeditor.gridSize": 100,
 	"sceneeditor.gridStep": 1,
-
 	// FX editor
 	"fx.shaders": [
 		"h3d.shader.AlphaMap",
@@ -159,21 +170,36 @@
 		"h3d.shader.UVScroll",
 		"shaders/"
 	],
-
-	"fx.tags": [ { "id": "tag", "color": "#802000" } ],
-
-	"shadergraph.libfolders": ["shaders", "shaders/subshaders"],
-
+	"fx.tags": [
+		{
+			"id": "tag",
+			"color": "#802000"
+		}
+	],
+	"shadergraph.libfolders": [
+		"shaders",
+		"shaders/subshaders"
+	],
 	// DomKit css files list
-	"domkit.css" : [],
-
+	"domkit.css": [],
 	// reserved for internal ide usage
-	"debug.displayErrors" : true,
-	"hide" : {},
-
+	"debug.displayErrors": true,
+	"hide": {},
 	// Brushes for terrain
 	"terrain.brushes": [
-        { "name": "Default", "texture" : "${HIDE}/res/brushes/default.jpg", "step" : 3, "size" : 30, "strength" : 1.0 },
-		{ "name": "Square", "texture" : "${HIDE}/res/brushes/square.jpg", "step" : 3, "size" : 30, "strength" : 1.0 }
+		{
+			"name": "Default",
+			"texture": "${HIDE}/res/brushes/default.jpg",
+			"step": 3,
+			"size": 30,
+			"strength": 1.0
+		},
+		{
+			"name": "Square",
+			"texture": "${HIDE}/res/brushes/square.jpg",
+			"step": 3,
+			"size": 30,
+			"strength": 1.0
+		}
 	]
 }

@@ -1046,6 +1046,7 @@ input[type=checkbox]:checked:after {
   border: none;
   zoom: 1;
   font-size: 11px;
+  text-wrap: wrap;
 }
 .hide-properties select {
   width: 197px;
