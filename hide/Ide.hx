@@ -648,7 +648,7 @@ class Ide {
 	}
 
 	function get_projectDir() return ideConfig.currentProject.split("\\").join("/");
-	function get_resourceDir() return projectDir+"/res";
+	function get_resourceDir() return projectDir;
 
 	function setProject( dir : String ) {
 		fileWatcher.dispose();
@@ -677,7 +677,6 @@ class Ide {
 		hxd.res.Image.ASYNC_LOADER = new hxd.impl.AsyncLoader.NodeLoader();
 		renderers = [
 			new hide.Renderer.MaterialSetup("Default"),
-			new hide.Renderer.PbrSetup("PBR"),
 		];
 
 		var plugins : Array<String> = config.current.get("plugins");
@@ -1012,14 +1011,16 @@ class Ide {
 		if( file == null )
 			return null;
 		var l = hrt.prefab.Library.create(file.split(".").pop().toLowerCase());
-		try {
-			var path = getPath(file);
-			if( checkExists && !sys.FileSystem.exists(path) )
-				return null;
-			l.loadData(parseJSON(sys.io.File.getContent(path)));
-		} catch( e : Dynamic ) {
-			error("Invalid prefab "+file+" ("+e+")");
-			throw e;
+		if (!l.loadFromPath(file)) {
+			try {
+				var path = getPath(file);
+				if( checkExists && !sys.FileSystem.exists(path) )
+					return null;
+				l.loadData(parseJSON(sys.io.File.getContent(path)));
+			} catch( e : Dynamic ) {
+				error("Invalid prefab "+file+" ("+e+")");
+				throw e;
+			}
 		}
 		if( cl == null )
 			return cast l;

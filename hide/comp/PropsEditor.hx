@@ -308,6 +308,9 @@ class PropsField extends Component {
 		current = getFieldValue();
 		switch( f.attr("type") ) {
 		case "checkbox":
+			if (current is String) {
+				current = current == "true" || current == "1";
+			}
 			f.prop("checked", current);
 			f.mousedown(function(e) e.stopPropagation());
 			f.change(function(_) {
