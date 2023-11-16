@@ -12,6 +12,5 @@ common.hxml
 --macro include("hrt.dif")
 --macro include("hrt.dts")
 --macro include("hrt.mis")
---macro include("hrt.shgraph.nodes")
 -dce no
 -debug
