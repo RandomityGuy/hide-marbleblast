@@ -1794,7 +1794,11 @@ class SceneEditor {
 			},
 			{
 				label: "Torque",
-				menu: [makeTMenuItem("SimGroup"), makeTMenuItem("ScriptObject")]
+				menu: [
+					makeTMenuItem("SimGroup"),
+					makeTMenuItem("ScriptObject"),
+					makeTMenuItem("TSStatic")
+				]
 			}
 		];
 

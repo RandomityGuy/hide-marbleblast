@@ -209,7 +209,7 @@ class PhysModPropertyProvider extends PropertyProvider {
 				var fieldIndex = Std.parseInt(field.field.substring("marbleattribute".length));
 				definedAttribMap.set(field.value, {
 					value: obj.getDynamicFieldValue('value${fieldIndex}'),
-					megaValue: obj.getDynamicFieldValue('megaValue${fieldIndex}'),
+					megaValue: obj.getDynamicFieldValue('megavalue${fieldIndex}'),
 				});
 			}
 		}
@@ -232,6 +232,7 @@ class PhysModPropertyProvider extends PropertyProvider {
 		}
 
 		var makeAddFieldFn = null;
+		var makeEditFieldFn = null;
 
 		var makeEditFieldFn = (dd, marbleAttrib:{
 			name:String,
@@ -248,26 +249,46 @@ class PhysModPropertyProvider extends PropertyProvider {
 			var removeField = new hide.Element('<input type="button" value="X" style="width:30px"></input>');
 			removeField.appendTo(dd);
 
-			removeField.click((_) -> {
+			var removeFunc = () -> {
 				editFields.remove();
 				editFields2.remove();
 				removeField.remove();
 				definedAttribMap.remove(marbleAttrib.name);
 				makeAddFieldFn(dd, marbleAttrib);
 				exportToObj();
-			});
+			}
+
+			removeField.click((_) -> removeFunc());
 
 			editFields.val(MisParser.parseNumber(definedAttribMap.get(marbleAttrib.name).value));
-			editFields2.val(MisParser.parseNumber(definedAttribMap.get(marbleAttrib.name).value));
+			editFields2.val(MisParser.parseNumber(definedAttribMap.get(marbleAttrib.name).megaValue));
 
 			editFields.change((e) -> {
+				var oldValue = definedAttribMap.get(marbleAttrib.name).value;
+				var newValue = '${editFields.val()}';
 				definedAttribMap.get(marbleAttrib.name).value = '${editFields.val()}';
 				exportToObj();
+
+				ctx.properties.undo.change(Custom(isUndo -> {
+					definedAttribMap.get(marbleAttrib.name).value = isUndo ? oldValue : newValue;
+					editFields.val(MisParser.parseNumber(definedAttribMap.get(marbleAttrib.name).value));
+					exportToObj();
+				}));
 			});
 			editFields2.change((e) -> {
+				var oldValue = definedAttribMap.get(marbleAttrib.name).value;
+				var newValue = '${editFields2.val()}';
 				definedAttribMap.get(marbleAttrib.name).megaValue = '${editFields2.val()}';
 				exportToObj();
+
+				ctx.properties.undo.change(Custom(isUndo -> {
+					definedAttribMap.get(marbleAttrib.name).megaValue = isUndo ? oldValue : newValue;
+					editFields2.val(MisParser.parseNumber(definedAttribMap.get(marbleAttrib.name).megaValue));
+					exportToObj();
+				}));
 			});
+
+			return removeFunc;
 		}
 
 		makeAddFieldFn = (dd, marbleAttrib:{

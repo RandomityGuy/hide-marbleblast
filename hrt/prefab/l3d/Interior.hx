@@ -383,7 +383,7 @@ class Interior extends TorqueObject {
 
 		ctx.properties.add(new hide.Element('<div class="group" name="Path">
 			<dl>
-				<dt>File</dt><dd><input type="text" field="path" /></dd>
+				<dt>File</dt><dd><input type="fileselect" extensions="dif" field="path" /></dd>
 			</dl></div>'), this, function(pname) {
 			ctx.onChange(this, pname);
 

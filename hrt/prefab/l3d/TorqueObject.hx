@@ -175,12 +175,20 @@ class TorqueObject extends Object3D {
 			});
 			def.find("dt").contextmenu(function(e) {
 				new hide.comp.ContextMenu([
-					{label: "Set Default", click: () -> v.value = ref.v},
 					{
 						label: "Remove",
 						click: () -> {
 							dynamicFields.remove(v);
 							ectx.rebuildProperties();
+
+							ectx.properties.undo.change(Custom(isUndo -> {
+								if (isUndo) {
+									dynamicFields.push(v);
+								} else {
+									dynamicFields.remove(v);
+								}
+								propagatePropertyChanged(ectx, v.field);
+							}));
 						}
 					},
 				]);
@@ -214,6 +222,8 @@ class TorqueObject extends Object3D {
 								opt.appendTo(select);
 							}
 							def.on("change", function(e) {
+								var oldValue = v.value;
+								var newValue = e.target.value;
 								v.value = e.target.value;
 								if (fieldDef.name == "skin") {
 									if (this is DtsMesh) {
@@ -222,6 +232,17 @@ class TorqueObject extends Object3D {
 									}
 								}
 								propagatePropertyChanged(ectx, v.field);
+
+								ectx.properties.undo.change(Custom(isUndo -> {
+									v.value = isUndo ? oldValue : newValue;
+									if (fieldDef.name == "skin") {
+										if (this is DtsMesh) {
+											var thisdts = cast(this, DtsMesh);
+											thisdts.changeSkin(v.value, ectx.getContext(this));
+										}
+									}
+									propagatePropertyChanged(ectx, v.field);
+								}));
 							});
 							def.appendTo(cvars);
 						}
@@ -251,8 +272,16 @@ class TorqueObject extends Object3D {
 							select.val(v.value.toLowerCase());
 
 							def.on("change", function(e) {
+								var oldValue = v.value;
+								var newValue = e.target.value;
 								v.value = e.target.value;
 								propagatePropertyChanged(ectx, v.field);
+
+								ectx.properties.undo.change(Custom(isUndo -> {
+									v.value = isUndo ? oldValue : newValue;
+									select.val(v.value.toLowerCase());
+									propagatePropertyChanged(ectx, v.field);
+								}));
 							});
 
 							def.appendTo(cvars);

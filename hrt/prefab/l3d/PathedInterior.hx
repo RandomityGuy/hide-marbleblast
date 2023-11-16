@@ -96,7 +96,7 @@ class PathedInterior extends TorqueObject {
 		var group = new hide.Element('
 			<div class="group" name="Pathed Interior">
 				<dl>
-					<dt>File</dt><dd><input type="text" field="path" /></dd>
+					<dt>File</dt><dd><input type="fileselect" extensions="dif" field="path" /></dd>
 					<dt>Sub Object</dt><dd><input type="number" field="so" /></dd>
 					<dt>Initial Target</dt>
                     <dd>

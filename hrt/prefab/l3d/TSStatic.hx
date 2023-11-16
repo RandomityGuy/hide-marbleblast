@@ -7,7 +7,7 @@ class TSStatic extends DtsMesh {
 
 		ctx.properties.add(new hide.Element('<div class="group" name="TSStatic">
 			<dl>
-				<dt>Shape</dt><dd><input type="text" field="path" /></dd>
+				<dt>Shape</dt><dd><input type="fileselect" extensions="dts" field="path" /></dd>
 			</dl></div>'), this, function(pname) {
 			ctx.onChange(this, pname);
 

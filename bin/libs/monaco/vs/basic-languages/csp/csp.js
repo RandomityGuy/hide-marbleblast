@@ -4,4 +4,166 @@
  * Released under the MIT license
  * https://github.com/Microsoft/monaco-languages/blob/master/LICENSE.md
  *-----------------------------------------------------------------------------*/
-define("vs/basic-languages/csp/csp",["require","exports"],function(t,e){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.conf={brackets:[],autoClosingPairs:[],surroundingPairs:[]},e.language={keywords:[],typeKeywords:[],tokenPostfix:".csp",operators:[],symbols:/[=><!~?:&|+\-*\/\^%]+/,escapes:/\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,tokenizer:{root:[[/child-src/,"string.quote"],[/connect-src/,"string.quote"],[/default-src/,"string.quote"],[/font-src/,"string.quote"],[/frame-src/,"string.quote"],[/img-src/,"string.quote"],[/manifest-src/,"string.quote"],[/media-src/,"string.quote"],[/object-src/,"string.quote"],[/script-src/,"string.quote"],[/style-src/,"string.quote"],[/worker-src/,"string.quote"],[/base-uri/,"string.quote"],[/plugin-types/,"string.quote"],[/sandbox/,"string.quote"],[/disown-opener/,"string.quote"],[/form-action/,"string.quote"],[/frame-ancestors/,"string.quote"],[/report-uri/,"string.quote"],[/report-to/,"string.quote"],[/upgrade-insecure-requests/,"string.quote"],[/block-all-mixed-content/,"string.quote"],[/require-sri-for/,"string.quote"],[/reflected-xss/,"string.quote"],[/referrer/,"string.quote"],[/policy-uri/,"string.quote"],[/'self'/,"string.quote"],[/'unsafe-inline'/,"string.quote"],[/'unsafe-eval'/,"string.quote"],[/'strict-dynamic'/,"string.quote"],[/'unsafe-hashed-attributes'/,"string.quote"]]}}});
+define("vs/basic-languages/csp/csp", ["require", "exports"], function (t, e) {
+    "use strict";
+    Object.defineProperty(e, "__esModule", { value: !0 }),
+        (e.conf = {
+            comments: { lineComment: "//", blockComment: ["/*", "*/"] },
+            brackets: [
+                ["{", "}"],
+                ["[", "]"],
+                ["(", ")"],
+            ],
+            autoClosingPairs: [
+                { open: "{", close: "}" },
+                { open: "[", close: "]" },
+                { open: "(", close: ")" },
+                { open: '"', close: '"' },
+                { open: "'", close: "'" },
+                { open: "`", close: "`" },
+            ],
+            surroundingPairs: [
+                { open: "{", close: "}" },
+                { open: "[", close: "]" },
+                { open: "(", close: ")" },
+                { open: '"', close: '"' },
+                { open: "'", close: "'" },
+                { open: "`", close: "`" },
+            ],
+    }),
+        (e.language =  {
+            defaultToken: "",
+            tokenPostfix: ".cs",
+            keywords: [
+                "datablock",
+                "package",
+                "continue",
+                "for",
+                "function",
+                "switch",
+                "new",
+                "goto",
+                "if",
+                "break",
+                "else",
+                "return",
+                "while",
+                "true",
+                "false",
+                "case",
+                "default",
+                "or",
+            ],
+
+            typeKeywords: [],
+
+            operators: [
+                "=",
+                ">",
+                "<",
+                "!",
+                "~",
+                "?",
+                ":",
+                "==",
+                "<=",
+                ">=",
+                "!=",
+                "&&",
+                "||",
+                "++",
+                "--",
+                "+",
+                "-",
+                "*",
+                "/",
+                "&",
+                "|",
+                "^",
+                "%",
+                "<<",
+                ">>",
+                "+=",
+                "-=",
+                "*=",
+                "/=",
+                "&=",
+                "|=",
+                "^=",
+                "%=",
+                "<<=",
+                ">>=",
+                "@",
+                "SPC",
+                "TAB",
+                "NL",
+                "$=",
+                "!$=",
+            ],
+
+            // we include these common regular expressions
+            symbols: /[=><!~?:&|+\-*\/\^%]+/,
+
+            // C# style strings
+            escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+
+            // The main tokenizer for our languages
+            tokenizer: {
+                root: [
+                    // identifiers and keywords
+                    [/[a-z_$][\w$]*/, { cases: { "@typeKeywords": "keyword", "@keywords": "keyword", "@default": "identifier" } }],
+                    [/[$%][a-zA-Z][\w\$]*/, "type.identifier"], // to show class names nicely
+
+                    // whitespace
+                    { include: "@whitespace" },
+
+                    // delimiters and operators
+                    [/[{}()\[\]]/, "@brackets"],
+                    [/[<>](?!@symbols)/, "@brackets"],
+                    [/@symbols/, { cases: { "@operators": "operator", "@default": "" } }],
+
+                    // @ annotations.
+                    // As an example, we emit a debugging log message on these tokens.
+                    // Note: message are supressed during the first load -- change some lines to see them.
+                    [/@\s*[a-zA-Z_\$][\w\$]*/, { token: "annotation", log: "annotation token: $0" }],
+
+                    // numbers
+                    [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+                    [/0[xX][0-9a-fA-F]+/, "number.hex"],
+                    [/\d+/, "number"],
+
+                    // delimiter: after number because of .\d floats
+                    [/[;,.]/, "delimiter"],
+
+                    // strings
+                    [/"([^"\\]|\\.)*$/, "string.invalid"], // non-teminated string
+                    [/"/, { token: "string.quote", bracket: "@open", next: "@string" }],
+
+                    // characters
+                    [/'[^\\']'/, "string"],
+                    [/(')(@escapes)(')/, ["string", "string.escape", "string"]],
+                    [/'/, "string.invalid"],
+                ],
+
+                comment: [
+                    [/[^\/*]+/, "comment"],
+                    [/\/\*/, "comment", "@push"], // nested comment
+                    ["\\*/", "comment", "@pop"],
+                    [/[\/*]/, "comment"],
+                ],
+
+                string: [
+                    [/[^\\"]+/, "string"],
+                    [/@escapes/, "string.escape"],
+                    [/\\./, "string.escape.invalid"],
+                    [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }],
+                ],
+
+                whitespace: [
+                    [/[ \t\r\n]+/, "white"],
+                    [/\/\*/, "comment", "@comment"],
+                    [/\/\/.*$/, "comment"],
+                ],
+            },
+        });
+});
