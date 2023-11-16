@@ -323,30 +323,6 @@ class FileTree extends FileView {
 		});
 
 		changed = false;
-		var tmpSheets = [];
-		for( sheet in ide.database.sheets ) {
-			if( sheet.props.dataFiles != null && sheet.lines == null ) {
-				// we already updated prefabs, no need to load data files
-				tmpSheets.push(sheet);
-				@:privateAccess sheet.sheet.lines = [];
-			}
-			for( c in sheet.columns ) {
-				switch( c.type ) {
-				case TFile:
-					for( o in sheet.getLines() ) {
-						var v : Dynamic = filter(Reflect.field(o, c.name));
-						if( v != null ) Reflect.setField(o, c.name, v);
-					}
-				default:
-				}
-			}
-		}
-		if( changed ) {
-			ide.saveDatabase();
-			hide.comp.cdb.Editor.refreshAll(true);
-		}
-		for( sheet in tmpSheets )
-			@:privateAccess sheet.sheet.lines = null;
 
 		var dataDir = new haxe.io.Path(path);
 		if( dataDir.ext != "dat" ) {

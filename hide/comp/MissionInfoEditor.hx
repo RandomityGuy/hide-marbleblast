@@ -2,8 +2,6 @@ package hide.comp;
 
 using hide.tools.Extensions;
 
-import cdb.Data;
-
 class MissionInfoEditor extends Popup {
 	var contentModal:Element;
 	var form:Element;

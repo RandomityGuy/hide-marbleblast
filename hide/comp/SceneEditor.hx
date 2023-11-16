@@ -20,7 +20,6 @@ import hrt.prefab.Prefab as PrefabElement;
 import hrt.prefab.Object2D;
 import hrt.prefab.Object3D;
 import h3d.scene.Object;
-import hide.comp.cdb.DataFiles;
 import hide.view.CameraController;
 
 using hide.tools.Extensions.ArrayExtensions;
@@ -2486,18 +2485,6 @@ class SceneEditor {
 		}));
 	}
 
-	function makeCdbProps(e:PrefabElement, type:cdb.Sheet) {
-		var props = type.getDefaults();
-		Reflect.setField(props, "$cdbtype", DataFiles.getTypeName(type));
-		if (type.idCol != null && !type.idCol.opt) {
-			var id = new haxe.io.Path(view.state.path).file;
-			id = id.charAt(0).toUpperCase() + id.substr(1);
-			id += "_" + e.name;
-			Reflect.setField(props, type.idCol.name, id);
-		}
-		return props;
-	}
-
 	function serializeProps(fields:Array<hide.comp.PropsEditor.PropsField>):String {
 		var out = new Array<String>();
 		for (field in fields) {
@@ -2597,82 +2584,6 @@ class SceneEditor {
 		var typeName = e.getCdbType();
 		if (typeName == null && e.props != null)
 			return; // don't allow CDB data with props already used !
-
-		var types = DataFiles.getAvailableTypes();
-		if (types.length == 0)
-			return;
-
-		var group = new hide.Element('
-			<div class="group" name="CDB">
-				<dl>
-				<dt>
-					<div class="btn-cdb-large ico ico-file-text" title="Detach panel"></div>
-					Type
-				</dt>
-				<dd><select><option value="">- No props -</option></select></dd>
-			</div>
-		');
-
-		var cdbLarge = @:privateAccess view.getDisplayState("cdbLarge");
-		var detachable = new DetachablePanel();
-		detachable.saveDisplayKey = "detachedCdb";
-		group.find(".btn-cdb-large").click((_) -> {
-			cdbLarge = !cdbLarge;
-			@:privateAccess view.saveDisplayState("cdbLarge", cdbLarge);
-			group.toggleClass("cdb-large", cdbLarge);
-			detachable.setDetached(cdbLarge);
-		});
-		group.toggleClass("cdb-large", cdbLarge == true);
-		detachable.setDetached(cdbLarge == true);
-
-		var select = group.find("select");
-		for (t in types) {
-			var id = DataFiles.getTypeName(t);
-			new hide.Element("<option>").attr("value", id).text(id).appendTo(select);
-		}
-
-		var curType = DataFiles.resolveType(typeName);
-		if (curType != null)
-			select.val(DataFiles.getTypeName(curType));
-
-		function changeProps(props:Dynamic) {
-			properties.undo.change(Field(e, "props", e.props), () -> edit.rebuildProperties());
-			e.props = props;
-			edit.onChange(e, "props");
-			edit.rebuildProperties();
-		}
-
-		select.change(function(v) {
-			var typeId = select.val();
-			if (typeId == null || typeId == "") {
-				changeProps(null);
-				return;
-			}
-			var props = makeCdbProps(e, DataFiles.resolveType(typeId));
-			changeProps(props);
-		});
-
-		edit.properties.add(group);
-
-		if (curType != null) {
-			var props = new hide.Element('<div></div>').appendTo(group.find(".content"));
-			var fileRef = view.state.path;
-			var ctx = context.shared.getContexts(e)[0];
-			if (ctx != null)
-				fileRef = ctx.shared.currentPath;
-			detachable.element.appendTo(props);
-			var editor = new hide.comp.cdb.ObjEditor(curType, view.config, e.props, fileRef, detachable.element);
-			editor.undo = properties.undo;
-			editor.fileView = view;
-			editor.onChange = function(pname) {
-				edit.onChange(e, 'props.$pname');
-				var e = Std.downcast(e, Object3D);
-				if (e != null) {
-					for (ctx in context.shared.getContexts(e))
-						e.addEditorUI(ctx);
-				}
-			}
-		}
 	}
 
 	public function addGroupCopyPaste(edit:SceneEditorContext) {

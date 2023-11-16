@@ -15,7 +15,6 @@ class Ide {
 	public var isWindows(get, never) : Bool;
 	public var isFocused(get, never) : Bool;
 
-	public var database : cdb.Database = new cdb.Database();
 	public var shaderLoader : hide.tools.ShaderLoader;
 	public var fileWatcher : hide.tools.FileWatcher;
 	public var isCDB = false;
@@ -26,7 +25,6 @@ class Ide {
 	var databaseFile : String;
 	var databaseDiff : String;
 	var pakFile : hxd.fmt.pak.FileSystem;
-	var originDataBase : cdb.Database;
 	var dbWatcher : hide.tools.FileWatcher.FileWatchEvent;
 
 	var config : {
@@ -183,13 +181,6 @@ class Ide {
 		window.on("focus", function() {
 			// handle cancel on type=file
 			haxe.Timer.delay(function() new Element(body).find("input[type=file]").change().remove(), 200);
-
-			if(fileExists(databaseFile) && getFileText(databaseFile) != lastDBContent) {
-				if(js.Browser.window.confirm(databaseFile + " has changed outside of Hide. Do you want to reload?")) {
-					loadDatabase(true);
-					hide.comp.cdb.Editor.refreshAll(true);
-				};
-			}
 		});
 		function dragFunc(drop : Bool, e:js.html.DragEvent) {
 			syncMousePosition(e);
@@ -416,10 +407,7 @@ class Ide {
 				initView(v);
 			initViews = null;
 			if( subView == null && views.length == 0 ) {
-				if( isCDB )
-					open("hide.view.CdbTable",{}, function(v) v.fullScreen = true);
-				else
-					open("hide.view.FileTree",{path:""});
+				open("hide.view.FileTree",{path:""});
 			}
 			if( firstInit ) {
 				firstInit = false;
@@ -580,60 +568,6 @@ class Ide {
 		return tex;
 	}
 
-	public function resolveCDBValue( path : String, key : Dynamic, obj : Dynamic ) : Dynamic {
-
-		// allow Array as key (first choice)
-		if( Std.isOfType(key,Array) ) {
-			for( v in (key:Array<Dynamic>) ) {
-				var value = resolveCDBValue(path, v, obj);
-				if( value != null ) return value;
-			}
-			return null;
-		}
-		path += "."+key;
-
-		var path = path.split(".");
-		var sheet = database.getSheet(path.shift());
-		if( sheet == null )
-			return null;
-		while( path.length > 0 && sheet != null ) {
-			var f = path.shift();
-			var value : Dynamic;
-			if( f.charCodeAt(f.length-1) == "]".code ) {
-				var parts = f.split("[");
-				f = parts[0];
-				value = Reflect.field(obj, f);
-				if( value != null )
-					value = value[Std.parseInt(parts[1])];
-			} else
- 				value = Reflect.field(obj, f);
-			if( value == null )
-				return null;
-			var current = sheet;
-			sheet = null;
-			for( c in current.columns ) {
-				if( c.name == f ) {
-					switch( c.type ) {
-					case TRef(name):
-						sheet = database.getSheet(name);
-						var ref = sheet.index.get(value);
-						if( ref == null )
-							return null;
-						value = ref.obj;
-					case TProperties, TList:
-						sheet = current.getSub(c);
-					default:
-					}
-					break;
-				}
-			}
-			obj = value;
-		}
-		for( f in path )
-			obj = Reflect.field(obj, f);
-		return obj;
-	}
-
 	var showErrors = true;
 	public function error( e : Dynamic ) {
 		if( showErrors && !js.Browser.window.confirm(e) )
@@ -683,8 +617,6 @@ class Ide {
 		for ( plugin in plugins )
 			loadPlugin(plugin, function() {});
 
-		databaseFile = config.project.get("cdb.databaseFile");
-		databaseDiff = config.user.get("cdb.databaseDiff");
 		var pak = config.project.get("pak.dataFile");
 		pakFile = null;
 		if( pak != null ) {
@@ -695,11 +627,6 @@ class Ide {
 				error(""+e);
 			}
 		}
-		loadDatabase();
-		dbWatcher = fileWatcher.register(databaseFile,function() {
-			loadDatabase(true);
-			hide.comp.cdb.Editor.refreshAll(true);
-		});
 
 		if( config.project.get("debug.displayErrors")  ) {
 			js.Browser.window.onerror = function(msg, url, line, col, error) {
@@ -849,65 +776,6 @@ class Ide {
 	}
 
 	var lastDBContent = null;
-	function loadDatabase( ?checkExists ) {
-		var exists = fileExists(databaseFile);
-		if( checkExists && !exists )
-			return; // cancel load
-		var loadedDatabase = new cdb.Database();
-		if( !exists ) {
-			database = loadedDatabase;
-			return;
-		}
-		try {
-			lastDBContent = getFileText(databaseFile);
-			loadedDatabase.load(lastDBContent);
-		} catch( e : Dynamic ) {
-			error(e);
-			return;
-		}
-		database = loadedDatabase;
-		if( databaseDiff != null ) {
-			originDataBase = new cdb.Database();
-			lastDBContent = getFileText(databaseFile);
-			originDataBase.load(lastDBContent);
-			if( fileExists(databaseDiff) ) {
-				var d = new cdb.DiffFile();
-				d.apply(database,parseJSON(getFileText(databaseDiff)),config.project.get("cdb.view"));
-			}
-		}
-	}
-
-	public function saveDatabase( ?forcePrefabs ) {
-		hide.comp.cdb.DataFiles.save(function() {
-			if( databaseDiff != null ) {
-				sys.io.File.saveContent(getPath(databaseDiff), toJSON(new cdb.DiffFile().make(originDataBase,database)));
-				fileWatcher.ignorePrevChange(dbWatcher);
-			} else {
-				if( !sys.FileSystem.exists(getPath(databaseFile)) && fileExists(databaseFile) ) {
-					// was loaded from pak, cancel changes
-					loadDatabase();
-					hide.comp.cdb.Editor.refreshAll();
-					return;
-				}
-				lastDBContent = database.save();
-				sys.io.File.saveContent(getPath(databaseFile), lastDBContent);
-				fileWatcher.ignorePrevChange(dbWatcher);
-			}
-		}, forcePrefabs);
-	}
-
-	public function createDBSheet( ?index : Int ) {
-		var value = ask("Sheet name");
-		if( value == "" || value == null ) return null;
-		var s = database.createSheet(value, index);
-		if( s == null ) {
-			error("Name already exists");
-			return null;
-		}
-		saveDatabase();
-		hide.comp.cdb.Editor.refreshAll();
-		return s;
-	}
 
 	public function makeRelative( path : String ) {
 		path = path.split("\\").join("/");
@@ -1203,124 +1071,6 @@ class Ide {
 			if( state != null ) try haxe.Json.parse(state) catch( e : Dynamic ) error("Invalid state "+state+" ("+e+")");
 			c.click(function(_) {
 				open(cname, state == null ? null : haxe.Json.parse(state));
-			});
-		}
-
-		// database
-		var db = menu.find(".database");
-		db.find(".dbView").click(function(_) {
-			open("hide.view.CdbTable",{});
-		});
-		db.find(".dbCompress").prop("checked",database.compress).click(function(_) {
-			database.compress = !database.compress;
-			saveDatabase();
-		});
-		db.find(".dbExport").click(function(_) {
-			hide.comp.cdb.DataFiles.load();
-			var lang = new cdb.Lang(@:privateAccess database.data);
-			var xml = lang.buildXML();
-			xml = String.fromCharCode(0xFEFF) + xml; // prefix with BOM
-			chooseFileSave("export.xml", function(f) {
-				if( f != null ) sys.io.File.saveContent(getPath(f), xml);
-			});
-		});
-		db.find(".dbImport").click(function(_) {
-			chooseFile(["xml"], function(file) {
-				hide.comp.cdb.DataFiles.load();
-				var lang = new cdb.Lang(@:privateAccess database.data);
-				var xml = sys.io.File.getContent(getPath(file));
-				lang.apply(xml);
-				saveDatabase(true);
-
-				for( file in @:privateAccess hide.comp.cdb.DataFiles.watching.keys() ) {
-					if( sys.FileSystem.isDirectory(getPath(file)) )
-						continue;
-					var p = loadPrefab(file);
-					lang.applyPrefab(p);
-					savePrefab(file, p);
-				}
-
-				hide.comp.cdb.Editor.refreshAll();
-				message("Import completed");
-			});
-		});
-
-		var proofing = projectConfig.dbProofread == true;
-		db.find(".dbProofread").prop("checked", proofing).click(function(_) {
-			projectConfig.dbProofread = !proofing;
-			config.global.save();
-			for( v in getViews(hide.view.CdbTable) )
-				v.applyProofing();
-			initMenu();
-		});
-
-		function setDiff(f) {
-			databaseDiff = f;
-			config.user.set("cdb.databaseDiff", f);
-			config.user.save();
-			loadDatabase();
-			hide.comp.cdb.Editor.refreshAll();
-			initMenu();
-			for( v in getViews(hide.view.CdbTable) )
-				v.rebuild();
-		}
-		db.find(".dbCreateDiff").click(function(_) {
-			chooseFileSave("cdb.diff", function(name) {
-				if( name == null ) return;
-				if( name.indexOf(".") < 0 ) name += ".diff";
-				sys.io.File.saveContent(getPath(name),"{}");
-				setDiff(name);
-			});
-		});
-		db.find(".dbLoadDiff").click(function(_) {
-			chooseFile(["diff"], function(f) {
-				if( f == null ) return;
-				setDiff(f);
-			});
-		});
-		db.find(".dbCloseDiff").click(function(_) {
-			setDiff(null);
-		}).attr("disabled", databaseDiff == null ? "disabled" : null);
-		db.find(".dbCustom").click(function(_) {
-			open("hide.view.CdbCustomTypes",{});
-		});
-		db.find(".dbFormulas").click(function(_) {
-			open("hide.comp.cdb.FormulasView",{ path : config.current.get("cdb.formulasFile") });
-		});
-
-		// Categories
-		{
-			function applyCategories() {
-				for( v in getViews(hide.view.CdbTable) )
-					v.applyCategories(projectConfig.dbCategories);
-				initMenu();
-			}
-			var allCats = hide.comp.cdb.Editor.getCategories(database);
-			var showAll = db.find(".dbCatShowAll");
-			for(cat in allCats) {
-				var isShown = projectConfig.dbCategories == null || projectConfig.dbCategories.indexOf(cat) >= 0;
-				new Element("<menu type='checkbox'>").attr("label",cat).prop("checked", isShown).insertBefore(showAll).click(function(_){
-					if(projectConfig.dbCategories == null)
-						projectConfig.dbCategories = allCats; // Init with all cats
-					if(isShown)
-						projectConfig.dbCategories.remove(cat);
-					else
-						projectConfig.dbCategories.push(cat);
-					config.global.save();
-					applyCategories();
-				});
-			}
-			new Element("<separator>").insertBefore(showAll);
-
-			db.find(".dbCatShowAll").click(function(_) {
-				projectConfig.dbCategories = null;
-				config.global.save();
-				applyCategories();
-			});
-			db.find(".dbCatHideAll").click(function(_) {
-				projectConfig.dbCategories = [];
-				config.global.save();
-				applyCategories();
 			});
 		}
 

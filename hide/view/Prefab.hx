@@ -11,7 +11,6 @@ import hxd.Key as K;
 import hrt.prefab.Prefab as PrefabElement;
 import hrt.prefab.Object3D;
 import hrt.prefab.l3d.Instance;
-import hide.comp.cdb.DataFiles;
 
 class FiltersPopup extends hide.comp.Popup {
 	var editor:Prefab;
@@ -160,59 +159,6 @@ private class PrefabSceneEditor extends hide.comp.SceneEditor {
 
 		function addNewInstances() {
 			var items = new Array<hide.comp.ContextMenu.ContextMenuItem>();
-			for (type in DataFiles.getAvailableTypes()) {
-				var typeId = DataFiles.getTypeName(type);
-				var label = typeId.charAt(0).toUpperCase() + typeId.substr(1);
-
-				var refCols = Instance.findRefColumns(type);
-				var refSheet = refCols == null ? null : type.base.getSheet(refCols.sheet);
-				var idCol = refCols == null ? null : Instance.findIDColumn(refSheet);
-
-				function make(name) {
-					var p = new Instance(current == null ? sceneData : current);
-					p.name = name;
-					p.props = makeCdbProps(p, type);
-					setup(p);
-					if (onMake != null)
-						onMake(p);
-					return p;
-				}
-
-				if (idCol != null && refSheet.props.dataFiles == null) {
-					var kindItems = new Array<hide.comp.ContextMenu.ContextMenuItem>();
-					for (line in refSheet.lines) {
-						var kind:String = Reflect.getProperty(line, idCol.name);
-						kindItems.push({
-							label: kind,
-							click: function() {
-								var p = make(kind.charAt(0).toLowerCase() + kind.substr(1));
-								var obj:Dynamic = p.props;
-								for (c in refCols.cols) {
-									if (c == refCols.cols[refCols.cols.length - 1])
-										Reflect.setField(obj, c.name, kind);
-									else {
-										var s = Reflect.field(obj, c.name);
-										if (s == null) {
-											s = {};
-											Reflect.setField(obj, c.name, s);
-										}
-										obj = s;
-									}
-								}
-							}
-						});
-					}
-					items.unshift({
-						label: label,
-						menu: kindItems
-					});
-				} else {
-					items.push({
-						label: label,
-						click: make.bind(typeId)
-					});
-				}
-			}
 			newItems.unshift({
 				label: "Instance",
 				menu: items
@@ -1018,9 +964,6 @@ class Prefab extends FileView {
 	function refreshSceneFilters() {
 		var filters:Array<String> = ide.currentConfig.get("sceneeditor.filterTypes");
 		filters = filters.copy();
-		for (sheet in DataFiles.getAvailableTypes()) {
-			filters.push(DataFiles.getTypeName(sheet));
-		}
 		sceneFilters = new Map();
 		for (f in filters) {
 			sceneFilters.set(f, getDisplayState("sceneFilters/" + f) != false);

@@ -121,7 +121,6 @@ class ScriptChecker {
 				apis.unshift(api);
 		}
 
-		var cdbPack : String = config.get("script.cdbPackage");
 		var contexts = [];
 		var allowGlobalsDefine = false;
 		checkEvents = false;
@@ -181,11 +180,6 @@ class ScriptChecker {
 				checkEvents = true;
 			}
 
-			if( api.cdbEnums != null ) {
-				for( c in api.cdbEnums )
-					addCDBEnum(c, cdbPack);
-			}
-
 			if( api.evalTo != null )
 				this.evalTo = api.evalTo;
 		}
@@ -231,46 +225,6 @@ class ScriptChecker {
 			ERROR_SAVE.set(msg,true);
 			ide.error(msg);
 		}
-	}
-
-	public function addCDBEnum( name : String, ?cdbPack : String ) {
-		var path = name.split(".");
-		var sname = path.join("@");
-		var objPath = null;
-		if( path.length > 1 ) { // might be a scoped id
-			var objID = this.constants.get("cdb.objID");
-			objPath = objID == null ? [] : objID.split(":");
-		}
-		for( s in ide.database.sheets ) {
-			if( s.name != sname ) continue;
-			var name = path[path.length - 1];
-			name = name.charAt(0).toUpperCase() + name.substr(1);
-			var kname = path.join("_")+"Kind";
-			kname = kname.charAt(0).toUpperCase() + kname.substr(1);
-			if( cdbPack != "" ) kname = cdbPack + "." + kname;
-			var kind = checker.types.resolve(kname);
-			if( kind == null )
-				kind = TEnum({ name : kname, params : [], constructors : [] },[]);
-			var cl : hscript.Checker.CClass = {
-				name : name,
-				params : [],
-				fields : new Map(),
-				statics : new Map()
-			};
-			var refPath = s.idCol.scope == null ? null : objPath.slice(0, s.idCol.scope).join(":")+":";
-			for( o in s.all ) {
-				var id = o.id;
-				if( id == null || id == "" ) continue;
-				if( refPath != null ) {
-					if( !StringTools.startsWith(id, refPath) ) continue;
-					id = id.substr(refPath.length);
-				}
-				cl.fields.set(id, { name : id, params : [], canWrite : false, t : kind, isPublic: true, complete : true });
-			}
-			checker.setGlobal(name, TInst(cl,[]));
-			return kind;
-		}
-		return null;
 	}
 
 	function typeFromValue( value : Dynamic ) : hscript.Checker.TType {
