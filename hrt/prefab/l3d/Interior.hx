@@ -201,6 +201,7 @@ class InteriorInstanceManager {
 				manager.instancers = [];
 				manager.instancerMap = [];
 				manager = null;
+				managers.remove(ctx.shared);
 			};
 			managers.set(ctx.shared, manager);
 		}
@@ -413,6 +414,21 @@ class Interior extends TorqueObject {
 
 	override function getRenderTransform() {
 		return innerMesh.getAbsPos();
+	}
+
+	override function cleanup() {
+		innerMesh.remove();
+		innerMesh.removeChildren();
+		innerMesh = null;
+		ctxObject.remove();
+		ctxObject.removeChildren();
+		ctxObject = null;
+		for (inst in meshInstances) {
+			inst.remove();
+			inst.instancer = null;
+			inst.o = null;
+		}
+		meshInstances = null;
 	}
 
 	static var _ = Library.register("interiorinstance", Interior, "dif");

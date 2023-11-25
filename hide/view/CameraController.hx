@@ -86,18 +86,6 @@ class OrthoController extends CameraControllerBase {
 			pushStartX = pushX = e.relX;
 			pushStartY = pushY = e.relY;
 			startPush = new h2d.col.Point(pushX, pushY);
-			if( pushing == 2 ) {
-				var se = sceneEditor;
-				var selection = se.getSelection();
-				var angle = hxd.Math.abs(Math.PI/2 - phi);
-				if( selection.length == 0 && angle > groundSnapAngle ) {
-					var visGround = se.screenToGround(se.scene.s2d.width / 2, se.scene.s2d.height / 2);
-					var dist = se.screenDistToGround(se.scene.s2d.width / 2, se.scene.s2d.height / 2);
-					if( dist != null ) {
-						set(dist, null, null, visGround);
-					}
-				}
-			}
 			moveCount = 0;
 			@:privateAccess scene.window.mouseMode = AbsoluteUnbound(true);
 		case ERelease, EReleaseOutside:
@@ -371,18 +359,6 @@ class CamController extends CameraControllerBase {
 			pushStartX = pushX = e.relX;
 			pushStartY = pushY = e.relY;
 			startPush = new h2d.col.Point(pushX, pushY);
-			if( pushing == 2 ) {
-				var se = sceneEditor;
-				var selection = se.getSelection();
-				var angle = hxd.Math.abs(Math.PI/2 - phi);
-				if( selection.length == 0 && angle > groundSnapAngle ) {
-					var visGround = se.screenToGround(se.scene.s2d.width / 2, se.scene.s2d.height / 2);
-					var dist = se.screenDistToGround(se.scene.s2d.width / 2, se.scene.s2d.height / 2);
-					if( dist != null ) {
-						set(dist, null, null, visGround);
-					}
-				}
-			}
 			moveCount = 0;
 			@:privateAccess scene.window.mouseMode = AbsoluteUnbound(true);
 		case ERelease, EReleaseOutside:

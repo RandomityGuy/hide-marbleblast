@@ -505,4 +505,9 @@ class Prefab {
 	}
 
 	public function tick(ctx:Context, elapsedTime:Float, dt:Float) {}
+
+	public function cleanup() {
+		for (ch in children)
+			ch.cleanup();
+	}
 }

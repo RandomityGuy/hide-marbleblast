@@ -48,6 +48,8 @@ class Scene extends Component implements h3d.IDrawable {
 		cleanup = [];
 		ide.unregisterUpdate(sync);
 		@:privateAccess s2d.window.removeResizeEvent(s2d.checkResize);
+		if (editor != null)
+			editor.cleanup();
 		engine.dispose();
 		@:privateAccess engine.driver = null;
 		untyped canvas.__scene = null;
@@ -56,6 +58,9 @@ class Scene extends Component implements h3d.IDrawable {
 		untyped js.Browser.window.$_ = null; // jquery can sometimes leak s2d
 		@:privateAccess haxe.NativeStackTrace.lastError = null; // possible leak there
 		window.dispose();
+		sevents.removeScene(s3d);
+		sevents.dispose();
+		// this.s3d.removeChildren();
 	}
 
 	public function addListener(f) {

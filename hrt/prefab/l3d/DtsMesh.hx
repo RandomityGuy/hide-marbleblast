@@ -186,6 +186,7 @@ class DtsMeshInstancer {
 		instances.remove(o);
 		if (isAlpha) {
 			o.mesh.remove();
+			o.mesh = null;
 		}
 	}
 
@@ -304,6 +305,7 @@ class DtsInstanceManager {
 				manager.instancers = [];
 				manager.instancerMap = [];
 				manager = null;
+				managers.remove(ctx.shared);
 			};
 			managers.set(ctx.shared, manager);
 		}
@@ -350,6 +352,19 @@ class DtsRootObject extends Object {
 	}
 }
 
+class DtsCache {
+	static var cache:Map<String, DtsFile> = [];
+
+	public static function readDTS(path:String) {
+		if (cache.exists(path))
+			return cache[path];
+		var dts = new DtsFile();
+		dts.read(path);
+		cache.set(path, dts);
+		return dts;
+	}
+}
+
 class DtsMesh extends TorqueObject {
 	@:s public var path:String;
 
@@ -393,8 +408,7 @@ class DtsMesh extends TorqueObject {
 		if (path != null) {
 			ctx = ctx.clone(this);
 
-			dts = new DtsFile();
-			dts.read(path);
+			dts = DtsCache.readDTS(path);
 			dtsPath = path;
 			init(ctx.local3d, ctx); // new h3d.scene.Mesh(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
 
@@ -1038,6 +1052,26 @@ class DtsMesh extends TorqueObject {
 
 	override function getRenderTransform() {
 		return rootObject.getAbsPos();
+	}
+
+	override function cleanup() {
+		materials = null;
+		materialInfos = null;
+		rootObject.remove();
+		rootObject.removeChildren();
+		rootObject = null;
+		ctxObject.remove();
+		ctxObject.removeChildren();
+		ctxObject = null;
+		skinMeshData = null;
+		for (inst in meshInstances) {
+			inst.remove();
+			inst.instancer = null;
+			inst.mesh = null;
+			inst.o = null;
+			inst.l3d = null;
+		}
+		meshInstances = null;
 	}
 
 	static var _ = Library.register("dts", DtsMesh);

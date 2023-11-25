@@ -1332,10 +1332,34 @@ class SceneEditor {
 		}
 	}
 
+	public function cleanup() {
+		sceneData.cleanup();
+		var sh = context.shared;
+		sh.root3d.remove();
+		sh.root2d.remove();
+		for (pref => int in interactives) {
+			var i3d = Std.downcast(int, h3d.scene.Interactive);
+			i3d.remove();
+			i3d.onPush = null;
+			i3d.onMove = null;
+			i3d.onClick = null;
+			i3d.onRelease = null;
+			i3d.preciseShape = null;
+			i3d.shape = null;
+		}
+		interactives.clear();
+		interactives = [];
+
+		for (c in sh.contexts)
+			if (c != null && c.cleanup != null)
+				c.cleanup();
+	}
+
 	public function refreshScene() {
 		clearWatches();
 
 		var sh = context.shared;
+		sh.root3d.removeChildren();
 		sh.root3d.remove();
 		sh.root2d.remove();
 

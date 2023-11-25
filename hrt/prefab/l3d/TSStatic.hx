@@ -1,5 +1,7 @@
 package hrt.prefab.l3d;
 
+import hrt.dts.DtsFile;
+
 class TSStatic extends DtsMesh {
 	#if editor
 	override function edit(ctx:EditContext) {
@@ -12,13 +14,17 @@ class TSStatic extends DtsMesh {
 			ctx.onChange(this, pname);
 
 			if (pname == "path") {
+				dts = new DtsFile();
+				dts.read(path);
 				this.dtsPath = path;
 				this.path = path;
-				var local3d = rootObject.parent.parent;
+				var local3d = ctxObject.parent;
 				this.skin = "";
 				for (gnode in graphNodes) {
 					rootObject.removeChild(gnode);
 				}
+				for (insts in meshInstances)
+					insts.remove();
 				init(local3d, ctx.getContext(this));
 			}
 		});
