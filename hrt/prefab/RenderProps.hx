@@ -67,7 +67,7 @@ class RenderProps extends Prefab {
 		renderer.props = props;
 		for(fx in renderer.effects)
 			fx.dispose();
-		renderer.effects = [for( v in getAll(hrt.prefab.rfx.RendererFX,true) ) v];
+		renderer.effects = [];
 		var env = getOpt(hrt.prefab.l3d.Environment);
 		if( env != null )
 			env.applyToRenderer(renderer);
@@ -99,8 +99,7 @@ class RenderProps extends Prefab {
 
 	override function getHideProps() : HideProps {
 		return { icon : "sun-o", name : "RenderProps", allowChildren : function(t) {
-			return Library.isOfType(t,hrt.prefab.rfx.RendererFX)
-				|| Library.isOfType(t,Light)
+			return Library.isOfType(t,Light)
 				|| Library.isOfType(t,hrt.prefab.l3d.Environment);
 		}};
 	}

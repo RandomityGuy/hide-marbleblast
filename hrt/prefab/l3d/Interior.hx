@@ -107,7 +107,7 @@ class InteriorMeshInstancer {
 		var unselectedInsts = [];
 		var selectedInsts = [];
 		for (inst in instances) {
-			if (!inst.o.visible)
+			if (!inst.o.visible || !inst.o.parent.visible)
 				continue;
 			if (inst.selected)
 				selectedInsts.push(inst);

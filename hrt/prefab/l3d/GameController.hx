@@ -127,9 +127,6 @@ class GameController extends Object3D {
 					camSave = { pos : cam.pos.clone(), target : cam.target.clone(), fovY : cam.fovY, zFar : cam.zFar };
 
 					obj.setTransform(getTransform());
-					var camView = @:privateAccess ctx.scene.editor.sceneData.getOpt(Camera);
-					if( camView != null )
-						camView.applyTo(cam);
 					var delta = cam.pos.sub(cam.target);
 					var q = new h3d.Quat();
 					q.initDirection(delta);

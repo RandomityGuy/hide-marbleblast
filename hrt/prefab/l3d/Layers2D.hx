@@ -88,52 +88,6 @@ class LayerView2DRFXShader extends h3d.shader.ScreenShader {
 	}
 }
 
-class Layer2DRFX extends hrt.prefab.rfx.RendererFX {
-
-	public var pass = new h3d.pass.ScreenFx(new LayerView2DRFXShader());
-
-	var tmp = new h3d.Matrix();
-	var curMatNoJitter = new h3d.Matrix();
-
-	override function begin( r:h3d.scene.Renderer, step:h3d.impl.RendererFX.Step ) {
-		if( step == MainDraw ) {
-			var ctx = r.ctx;
-			var s = pass.shader;
-
-			curMatNoJitter.load(ctx.camera.m);
-			s.cameraInverseViewProj.initInverse(curMatNoJitter);
-		}
-	}
-
-	override function end( r:h3d.scene.Renderer, step:h3d.impl.RendererFX.Step ) {
-		var ctx = r.ctx;
-		if( step == AfterTonemapping ) {
-			r.mark("Layers2D");
-			var output : h3d.mat.Texture = ctx.engine.getCurrentTarget();
-			var depthMap : Dynamic = ctx.getGlobal("depthMap");
-
-			var curFrame = r.allocTarget("curFrame", false, 1.0, output.format);
-			h3d.pass.Copy.run(output, curFrame);
-
-			var s = pass.shader;
-			s.curFrame = curFrame;
-
-			s.PACKED_DEPTH = depthMap.packed != null && depthMap.packed == true;
-			if( s.PACKED_DEPTH ) {
-				s.depthTexture = depthMap.texture;
-			}
-			else {
-				s.depthChannel = depthMap.texture;
-				s.depthChannelChannel = depthMap.channel == null ? hxsl.Channel.R : depthMap.channel;
-			}
-
-			r.setTarget(output);
-			pass.render();
-		}
-	}
-
-}
-
 @:allow(hrt.prefab.l3d)
 class Layers2D extends hrt.prefab.Object3D {
 
@@ -170,8 +124,6 @@ class Layers2D extends hrt.prefab.Object3D {
 	var colorMap : h3d.mat.Texture;
 
 	var highlightNotPaintedPixels : Bool = false;
-
-	var rfx : Layer2DRFX;
 
 	var sceneEditor : hide.comp.SceneEditor;
 	var editorCtx : hide.prefab.EditContext;
@@ -274,53 +226,8 @@ class Layers2D extends hrt.prefab.Object3D {
 		}
 	}
 
-	function setupRfx( ectx : hide.prefab.EditContext, b : Bool ) {
-		if ( ectx == null )
-			return;
-		if ( b ) {
-			if ( rfx == null ) {
-				rfx = new Layer2DRFX();
-				var renderer = Std.downcast(ectx.scene.s3d.renderer, h3d.scene.pbr.Renderer);
-				renderer.effects.push(rfx);
-			}
-		} else if ( rfx != null ) {
-			var renderer = Std.downcast(ectx.scene.s3d.renderer, h3d.scene.pbr.Renderer);
-			renderer.effects.remove(rfx);
-			rfx = null;
-		}
-	}
-
 	function updateVisuals( ctx : hrt.prefab.Context ) {
-		if ( rfx != null ) {
-			var sh : LayerView2DRFXShader = cast rfx.pass.shader;
-			if( collideMap == null || collideMap.isDisposed() ) {
-				if ( collidePath != null ) {
-					collideMap = ctx.loadTexture(collidePath);
-					collideMap.filter = Nearest;
-					collidePixels = loadPixels(collidePath);
-				}
-			}
 
-			sh.layerAlpha = layerAlpha;
-			sh.worldSize = worldSize;
-			sh.collideScale = (collideMap != null) ? worldSize / collideMap.width : 1;
-			sh.collideMap = collideMap;
-
-			sh.collideEnable = collideEnable && collideMap != null;
-			sh.collideMask = h3d.Vector.fromColor(collideMask);
-
-			sh.layerEnable = currentTexture != null;
-			sh.layerMap = currentTexture;
-			sh.layerScale = layerScale;
-
-			if ( sh.layerEnable ) {
-				sh.colors = colorMap;
-				sh.nbColorsIndexes = colorMap.width;
-			}
-
-			sh.highlightNoPixels = highlightNotPaintedPixels;
-			sh.highlightColor = h3d.Vector.fromColor(highlightColor);
-		}
 	}
 
 	var revertList : Array<{ pixels : hxd.Pixels, layer : String }> = [];
@@ -606,7 +513,6 @@ class Layers2D extends hrt.prefab.Object3D {
 		if( !b ) {
 			removeInteractiveBrush();
 		}
-		setupRfx(editorCtx, keepVisible || b);
 		updateVisuals(ctx);
 		return false;
 	}
@@ -855,7 +761,6 @@ class Layers2D extends hrt.prefab.Object3D {
 			removeInteractiveBrush();
 		}
 
-		setupRfx(ectx, true);
 		updateVisuals(ctx);
 
 		var actions = new hide.Element('<div class="btn-list" align="center" style="margin-top: 5px;" ></div>').appendTo(list);

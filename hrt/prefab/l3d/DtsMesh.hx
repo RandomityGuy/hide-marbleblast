@@ -1047,6 +1047,9 @@ class DtsMesh extends TorqueObject {
 		for (gnode in graphNodes) {
 			rootObject.removeChild(gnode);
 		}
+		for (inst in meshInstances) {
+			inst.remove();
+		}
 		init(local3d, ctx);
 	}
 
