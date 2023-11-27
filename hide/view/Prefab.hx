@@ -209,6 +209,10 @@ class Prefab extends FileView {
 
 	var totalElapsedTime:Float = 0;
 	var playAnims:Bool = false;
+	var camPathAnimation:Bool = false;
+	var camPathAnimationDummy:hrt.prefab.l3d.TorqueObject;
+	var camPathRenderObj:h3d.scene.Object;
+	var camPathCameraClassSave:Class<hide.view.CameraController.CameraControllerBase>;
 
 	function get_scene()
 		return sceneEditor.scene;
@@ -895,6 +899,8 @@ class Prefab extends FileView {
 			var ctx = sceneEditor.getContext(obj);
 			obj.tick(ctx, totalElapsedTime, 0);
 		}
+		// Update camera path
+		if (camPathAnimation) {}
 	}
 
 	function onUpdate(dt:Float) {
@@ -917,6 +923,29 @@ class Prefab extends FileView {
 			for (obj in data.getAll(hrt.prefab.Object3D, true)) {
 				var ctx = sceneEditor.getContext(obj);
 				obj.tick(ctx, totalElapsedTime, dt);
+			}
+			// Update camera path
+			if (camPathAnimation) {
+				var campos = camPathRenderObj.getAbsPos().getPosition();
+				var rotmat = camPathRenderObj.getRotationQuat().toMatrix();
+				var rotfront = rotmat.front();
+				var rotside = rotmat.right();
+				rotmat._11 = rotside.x;
+				rotmat._12 = rotside.y;
+				rotmat._13 = rotside.z;
+				rotmat._21 = -rotfront.x;
+				rotmat._22 = -rotfront.y;
+				rotmat._23 = -rotfront.z;
+				var rot = new h3d.Quat();
+				rot.initRotateMatrix(rotmat);
+
+				var flightController = cast(sceneEditor.cameraController, hide.view.CameraController.FlightController);
+				if (flightController != null) {
+					@:privateAccess flightController.currentFlightPos.load(campos);
+					@:privateAccess flightController.currentFlightRot.load(rot);
+					@:privateAccess flightController.targetFlightPos.load(campos);
+					@:privateAccess flightController.targetFlightRot.load(rot);
+				}
 			}
 		}
 	}
@@ -1129,6 +1158,39 @@ class Prefab extends FileView {
 			}
 		}
 		return null;
+	}
+
+	public function doCameraPathAnimation() {
+		var camPath1 = cast(data.getPrefabByName("camerapath1"), hrt.prefab.l3d.StaticShape);
+		if (camPath1 != null) {
+			camPathAnimation = true;
+			if (camPathAnimationDummy == null) {
+				camPathAnimationDummy = new hrt.prefab.l3d.TorqueObject();
+				camPathAnimationDummy.parent = data;
+				camPathAnimationDummy.dynamicFields.push({field: "path", value: "camerapath1"});
+				sceneEditor.addElements([camPathAnimationDummy]);
+				camPathRenderObj = new h3d.scene.Object(scene.s3d);
+
+				var ctx = sceneEditor.getContext(camPathAnimationDummy);
+				camPathAnimationDummy.buildAnimators(camPathRenderObj, ctx);
+				camPathCameraClassSave = Type.getClass(sceneEditor.cameraController);
+				sceneEditor.switchCamController(hide.view.CameraController.FlightController);
+			}
+		}
+	}
+
+	public function stopCameraPathAnimation() {
+		camPathAnimation = false;
+		if (camPathAnimationDummy != null) {
+			var ctx = sceneEditor.getContext(camPathAnimationDummy);
+			camPathAnimationDummy.removeInstance(ctx);
+			sceneEditor.deleteElements([camPathAnimationDummy]);
+			camPathAnimationDummy = null;
+			camPathRenderObj.remove();
+			camPathRenderObj = null;
+
+			sceneEditor.switchCamController(camPathCameraClassSave);
+		}
 	}
 
 	static var _ = FileTree.registerExtension(Prefab, ["prefab"], {icon: "sitemap", createNew: "Prefab"});
