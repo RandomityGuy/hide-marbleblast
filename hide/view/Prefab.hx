@@ -15,6 +15,10 @@ import hrt.prefab.l3d.Instance;
 class FiltersPopup extends hide.comp.Popup {
 	var editor:Prefab;
 
+	var gizmoToggle:Bool;
+
+	var inputEls:Map<String, Element> = [];
+
 	public function new(?parent:Element, ?root:Element, editor:Prefab, filters:Map<String, Bool>, type:String) {
 		super(parent, root);
 		this.editor = editor;
@@ -29,6 +33,8 @@ class FiltersPopup extends hide.comp.Popup {
 				var input = new Element('<input type="checkbox" id="$typeid" value="$typeid"/>');
 				if (on)
 					input.get(0).toggleAttribute("checked", true);
+
+				inputEls.set(typeid, input);
 
 				input.change((e) -> {
 					var on = !filters[typeid];
@@ -45,6 +51,28 @@ class FiltersPopup extends hide.comp.Popup {
 				var nameCap = typeid.substr(0, 1).toUpperCase() + typeid.substr(1);
 				form_div.append(new Element('<label for="$typeid" class="left">$nameCap</label>'));
 			}
+		}
+
+		{
+			var dd = new Element('<br><input type="button" value="Toggle Gizmos"/>').appendTo(form_div);
+			dd.on("click", function(_) {
+				filters.set("trigger", gizmoToggle);
+				filters.set("marker", gizmoToggle);
+				filters.set("path", gizmoToggle);
+				filters.set("pathnode", gizmoToggle);
+
+				inputEls["trigger"].get(0).toggleAttribute("checked", gizmoToggle);
+				inputEls["marker"].get(0).toggleAttribute("checked", gizmoToggle);
+				inputEls["path"].get(0).toggleAttribute("checked", gizmoToggle);
+				inputEls["pathnode"].get(0).toggleAttribute("checked", gizmoToggle);
+
+				@:privateAccess editor.applySceneFilter("trigger", gizmoToggle);
+				@:privateAccess editor.applySceneFilter("marker", gizmoToggle);
+				@:privateAccess editor.applySceneFilter("path", gizmoToggle);
+				@:privateAccess editor.applySceneFilter("pathnode", gizmoToggle);
+
+				gizmoToggle = !gizmoToggle;
+			});
 		}
 	}
 }
@@ -984,8 +1012,20 @@ class Prefab extends FileView {
 		else
 			all = data.flatten(hrt.prefab.Prefab);
 		for (p in all) {
-			if (p.type == typeid || p.getCdbType() == typeid) {
-				sceneEditor.applySceneStyle(p);
+			if (typeid == "pathnode") {
+				// special handling ew
+				if (p is hrt.prefab.l3d.StaticShape) {
+					var so = cast(p, hrt.prefab.l3d.StaticShape);
+					if (["pathnode", "bezierhandle"].contains(so.customFieldProvider.toLowerCase())) {
+						for (ctx in sceneEditor.getContexts(so)) {
+							ctx.local3d.visible = visible;
+						}
+					}
+				}
+			} else {
+				if (p.type == typeid || p.getCdbType() == typeid) {
+					sceneEditor.applySceneStyle(p);
+				}
 			}
 		}
 	}
