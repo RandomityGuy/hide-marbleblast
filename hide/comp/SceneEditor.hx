@@ -1497,7 +1497,6 @@ class SceneEditor {
 						elts = elt.parent.children;
 				} else
 					elts = [elt];
-
 				i3d.priority = nextInteractivePriority--;
 				if (K.isDown(K.CTRL)) {
 					var current = curEdit.elements.copy();
@@ -2971,9 +2970,9 @@ class SceneEditor {
 			var invT = objlocal.parent.getInvPos();
 			pos.transform(invT);
 
-			obj3d.x = hxd.Math.floor(pos.x * 10) / 10;
-			obj3d.y = hxd.Math.floor(pos.y * 10) / 10;
-			obj3d.z = hxd.Math.floor(pos.z * 10) / 10;
+			obj3d.x = pos.x;
+			obj3d.y = pos.y;
+			obj3d.z = pos.z;
 			obj3d.updateInstance(getContext(obj3d));
 		}
 		var newState = [for (o in objects3d) o.saveTransform()];

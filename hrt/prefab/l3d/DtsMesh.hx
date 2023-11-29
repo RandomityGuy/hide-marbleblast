@@ -248,6 +248,7 @@ class DtsInstancer {
 	var identifier:String;
 	var meshes:Array<DtsMeshInstancer>;
 	var meshMap:Map<Int, Int>;
+	var collider:hrt.collision.Collider;
 
 	public function new(identifier:String) {
 		this.identifier = identifier;
@@ -270,6 +271,10 @@ class DtsInstancer {
 			// if (mesh.isAlpha == alphaPass)
 			mesh.emitInstances(ctx);
 		}
+	}
+
+	public function setCollider(c:hrt.collision.Collider) {
+		this.collider = c;
 	}
 
 	public function dispose() {
@@ -510,6 +515,10 @@ class DtsMesh extends TorqueObject {
 		var affectedBySequences = this.dts.sequences.length > 0 ? (this.dts.sequences[0].rotationMatters.length < 0 ? 0 : this.dts.sequences[0].rotationMatters[0]) | (this.dts.sequences[0].translationMatters.length > 0 ? this.dts.sequences[0].translationMatters[0] : 0) : 0;
 
 		var meshIdx = 0;
+		var collider = null;
+		if (!isInstanced) {
+			collider = new hrt.collision.Collider();
+		}
 
 		for (i in 0...dts.nodes.length) {
 			var objects = dts.objects.filter(object -> object.node == i);
@@ -538,7 +547,7 @@ class DtsMesh extends TorqueObject {
 						var vertices = mesh.vertices.map(v -> new Vector(-v.x, v.y, v.z));
 						var vertexNormals = mesh.normals.map(v -> new Vector(-v.x, v.y, v.z));
 
-						var geometry = this.generateMaterialGeometry(mesh, vertices, vertexNormals);
+						var geometry = this.generateMaterialGeometry(collider, mesh, vertices, vertexNormals);
 
 						for (k in 0...geometry.length) {
 							if (geometry[k].vertices.length == 0)
@@ -591,7 +600,7 @@ class DtsMesh extends TorqueObject {
 				if (!isInstanced) {
 					var vertices = mesh.vertices.map(v -> new Vector(-v.x, v.y, v.z));
 					var vertexNormals = mesh.normals.map(v -> new Vector(-v.x, v.y, v.z));
-					var geometry = this.generateMaterialGeometry(mesh, vertices, vertexNormals);
+					var geometry = this.generateMaterialGeometry(collider, mesh, vertices, vertexNormals);
 
 					for (k in 0...geometry.length) {
 						if (geometry[k].vertices.length == 0)
@@ -637,6 +646,10 @@ class DtsMesh extends TorqueObject {
 					};
 				}
 			}
+		}
+		if (!isInstanced) {
+			collider.finalize();
+			instancer.setCollider(collider);
 		}
 		rootObject.setContent(ctx);
 		for (i in rootNodesIdx) {
@@ -788,7 +801,7 @@ class DtsMesh extends TorqueObject {
 		}
 	}
 
-	function generateMaterialGeometry(dtsMesh:hrt.dts.Mesh, vertices:Array<Vector>, vertexNormals:Array<Vector>) {
+	function generateMaterialGeometry(col:hrt.collision.Collider, dtsMesh:hrt.dts.Mesh, vertices:Array<Vector>, vertexNormals:Array<Vector>) {
 		var materialGeometry:Array<MaterialGeometry> = this.dts.matNames.map(x -> {
 			vertices: [],
 			normals: [],
@@ -806,7 +819,7 @@ class DtsMesh extends TorqueObject {
 
 		var ab = new Vector();
 		var ac = new Vector();
-		function addTriangleFromIndices(i1:Int, i2:Int, i3:Int, materialIndex:Int) {
+		function addTriangleFromIndices(hs:hrt.collision.CollisionSurface, i1:Int, i2:Int, i3:Int, materialIndex:Int) {
 			ab.set(vertices[i2].x - vertices[i1].x, vertices[i2].y - vertices[i1].y, vertices[i2].z - vertices[i1].z);
 			ac.set(vertices[i3].x - vertices[i1].x, vertices[i3].y - vertices[i1].y, vertices[i3].z - vertices[i1].z);
 			var normal = ab.cross(ac);
@@ -831,20 +844,31 @@ class DtsMesh extends TorqueObject {
 			for (index in [i1, i2, i3]) {
 				var vertex = vertices[index];
 				geometrydata.vertices.push(new Vector(vertex.x, vertex.y, vertex.z));
+				hs.addPoint(vertex.x, vertex.y, vertex.z);
 
 				var uv = dtsMesh.uv[index];
 				geometrydata.uvs.push(new UV(uv.x, uv.y));
 
 				var normal = vertexNormals[index];
 				geometrydata.normals.push(new Vector(normal.x, normal.y, normal.z));
+				hs.addNormal(normal.x, normal.y, normal.z);
 			}
 
 			geometrydata.indices.push(i1);
 			geometrydata.indices.push(i2);
 			geometrydata.indices.push(i3);
+			hs.indices.push(hs.indices.length);
+			hs.indices.push(hs.indices.length);
+			hs.indices.push(hs.indices.length);
 		}
 
 		for (primitive in dtsMesh.primitives) {
+			var hs = new hrt.collision.CollisionSurface();
+			hs.points = [];
+			hs.normals = [];
+			hs.indices = [];
+			hs.transformKeys = [];
+
 			var materialIndex = primitive.matIndex & TSDrawPrimitive.MaterialMask;
 			var drawType = primitive.matIndex & TSDrawPrimitive.TypeMask;
 			var geometrydata = materialGeometry[materialIndex];
@@ -856,7 +880,7 @@ class DtsMesh extends TorqueObject {
 					var i2 = dtsMesh.indices[i + 1];
 					var i3 = dtsMesh.indices[i + 2];
 
-					addTriangleFromIndices(i1, i2, i3, materialIndex);
+					addTriangleFromIndices(hs, i1, i2, i3, materialIndex);
 
 					i += 3;
 				}
@@ -874,7 +898,7 @@ class DtsMesh extends TorqueObject {
 						i3 = temp;
 					}
 
-					addTriangleFromIndices(i1, i2, i3, materialIndex);
+					addTriangleFromIndices(hs, i1, i2, i3, materialIndex);
 
 					k++;
 				}
@@ -885,11 +909,14 @@ class DtsMesh extends TorqueObject {
 					var i2 = dtsMesh.indices[i + 1];
 					var i3 = dtsMesh.indices[i + 2];
 
-					addTriangleFromIndices(i1, i2, i3, materialIndex);
+					addTriangleFromIndices(hs, i1, i2, i3, materialIndex);
 
 					i++;
 				}
 			}
+
+			hs.generateBoundingBox();
+			col.addSurface(hs);
 		}
 
 		return materialGeometry;
@@ -1019,14 +1046,16 @@ class DtsMesh extends TorqueObject {
 		}
 		if (visibleMeshes.length == 0)
 			return null;
-		var colliders = [
-			for (m in visibleMeshes) {
-				var c:h3d.col.Collider = try m.getGlobalCollider() catch (e:Dynamic) null;
-				if (c != null)
-					c;
-			}
-		];
-		var meshCollider = colliders.length == 1 ? colliders[0] : new h3d.col.Collider.GroupCollider(colliders);
+		// var colliders = [
+		// 	for (m in visibleMeshes) {
+		// 		var c:h3d.col.Collider = try m.getGlobalCollider() catch (e:Dynamic) null;
+		// 		if (c != null)
+		// 			c;
+		// 	}
+		// ];
+		var meshCollider = DtsInstanceManager.getManagerForContext(ctx)
+			.allocInstancer(this.dtsPath + (this.skin != null ? this.skin : ""))
+			.collider; // colliders.length == 1 ? colliders[0] : new h3d.col.Collider.GroupCollider(colliders);
 		var collider:h3d.col.Collider = new h3d.col.ObjectCollider(rootObject, bounds);
 		var int = new h3d.scene.Interactive(collider, rootObject);
 		int.ignoreParentTransform = true;

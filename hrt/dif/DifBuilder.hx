@@ -1,5 +1,6 @@
 package hrt.dif;
 
+import hrt.collision.CollisionSurface;
 import hxd.IndexBuffer;
 import hrt.dif.Edge;
 import h3d.shader.pbr.PropsValues;
@@ -97,6 +98,8 @@ class DifBuilder {
 			return tex.substring(slashpos, dotpos);
 		}
 
+		var collider = new hrt.collision.Collider();
+
 		var vertexBuckets = new Map<Point3F, Array<VertexBucket>>();
 
 		for (i in 0...hulls.length) {
@@ -125,17 +128,29 @@ class DifBuilder {
 					textures.push(texture);
 
 				var points = geo.points;
-
+				var colliderSurface = new CollisionSurface();
+				colliderSurface.points = [];
+				colliderSurface.normals = [];
+				colliderSurface.indices = [];
+				colliderSurface.transformKeys = [];
+				colliderSurface.originalIndices = [];
+				colliderSurface.originalSurfaceIndex = surfaceindex;
 				for (k in (surface.windingStart + 2)...(surface.windingStart + surface.windingCount)) {
 					var p1, p2, p3;
 					if ((k - (surface.windingStart + 2)) % 2 == 0) {
 						p1 = points[geo.windings[k]];
 						p2 = points[geo.windings[k - 1]];
 						p3 = points[geo.windings[k - 2]];
+						colliderSurface.originalIndices.push(geo.windings[k]);
+						colliderSurface.originalIndices.push(geo.windings[k - 1]);
+						colliderSurface.originalIndices.push(geo.windings[k - 2]);
 					} else {
 						p1 = points[geo.windings[k - 2]];
 						p2 = points[geo.windings[k - 1]];
 						p3 = points[geo.windings[k]];
+						colliderSurface.originalIndices.push(geo.windings[k - 2]);
+						colliderSurface.originalIndices.push(geo.windings[k - 1]);
+						colliderSurface.originalIndices.push(geo.windings[k]);
 					}
 
 					var texgen = geo.texGenEQs[surface.texGenIndex];
@@ -179,6 +194,18 @@ class DifBuilder {
 					triangles.push(tri);
 					hullTris.push(tri);
 					var materialName = stripTexName(texture);
+					colliderSurface.addPoint(-p1.x, p1.y, p1.z);
+					colliderSurface.addPoint(-p2.x, p2.y, p2.z);
+					colliderSurface.addPoint(-p3.x, p3.y, p3.z);
+					colliderSurface.addNormal(-normal.x, normal.y, normal.z);
+					colliderSurface.addNormal(-normal.x, normal.y, normal.z);
+					colliderSurface.addNormal(-normal.x, normal.y, normal.z);
+					colliderSurface.indices.push(colliderSurface.indices.length);
+					colliderSurface.indices.push(colliderSurface.indices.length);
+					colliderSurface.indices.push(colliderSurface.indices.length);
+					colliderSurface.transformKeys.push(0);
+					colliderSurface.transformKeys.push(0);
+					colliderSurface.transformKeys.push(0);
 					for (v in [p1, p2, p3]) {
 						var buckets = vertexBuckets.get(v);
 						if (buckets == null) {
@@ -205,6 +232,8 @@ class DifBuilder {
 						bucket.triangleIndices.push(triangles.length - 1);
 						bucket.normals.push(normal);
 					}
+					colliderSurface.generateBoundingBox();
+					collider.addSurface(colliderSurface);
 				}
 			}
 		}
@@ -240,7 +269,7 @@ class DifBuilder {
 				mats.set(value.texture, [value]);
 			}
 		}
-
+		collider.finalize();
 		function canFindTex(tex:String) {
 			if (["NULL"].contains(tex)) {
 				return false;
@@ -370,5 +399,7 @@ class DifBuilder {
 
 			var mesh = new Mesh(prim, material, itr);
 		}
+
+		return collider;
 	}
 }

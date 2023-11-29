@@ -144,6 +144,7 @@ class InteriorInstancer {
 	var identifier:String;
 	var meshes:Array<InteriorMeshInstancer>;
 	var meshMap:Map<Int, Int>;
+	var collider:hrt.collision.Collider;
 
 	public function new(identifier:String) {
 		this.identifier = identifier;
@@ -166,6 +167,10 @@ class InteriorInstancer {
 			// if (mesh.isAlpha == alphaPass)
 			mesh.emitInstances(ctx);
 		}
+	}
+
+	public function setCollider(c:hrt.collision.Collider) {
+		this.collider = c;
 	}
 
 	public function dispose() {
@@ -273,7 +278,8 @@ class Interior extends TorqueObject {
 
 			if (!isInstanced) {
 				var meshTemp = new h3d.scene.Object();
-				hrt.dif.DifBuilder.loadDif(path, meshTemp); // new h3d.scene.Mesh(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
+				var collider = hrt.dif.DifBuilder.loadDif(path, meshTemp); // new h3d.scene.Mesh(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
+				instancer.setCollider(collider);
 				for (i in 0...meshTemp.numChildren) {
 					var ch = meshTemp.getChildAt(i);
 					if (ch is Mesh) {
@@ -362,14 +368,7 @@ class Interior extends TorqueObject {
 		}
 		if (visibleMeshes.length == 0)
 			return null;
-		var colliders = [
-			for (m in visibleMeshes) {
-				var c:h3d.col.Collider = try m.getGlobalCollider() catch (e:Dynamic) null;
-				if (c != null)
-					c;
-			}
-		];
-		var meshCollider = colliders.length == 1 ? colliders[0] : new h3d.col.Collider.GroupCollider(colliders);
+		var meshCollider = InteriorInstanceManager.getManagerForContext(ctx).allocInstancer(path).collider;
 		var collider:h3d.col.Collider = new h3d.col.ObjectCollider(innerMesh, bounds);
 		var int = new h3d.scene.Interactive(collider, innerMesh);
 		int.ignoreParentTransform = true;
