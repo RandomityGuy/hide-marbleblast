@@ -273,37 +273,41 @@ class Interior extends TorqueObject {
 			var mesh = new InteriorRootObject(ctxObject);
 			mesh.setContent(ctx);
 
-			var isInstanced = InteriorInstanceManager.getManagerForContext(ctx).isInstanced(path);
-			var instancer = InteriorInstanceManager.getManagerForContext(ctx).allocInstancer(path);
-
-			if (!isInstanced) {
-				var meshTemp = new h3d.scene.Object();
-				var collider = hrt.dif.DifBuilder.loadDif(path, meshTemp); // new h3d.scene.Mesh(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
-				instancer.setCollider(collider);
-				for (i in 0...meshTemp.numChildren) {
-					var ch = meshTemp.getChildAt(i);
-					if (ch is Mesh) {
-						var chmesh:Mesh = cast ch;
-						var minst = instancer.allocMesh(i);
-						minst.createMesh(cast chmesh.primitive, chmesh.material, ctx);
-						meshInstances.push(minst.addInstance(mesh));
-					}
-				}
-			} else {
-				for (m in instancer.meshes) {
-					meshInstances.push(m.addInstance(mesh));
-				}
-			}
-
-			buildAnimators(mesh, ctx);
-
 			innerMesh = mesh;
+
+			loadInteriorFromPath(path, ctx);
+			buildAnimators(mesh, ctx);
 
 			ctx.local3d = ctxObject;
 			ctx.local3d.name = name;
 			updateInstance(ctx);
 		}
 		return ctx;
+	}
+
+	function loadInteriorFromPath(p:String, ctx:Context) {
+		path = p;
+		var isInstanced = InteriorInstanceManager.getManagerForContext(ctx).isInstanced(path);
+		var instancer = InteriorInstanceManager.getManagerForContext(ctx).allocInstancer(path);
+
+		if (!isInstanced) {
+			var meshTemp = new h3d.scene.Object();
+			var collider = hrt.dif.DifBuilder.loadDif(path, meshTemp); // new h3d.scene.Mesh(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
+			instancer.setCollider(collider);
+			for (i in 0...meshTemp.numChildren) {
+				var ch = meshTemp.getChildAt(i);
+				if (ch is Mesh) {
+					var chmesh:Mesh = cast ch;
+					var minst = instancer.allocMesh(i);
+					minst.createMesh(cast chmesh.primitive, chmesh.material, ctx);
+					meshInstances.push(minst.addInstance(innerMesh));
+				}
+			}
+		} else {
+			for (m in instancer.meshes) {
+				meshInstances.push(m.addInstance(innerMesh));
+			}
+		}
 	}
 
 	override function removeInstance(ctx:Context):Bool {
@@ -326,7 +330,7 @@ class Interior extends TorqueObject {
 		return true;
 	}
 
-	override function makeInteractive(ctx:Context):hxd.SceneEvents.Interactive {
+	function getInteractiveBounds(ctx:Context) {
 		var local3d = ctx.local3d;
 		if (local3d == null)
 			return null;
@@ -336,12 +340,12 @@ class Interior extends TorqueObject {
 		var localBounds = [];
 		var totalSeparateBounds = 0.;
 		var visibleMeshes = [];
-		var hasSkin = false;
 
 		inline function getVolume(b:h3d.col.Bounds) {
 			var c = b.getSize();
 			return c.x * c.y * c.z;
 		}
+
 		for (inst in meshInstances) {
 			var mesh = @:privateAccess inst.instancer.colliderMesh;
 			if (mesh.ignoreCollide)
@@ -366,7 +370,15 @@ class Interior extends TorqueObject {
 			}
 			localBounds.push(lb);
 		}
+
 		if (visibleMeshes.length == 0)
+			return null;
+		return bounds;
+	}
+
+	override function makeInteractive(ctx:Context):hxd.SceneEvents.Interactive {
+		var bounds = getInteractiveBounds(ctx);
+		if (bounds == null)
 			return null;
 		var meshCollider = InteriorInstanceManager.getManagerForContext(ctx).allocInstancer(path).collider;
 		var collider:h3d.col.Collider = new h3d.col.ObjectCollider(innerMesh, bounds);
@@ -376,6 +388,16 @@ class Interior extends TorqueObject {
 		int.propagateEvents = true;
 		int.enableRightButton = true;
 		return int;
+	}
+
+	function updateInteractiveMesh(ctx:Context) {
+		var bounds = getInteractiveBounds(ctx);
+		var int:h3d.scene.Interactive = cast ctxObject.find(x -> x is h3d.scene.Interactive ? x : null);
+		if (int != null) {
+			int.preciseShape = InteriorInstanceManager.getManagerForContext(ctx).allocInstancer(path).collider;
+			var collider:h3d.col.ObjectCollider = cast int.shape;
+			collider.collider = bounds;
+		}
 	}
 
 	override function edit(ctx:EditContext) {
@@ -388,17 +410,21 @@ class Interior extends TorqueObject {
 			ctx.onChange(this, pname);
 
 			if (pname == "path") {
-				var prevChildren = [];
-				for (ch in innerMesh)
-					prevChildren.push(ch);
-
-				innerMesh.removeChildren();
+				var noException = true;
 				try {
-					hrt.dif.DifBuilder.loadDif(path, innerMesh); // new h3d.scene.Mesh(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
+					var meshTemp = new h3d.scene.Object();
+					hrt.dif.DifBuilder.loadDif(path, meshTemp); // new h3d.scene.Mesh(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
 				} catch (e:Dynamic) {
-					// if an error occurs, re-add previous children
-					for (ch in prevChildren)
-						innerMesh.addChild(ch);
+					noException = false;
+				}
+				if (noException) {
+					// Do the load only if we won't get an exception
+					for (inst in meshInstances) {
+						inst.remove();
+					}
+					meshInstances = [];
+					loadInteriorFromPath(path, ctx.getContext(this));
+					updateInteractiveMesh(ctx.getContext(this));
 				}
 			}
 		});

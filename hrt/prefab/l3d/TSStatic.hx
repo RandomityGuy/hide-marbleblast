@@ -26,6 +26,7 @@ class TSStatic extends DtsMesh {
 				for (insts in meshInstances)
 					insts.remove();
 				init(local3d, ctx.getContext(this));
+				updateInteractiveMesh(ctx.getContext(this));
 			}
 		});
 

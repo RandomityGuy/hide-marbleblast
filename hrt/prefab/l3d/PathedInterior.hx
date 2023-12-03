@@ -1,5 +1,9 @@
 package hrt.prefab.l3d;
 
+import hrt.prefab.l3d.Interior.InteriorRootObject;
+import hrt.prefab.l3d.Interior.InteriorMeshInstance;
+import h3d.scene.Mesh;
+import hrt.prefab.l3d.Interior.InteriorInstanceManager;
 import h3d.Vector;
 import h3d.Matrix;
 
@@ -19,6 +23,8 @@ class PathedInterior extends TorqueObject {
 
 	var innerMesh:h3d.scene.Object;
 	var ctxObject:h3d.scene.Object;
+
+	var meshInstances:Array<InteriorMeshInstance> = [];
 
 	var pathObj:InteriorPath;
 
@@ -47,9 +53,12 @@ class PathedInterior extends TorqueObject {
 			ctx = ctx.clone(this);
 
 			ctxObject = new h3d.scene.Object(ctx.local3d);
-			var mesh = new h3d.scene.Object(ctxObject);
+			var mesh = new InteriorRootObject(ctxObject);
+			mesh.setContent(ctx);
 
-			hrt.dif.DifBuilder.loadDif(path, mesh, so); // new h3d.scene.Mesh(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
+			innerMesh = mesh;
+
+			loadInteriorFromPath(path, so, ctx);
 
 			innerMesh = mesh;
 
@@ -58,6 +67,31 @@ class PathedInterior extends TorqueObject {
 			updateInstance(ctx);
 		}
 		return ctx;
+	}
+
+	function loadInteriorFromPath(p:String, so:Int, ctx:Context) {
+		path = p;
+		var isInstanced = InteriorInstanceManager.getManagerForContext(ctx).isInstanced(path + '_so${so}');
+		var instancer = InteriorInstanceManager.getManagerForContext(ctx).allocInstancer(path + '_so${so}');
+
+		if (!isInstanced) {
+			var meshTemp = new h3d.scene.Object();
+			var collider = hrt.dif.DifBuilder.loadDif(path, meshTemp, so); // new h3d.scene.Mesh(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
+			instancer.setCollider(collider);
+			for (i in 0...meshTemp.numChildren) {
+				var ch = meshTemp.getChildAt(i);
+				if (ch is Mesh) {
+					var chmesh:Mesh = cast ch;
+					var minst = instancer.allocMesh(i);
+					minst.createMesh(cast chmesh.primitive, chmesh.material, ctx);
+					meshInstances.push(minst.addInstance(innerMesh));
+				}
+			}
+		} else {
+			for (m in instancer.meshes) {
+				meshInstances.push(m.addInstance(innerMesh));
+			}
+		}
 	}
 
 	override function updateInstance(ctx:hrt.prefab.Context, ?propName:String) {
@@ -85,9 +119,38 @@ class PathedInterior extends TorqueObject {
 				this.pathObj = null;
 			}
 		}
+		if (ctx.local3d != null)
+			ctx.local3d.remove();
+		for (insts in meshInstances)
+			insts.remove();
 		return super.removeInstance(ctx);
 	}
+
+	override function setSelected(ctx:Context, b:Bool):Bool {
+		for (inst in meshInstances)
+			inst.setSelected(b);
+		return true;
+	}
 	#end
+
+	override function getRenderTransform() {
+		return innerMesh.getAbsPos();
+	}
+
+	override function cleanup() {
+		innerMesh.remove();
+		innerMesh.removeChildren();
+		innerMesh = null;
+		ctxObject.remove();
+		ctxObject.removeChildren();
+		ctxObject = null;
+		for (inst in meshInstances) {
+			inst.remove();
+			inst.instancer = null;
+			inst.o = null;
+		}
+		meshInstances = null;
+	}
 
 	#if editor
 	override function edit(ctx:EditContext) {
@@ -143,17 +206,21 @@ class PathedInterior extends TorqueObject {
 			}
 
 			if (pname == "path" || pname == "so") {
-				var prevChildren = [];
-				for (ch in innerMesh)
-					prevChildren.push(ch);
-
-				innerMesh.removeChildren();
+				var noException = true;
 				try {
-					hrt.dif.DifBuilder.loadDif(path, innerMesh, so); // new h3d.scene.Mesh(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
+					var meshTemp = new h3d.scene.Object();
+					hrt.dif.DifBuilder.loadDif(path, meshTemp, so); // new h3d.scene.Mesh(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
 				} catch (e:Dynamic) {
-					// if an error occurs, re-add previous children
-					for (ch in prevChildren)
-						innerMesh.addChild(ch);
+					noException = false;
+				}
+				if (noException) {
+					// Do the load only if we won't get an exception
+					for (inst in meshInstances) {
+						inst.remove();
+					}
+					meshInstances = [];
+					loadInteriorFromPath(path, so, ctx.getContext(this));
+					updateInteractiveMesh(ctx.getContext(this));
 				}
 			}
 		});
@@ -163,6 +230,76 @@ class PathedInterior extends TorqueObject {
 
 	override function getHideProps():HideProps {
 		return {icon: "cube", name: "PathedInterior", fileSource: ["dif"]};
+	}
+
+	function getInteractiveBounds(ctx:Context) {
+		var local3d = ctx.local3d;
+		if (local3d == null)
+			return null;
+		var invRootMat = local3d.getAbsPos().clone();
+		invRootMat.invert();
+		var bounds = new h3d.col.Bounds();
+		var localBounds = [];
+		var totalSeparateBounds = 0.;
+		var visibleMeshes = [];
+
+		inline function getVolume(b:h3d.col.Bounds) {
+			var c = b.getSize();
+			return c.x * c.y * c.z;
+		}
+
+		for (inst in meshInstances) {
+			var mesh = @:privateAccess inst.instancer.colliderMesh;
+			if (mesh.ignoreCollide)
+				continue;
+
+			var localMat = inst.o.getAbsPos().clone();
+			localMat.multiply(localMat, invRootMat);
+
+			if (mesh.primitive == null)
+				continue;
+			visibleMeshes.push(mesh);
+
+			var lb = mesh.primitive.getBounds().clone();
+			lb.transform(localMat);
+			bounds.add(lb);
+
+			totalSeparateBounds += getVolume(lb);
+			for (b in localBounds) {
+				var tmp = new h3d.col.Bounds();
+				tmp.intersection(lb, b);
+				totalSeparateBounds -= getVolume(tmp);
+			}
+			localBounds.push(lb);
+		}
+
+		if (visibleMeshes.length == 0)
+			return null;
+		return bounds;
+	}
+
+	override function makeInteractive(ctx:Context):hxd.SceneEvents.Interactive {
+		var bounds = getInteractiveBounds(ctx);
+		if (bounds == null)
+			return null;
+		var meshCollider = InteriorInstanceManager.getManagerForContext(ctx).allocInstancer(path + '_so${so}').collider;
+		var collider:h3d.col.Collider = new h3d.col.ObjectCollider(innerMesh, bounds);
+		var int = new h3d.scene.Interactive(collider, innerMesh);
+		int.ignoreParentTransform = true;
+		int.preciseShape = meshCollider;
+		int.propagateEvents = true;
+		int.enableRightButton = true;
+		return int;
+	}
+
+	function updateInteractiveMesh(ctx:Context) {
+		var bounds = getInteractiveBounds(ctx);
+		var int:h3d.scene.Interactive = cast ctxObject.find(x -> x is h3d.scene.Interactive ? x : null);
+		if (int != null) {
+			int.preciseShape = InteriorInstanceManager.getManagerForContext(ctx).allocInstancer(path + '_so${so}').collider;
+			var collider:h3d.col.ObjectCollider = cast int.shape;
+			collider.collider = bounds;
+		}
 	}
 	#end
 
@@ -259,10 +396,6 @@ class PathedInterior extends TorqueObject {
 		point += t * ((-1) * p0 + p2) / 2;
 		point += p1;
 		return point;
-	}
-
-	override function getRenderTransform() {
-		return innerMesh.getAbsPos();
 	}
 
 	static var _ = Library.register("pathedinterior", PathedInterior);

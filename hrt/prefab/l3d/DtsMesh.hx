@@ -1004,7 +1004,7 @@ class DtsMesh extends TorqueObject {
 		return true;
 	}
 
-	override function makeInteractive(ctx:Context):hxd.SceneEvents.Interactive {
+	function getInteractiveBounds(ctx:Context) {
 		var local3d = ctx.local3d;
 		if (local3d == null)
 			return null;
@@ -1014,15 +1014,15 @@ class DtsMesh extends TorqueObject {
 		var localBounds = [];
 		var totalSeparateBounds = 0.;
 		var visibleMeshes = [];
-		var hasSkin = false;
 
 		inline function getVolume(b:h3d.col.Bounds) {
 			var c = b.getSize();
 			return c.x * c.y * c.z;
 		}
+
 		for (inst in meshInstances) {
 			var mesh = @:privateAccess inst.instancer.colliderMesh;
-			if (mesh == null || mesh.ignoreCollide)
+			if (mesh.ignoreCollide)
 				continue;
 
 			var localMat = inst.o.getAbsPos().clone();
@@ -1044,15 +1044,16 @@ class DtsMesh extends TorqueObject {
 			}
 			localBounds.push(lb);
 		}
+
 		if (visibleMeshes.length == 0)
 			return null;
-		// var colliders = [
-		// 	for (m in visibleMeshes) {
-		// 		var c:h3d.col.Collider = try m.getGlobalCollider() catch (e:Dynamic) null;
-		// 		if (c != null)
-		// 			c;
-		// 	}
-		// ];
+		return bounds;
+	}
+
+	override function makeInteractive(ctx:Context):hxd.SceneEvents.Interactive {
+		var bounds = getInteractiveBounds(ctx);
+		if (bounds == null)
+			return null;
 		var meshCollider = DtsInstanceManager.getManagerForContext(ctx)
 			.allocInstancer(this.dtsPath + (this.skin != null ? this.skin : ""))
 			.collider; // colliders.length == 1 ? colliders[0] : new h3d.col.Collider.GroupCollider(colliders);
@@ -1063,6 +1064,16 @@ class DtsMesh extends TorqueObject {
 		int.propagateEvents = true;
 		int.enableRightButton = true;
 		return int;
+	}
+
+	function updateInteractiveMesh(ctx:Context) {
+		var bounds = getInteractiveBounds(ctx);
+		var int:h3d.scene.Interactive = cast ctxObject.find(x -> x is h3d.scene.Interactive ? x : null);
+		if (int != null) {
+			int.preciseShape = DtsInstanceManager.getManagerForContext(ctx).allocInstancer(this.dtsPath + (this.skin != null ? this.skin : "")).collider;
+			var collider:h3d.col.ObjectCollider = cast int.shape;
+			collider.collider = bounds;
+		}
 	}
 
 	override function getHideProps():HideProps {
