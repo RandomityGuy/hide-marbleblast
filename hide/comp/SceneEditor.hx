@@ -2828,7 +2828,22 @@ class SceneEditor {
 		var obj3d:Object3D;
 		var relative = ide.makeRelative(path);
 
-		if (hrt.prefab.Library.getPrefabType(path) != null) {
+		var mi = parent.getPrefabByName("MissionGroup");
+		if (mi == null)
+			mi = parent;
+
+		var prefabType = hrt.prefab.Library.getPrefabType(path);
+		if (prefabType == "interiorinstance") {
+			var itr = new hrt.prefab.l3d.Interior(mi);
+			itr.path = relative;
+			obj3d = itr;
+			obj3d.name = "";
+		} else if (prefabType == 'tsstatic') {
+			var ts = new hrt.prefab.l3d.TSStatic(mi);
+			ts.path = relative;
+			obj3d = ts;
+			obj3d.name = "";
+		} else if (prefabType != null) {
 			var ref = new hrt.prefab.Reference(parent);
 			ref.source = relative;
 			obj3d = ref;
@@ -2861,7 +2876,7 @@ class SceneEditor {
 		for (path in paths) {
 			var obj3d = createDroppedElement(path, parent);
 			obj3d.setTransform(localMat);
-			autoName(obj3d);
+			// autoName(obj3d);
 			elts.push(obj3d);
 		}
 

@@ -13,6 +13,7 @@ class MissionInfoField {
 	var serialize:Bool;
 	var dependencyFunc:Void->Bool;
 	var isBigText:Bool;
+	var gameDep:Array<String>;
 
 	var getterFn:Void->Dynamic;
 	var setterFn:Dynamic->Void;

@@ -56,6 +56,8 @@ class MissionInfoEditor extends Popup {
 		}
 
 		for (field in fieldDefs) {
+			if (field.gameDep != null && !field.gameDep.contains(mi.gameType))
+				continue;
 			if (field.isSeparator) {
 				var elem = new Element('<tr><td></td><td><h3>${field.display}</h3></td><td></td></tr>').appendTo(tbody);
 				if (field.dependency != null) {

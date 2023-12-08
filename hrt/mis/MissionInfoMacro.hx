@@ -114,6 +114,9 @@ class MissionInfoMacro {
 									fieldDefExprs.push(macro {fieldData.inverseDependency = true;});
 									depInverse = true;
 
+								case [EConst(CIdent("game")), EArrayDecl(arr)]:
+									fieldDefExprs.push(macro {fieldData.gameDep = $a{arr};});
+
 								case _:
 									throw 'Unknown field metadata parameter: ' + Std.string(param.expr);
 							}

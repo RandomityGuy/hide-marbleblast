@@ -42,5 +42,5 @@ class TSStatic extends DtsMesh {
 		return "TSStatic";
 	}
 
-	static var _ = Library.register("tsstatic", TSStatic);
+	static var _ = Library.register("tsstatic", TSStatic, "dts");
 }

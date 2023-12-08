@@ -684,6 +684,7 @@ class Prefab extends FileView {
 					if (micast != null) {
 						var mi = new hrt.mis.MissionInfo();
 						mi.fromMissionInfo(micast);
+						mi.gameType = hrt.mis.TorqueConfig.gameType;
 						return new hide.comp.MissionInfoEditor(null, e, mi);
 					}
 				}

@@ -1,6 +1,7 @@
 package hrt.mis;
 
 typedef CreatorMenuJson = {
+	gameType:String,
 	shapes:Dynamic,
 	triggers:Array<ShapeCreatorMenuJson>,
 }
@@ -35,10 +36,13 @@ class TorqueConfig {
 
 	static var _init = false;
 
+	public static var gameType:String;
+
 	public static function init() {
 		if (creatorMenuJson == null) {
 			_init = true;
 			creatorMenuJson = haxe.Json.parse(hxd.res.Loader.currentInstance.fs.get("datablocks.json").getText());
+			gameType = creatorMenuJson.gameType;
 
 			datablockDb = [];
 
