@@ -2589,18 +2589,18 @@ class SceneEditor {
 	function fillProps(edit:SceneEditorContext, e:PrefabElement) {
 		properties.element.append(new Element('<h1 class="prefab-name">${e.getHideProps().name}</h1>'));
 
-		var copyButton = new Element('<div class="hide-button" title="Copy all properties">').append(new Element('<div class="icon ico ico-copy">'));
-		copyButton.click(function(event:js.jquery.Event) {
-			copyFields(properties.fields);
-		});
-		properties.element.append(copyButton);
+		// var copyButton = new Element('<div class="hide-button" title="Copy all properties">').append(new Element('<div class="icon ico ico-copy">'));
+		// copyButton.click(function(event:js.jquery.Event) {
+		// 	copyFields(properties.fields);
+		// });
+		// properties.element.append(copyButton);
 
-		var pasteButton = new Element('<div class="hide-button" title="Paste values from the clipboard">')
-			.append(new Element('<div class="icon ico ico-paste">'));
-		pasteButton.click(function(event:js.jquery.Event) {
-			pasteFields(edit, properties.fields);
-		});
-		properties.element.append(pasteButton);
+		// var pasteButton = new Element('<div class="hide-button" title="Paste values from the clipboard">')
+		// 	.append(new Element('<div class="icon ico ico-paste">'));
+		// pasteButton.click(function(event:js.jquery.Event) {
+		// 	pasteFields(edit, properties.fields);
+		// });
+		// properties.element.append(pasteButton);
 
 		e.edit(edit);
 
@@ -3033,55 +3033,34 @@ class SceneEditor {
 			return;
 
 		var elts = curEdit.rootElements;
-		var parent = elts[0].parent;
-		var parentMat = worldMat(parent);
-		var invParentMat = parentMat.clone();
-		invParentMat.invert();
 
-		var pivot = new h3d.Vector();
-		{
-			var count = 0;
-			for (elt in curEdit.rootElements) {
-				var m = worldMat(elt);
-				if (m != null) {
-					pivot = pivot.add(m.getPosition());
-					++count;
-				}
-			}
-			pivot.scale3(1.0 / count);
-		}
-		var local = new h3d.Matrix();
-		local.initTranslation(pivot.x, pivot.y, pivot.z);
-		local.multiply(local, invParentMat);
-		var group = new hrt.prefab.Object3D(parent);
-		@:privateAccess group.type = "object";
-		autoName(group);
-		group.x = local.tx;
-		group.y = local.ty;
-		group.z = local.tz;
-		var parentCtx = getContext(parent);
-		if (parentCtx == null)
-			parentCtx = context;
-		group.make(parentCtx);
+		var group = new hrt.prefab.l3d.SimGroup(sceneData.getPrefabByName("MissionGroup"));
+		group.name = "SimGroup";
+		var sceneCtx = getContext(sceneData.getPrefabByName("MissionGroup"));
+		group.make(sceneCtx);
 		var groupCtx = getContext(group);
 
-		var effectFunc = reparentImpl(elts, group, 0);
+		for (prefab in elts) {
+			prefab.parent = group;
+		}
+
+		// var effectFunc = reparentImpl(elts, group, 0);
 		undo.change(Custom(function(undo) {
 			if (undo) {
 				group.parent = null;
 				context.shared.contexts.remove(group);
-				effectFunc(true);
+				// effectFunc(true);
 			} else {
-				group.parent = parent;
+				group.parent = sceneData.getPrefabByName("MissionGroup");
 				context.shared.contexts.set(group, groupCtx);
-				effectFunc(false);
+				// effectFunc(false);
 			}
 			if (undo)
 				refresh(() -> selectElements([], NoHistory));
 			else
 				refresh(() -> selectElements([group], NoHistory));
 		}));
-		refresh(effectFunc(false) ? Full : Partial, () -> selectElements([group], NoHistory));
+		refresh(Partial, () -> selectElements([group], NoHistory));
 	}
 
 	function onCopy() {
@@ -3108,10 +3087,7 @@ class SceneEditor {
 	}
 
 	function onPaste() {
-		var parent:PrefabElement = sceneData;
-		if (curEdit != null && curEdit.elements.length > 0) {
-			parent = curEdit.elements[0];
-		}
+		var parent:PrefabElement = sceneData.getPrefabByName("MissionGroup");
 		var opts:{ref:{source:String, name:String}} = {ref: null};
 		var obj = view.getClipboard("prefab", opts);
 		if (obj != null) {
