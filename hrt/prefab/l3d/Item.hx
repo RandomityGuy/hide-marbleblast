@@ -27,7 +27,11 @@ class Item extends DtsMesh {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "puzzle-piece", name: "Item"};
+		return {
+			icon: "puzzle-piece",
+			name: "Item",
+			allowChildren: function(s) return false
+		};
 	}
 	#end
 

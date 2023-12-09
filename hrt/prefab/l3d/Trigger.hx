@@ -61,7 +61,11 @@ class Trigger extends TorqueObject {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "square-o", name: "Trigger"};
+		return {
+			icon: "square-o",
+			name: "Trigger",
+			allowChildren: function(s) return false
+		};
 	}
 	#end
 

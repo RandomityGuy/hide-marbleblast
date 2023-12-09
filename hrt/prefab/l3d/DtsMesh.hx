@@ -1077,7 +1077,7 @@ class DtsMesh extends TorqueObject {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "square", name: "DTS"};
+		return {icon: "square", name: "DTS", allowChildren: function(s) return false};
 	}
 	#end
 

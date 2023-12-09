@@ -59,7 +59,11 @@ class ScriptObject extends Prefab {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "info", name: "ScriptObject"};
+		return {
+			icon: "info",
+			name: "ScriptObject",
+			allowChildren: function(s) return false
+		};
 	}
 	#end
 

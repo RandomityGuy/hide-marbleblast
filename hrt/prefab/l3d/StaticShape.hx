@@ -9,7 +9,11 @@ class StaticShape extends DtsMesh {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "cog", name: "StaticShape"};
+		return {
+			icon: "cog",
+			name: "StaticShape",
+			allowChildren: function(s) return false
+		};
 	}
 	#end
 

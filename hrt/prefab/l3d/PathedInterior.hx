@@ -229,7 +229,12 @@ class PathedInterior extends TorqueObject {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "cube", name: "PathedInterior", fileSource: ["dif"]};
+		return {
+			icon: "cube",
+			name: "PathedInterior",
+			fileSource: ["dif"],
+			allowChildren: function(s) return false
+		};
 	}
 
 	function getInteractiveBounds(ctx:Context) {

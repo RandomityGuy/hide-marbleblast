@@ -433,7 +433,12 @@ class Interior extends TorqueObject {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "cube", name: "InteriorInstance", fileSource: ["dif"]};
+		return {
+			icon: "cube",
+			name: "InteriorInstance",
+			fileSource: ["dif"],
+			allowChildren: function(s) return false
+		}
 	}
 	#end
 

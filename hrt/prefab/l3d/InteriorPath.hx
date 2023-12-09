@@ -85,7 +85,11 @@ class InteriorPathMarker extends TorqueObject {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "arrows-v", name: "Marker"};
+		return {
+			icon: "arrows-v",
+			name: "Marker",
+			allowChildren: function(s) return false
+		};
 	}
 	#end
 
@@ -204,7 +208,11 @@ class InteriorPath extends Object3D {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "arrows-v", name: "Path"};
+		return {
+			icon: "arrows-v",
+			name: "Path",
+			allowChildren: function(s) return true
+		};
 	}
 	#end
 

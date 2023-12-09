@@ -307,7 +307,11 @@ class Sky extends TorqueObject {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "photo", name: "Sky"};
+		return {
+			icon: "photo",
+			name: "Sky",
+			allowChildren: function(s) return false
+		};
 	}
 	#end
 

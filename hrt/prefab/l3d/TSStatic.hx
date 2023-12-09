@@ -34,7 +34,12 @@ class TSStatic extends DtsMesh {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "cog", name: "TSStatic", fileSource: ["dts"]};
+		return {
+			icon: "cog",
+			name: "TSStatic",
+			fileSource: ["dts"],
+			allowChildren: function(s) return false
+		};
 	}
 	#end
 

@@ -16,7 +16,11 @@ class SimGroup extends Prefab {
 	}
 
 	override function getHideProps():HideProps {
-		return {icon: "folder", name: "SimGroup"};
+		return {
+			icon: "folder",
+			name: "SimGroup",
+			allowChildren: function(s) return true
+		};
 	}
 
 	public function addDynFieldsEdit(ectx:EditContext) {
