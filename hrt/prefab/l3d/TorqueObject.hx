@@ -105,17 +105,23 @@ class TorqueObject extends Object3D {
 	}
 
 	public function buildAnimators(renderObject:h3d.scene.Object, ctx:Context) {
-		pna = new PathNodeAnimator(this, ctx);
-		pa = new ParentingAnimator(this, ctx);
+		var field = dynamicFields.find(x -> x.field == "path");
+		if (field != null && field.value != "")
+			pna = new PathNodeAnimator(this, ctx);
+
+		field = dynamicFields.find(x -> x.field == "parent");
+		if (field != null && field.value != "")
+			pa = new ParentingAnimator(this, ctx);
 		this.renderObject = renderObject;
 	}
 
 	override function tick(ctx:Context, elapsedTime:Float, dt:Float) {
 		super.tick(ctx, elapsedTime, dt);
-		if (pna != null || pa != null) {
+		if (pna != null)
 			pna.updateObjPosition(renderObject, elapsedTime);
+
+		if (pa != null)
 			pa.updateTransform(renderObject);
-		}
 	}
 
 	#if editor
@@ -129,10 +135,28 @@ class TorqueObject extends Object3D {
 	function propagatePropertyChanged(ctx:EditContext, p:String) {
 		if (propertyProvider != null)
 			propertyProvider.onPropertyChanged(ctx, p);
-		if (["parent", "parentsimple", "parentoffset", "parentnorot", "parentmodtrans"].contains(p) && pa != null)
+		if (p == "parent" && pa == null) {
+			pa = new ParentingAnimator(this, ctx.getContext(this));
+		}
+		if (["parent", "parentsimple", "parentoffset", "parentnorot", "parentmodtrans"].contains(p) && pa != null) {
 			pa.updateProps();
-		if (p == "path" && pna != null)
+			var field = dynamicFields.find(x -> x.field == "parent");
+			if (field.value == "") {
+				pa = null;
+				renderObject.setTransform(Matrix.I());
+			}
+		}
+		if (p == "path" && pna == null) {
+			pna = new PathNodeAnimator(this, ctx.getContext(this));
+		}
+		if (p == "path" && pna != null) {
 			pna.regeneratePath();
+			var field = dynamicFields.find(x -> x.field == "path");
+			if (field.value == "") {
+				pna = null;
+				renderObject.setTransform(Matrix.I());
+			}
+		}
 	}
 
 	public function addDynFieldsEdit(ectx:EditContext) {
@@ -451,6 +475,272 @@ class TorqueObject extends Object3D {
 
 			if (propertyProvider != null)
 				propertyProvider.edit(ectx);
+		}
+
+		function getParentModTrans() {
+			var parentField = dynamicFields.find(x -> x.field == "parent");
+			if (parentField != null) {
+				var parentStr = parentField.value;
+
+				var rootObj:Prefab = this.parent;
+				while (rootObj.parent != null)
+					rootObj = rootObj.parent;
+
+				var parentObj = cast(rootObj.getPrefabByName(parentStr), TorqueObject);
+				if (parentObj != null) {
+					var relativeTransform = new Matrix();
+					var origTform = new Matrix();
+					this.getTransform(origTform);
+					relativeTransform.multiply(origTform, parentObj.getTransform().getInverse());
+
+					var pos = relativeTransform.getPosition();
+
+					var quat = new Quat();
+					quat.initRotateMatrix(relativeTransform);
+					quat.x = -quat.x;
+					quat.w = -quat.w;
+					var angle = 2 * Math.acos(quat.w);
+					var s = Math.sqrt(1 - quat.w * quat.w);
+					var x, y, z;
+					if (s < 0.001) {
+						x = quat.x;
+						y = quat.y;
+						z = quat.z;
+					} else {
+						x = quat.x / s;
+						y = quat.y / s;
+						z = quat.z / s;
+					}
+					angle = (angle * -180.0 / Math.PI) % 360.0;
+					return '${pos.x} ${pos.y} ${pos.z} ${x} ${y} ${z} ${angle}';
+				} else {
+					return "";
+				}
+			} else {
+				return "";
+			}
+		}
+
+		if (hrt.mis.TorqueConfig.gameType == "PQ") {
+			// Path node and parenting config
+
+			// Path
+			{
+				var props = new hide.Element('
+			<div>
+				<div class="group" name="Path">
+					<dl id="vars">
+						<dt>Path</dt>
+						<dd>
+							<select>
+								<option value="">-- Choose --</option>
+							</select>
+						</dd>
+					</dl>
+				</div>
+			</div>
+			');
+				ectx.properties.add(props);
+
+				var select = props.find("select");
+				var names = @:privateAccess ectx.scene.editor.sceneData.getAll(hrt.prefab.l3d.StaticShape)
+					.filter(x -> x.customFieldProvider == "pathnode")
+					.map(x -> x.name);
+				for (path in names) {
+					var hasDot = path.indexOf(".") != -1;
+					var properName = path;
+					if (hasDot) {
+						var split = path.split(".");
+						properName = split[split.length - 1];
+					}
+					if (properName == "" || properName == "_debugDir" || properName == "__selection")
+						continue;
+					var opt = new hide.Element("<option>").attr("value", properName.toLowerCase()).html(properName);
+					select.append(opt);
+				}
+				var pathField = dynamicFields.find(x -> x.field == 'path');
+				if (pathField != null) {
+					select.val(pathField.value.toLowerCase());
+				}
+				select.on("change", function(e) {
+					if (pathField == null) {
+						pathField = {field: "path", value: e.target.value};
+						dynamicFields.push(pathField);
+					}
+
+					var oldValue = pathField.value;
+					var newValue = e.target.value;
+					pathField.value = e.target.value;
+					propagatePropertyChanged(ectx, "path");
+
+					ectx.properties.undo.change(Custom(isUndo -> {
+						pathField.value = isUndo ? oldValue : newValue;
+						select.val(pathField.value.toLowerCase());
+						propagatePropertyChanged(ectx, "path");
+					}));
+				});
+			}
+
+			// Parent
+			{
+				var props = new hide.Element('
+			<div>
+				<div class="group" name="Parenting">
+					<dl id="vars">
+						<dt>Parent</dt>
+						<dd>
+							<select>
+								<option value="">-- Choose --</option>
+							</select>
+						</dd>
+						<dt>Ignore Parent Rotation</dt>
+						<dd>
+							<input type="checkbox" field="pNoRot"/>
+						</dd>
+						<dt>Offset Only</dt>
+						<dd>
+							<input type="checkbox" field="pOffset"/>
+						</dd>
+						<dt>Offset X</dt>
+						<dd>
+							<input type="range" min="-100" max="100" value="0" field="pOffsetX"/>
+						</dd>
+						<dt>Offset Y</dt>
+						<dd>
+							<input type="range" min="-100" max="100" value="0" field="pOffsetY"/>
+						</dd>
+						<dt>Offset Z</dt>
+						<dd>
+							<input type="range" min="-100" max="100" value="0" field="pOffsetZ"/>
+						</dd>
+						<dt>Parent - Child Transform</dt>
+						<dd>
+							<input type="text" field="pModTrans"/>
+						</dd>
+						<div align="center">
+							<input type="button" value="Lock Current Orientation"/>
+						</div>
+					</dl>
+				</div>
+			</div>
+			');
+
+				var noRotField = dynamicFields.find(x -> x.field == 'parentnorot');
+				var simpleField = dynamicFields.find(x -> x.field == 'parentsimple');
+				var offsetField = dynamicFields.find(x -> x.field == 'parentoffset');
+				var offsetValue = hrt.mis.MisParser.parseVector3(offsetField != null ? offsetField.value : "0 0 0");
+				var parentModTransField = dynamicFields.find(x -> x.field == 'parentmodtrans');
+
+				var propCtx:Dynamic = {
+					pNoRot: noRotField != null ? noRotField.value : "false",
+					pOffset: simpleField != null ? simpleField.value : "false",
+					pOffsetX: offsetValue.x,
+					pOffsetY: offsetValue.y,
+					pOffsetZ: offsetValue.z,
+					pModTrans: parentModTransField != null ? parentModTransField.value : "",
+				};
+
+				ectx.properties.add(props, propCtx, (propName) -> {
+					switch (propName) {
+						case "pNoRot":
+							if (noRotField == null) {
+								noRotField = {field: "parentnorot", value: '${propCtx.pNoRot}'};
+								dynamicFields.push(noRotField);
+							} else {
+								noRotField.value = '${propCtx.pNoRot}';
+							}
+							propagatePropertyChanged(ectx, "parentnotrot");
+
+						case "pOffset":
+							if (simpleField == null) {
+								simpleField = {field: "parentsimple", value: '${propCtx.pOffset}'};
+								dynamicFields.push(simpleField);
+							} else {
+								simpleField.value = '${propCtx.pOffset}';
+							}
+							propagatePropertyChanged(ectx, "parentsimple");
+
+						case "pOffsetX" | "pOffsetY" | "pOffsetZ":
+							if (offsetField == null) {
+								offsetField = {field: "parentoffset", value: '${propCtx.pOffsetX} ${propCtx.pOffsetY} ${propCtx.pOffsetZ}'};
+								dynamicFields.push(offsetField);
+							} else {
+								offsetField.value = '${propCtx.pOffsetX} ${propCtx.pOffsetY} ${propCtx.pOffsetZ}';
+							}
+							propagatePropertyChanged(ectx, "parentoffset");
+
+						case "pModTrans":
+							if (parentModTransField == null) {
+								parentModTransField = {field: "parentmodtrans", value: '${propCtx.pModTrans}'};
+								dynamicFields.push(parentModTransField);
+							} else {
+								parentModTransField.value = '${propCtx.pModTrans}';
+							}
+							propagatePropertyChanged(ectx, "parentmodtrans");
+
+						case _:
+							{}
+					}
+				});
+				var select = props.find("select");
+
+				for (path in ectx.getNamedObjects()) {
+					var hasDot = path.indexOf(".") != -1;
+					var properName = path;
+					if (hasDot) {
+						var split = path.split(".");
+						properName = split[split.length - 1];
+					}
+					if (properName == "" || properName == "_debugDir" || properName == "__selection")
+						continue;
+					var opt = new hide.Element("<option>").attr("value", properName.toLowerCase()).html(properName);
+					select.append(opt);
+				}
+
+				var parentField = dynamicFields.find(x -> x.field == 'parent');
+				if (parentField != null) {
+					select.val(parentField.value.toLowerCase());
+				}
+
+				props.find("input[type=button]").on("click", function() {
+					propCtx.pModTrans = getParentModTrans();
+					if (parentModTransField == null) {
+						parentModTransField = {field: "parentmodtrans", value: '${propCtx.pModTrans}'};
+						dynamicFields.push(parentModTransField);
+					} else {
+						parentModTransField.value = '${propCtx.pModTrans}';
+					}
+					propagatePropertyChanged(ectx, "parentmodtrans");
+				});
+
+				select.on("change", function(e) {
+					if (parentField == null) {
+						parentField = {field: "parent", value: e.target.value};
+						dynamicFields.push(parentField);
+					}
+
+					var oldValue = parentField.value;
+					var newValue = e.target.value;
+					parentField.value = e.target.value;
+					propagatePropertyChanged(ectx, "parent");
+
+					var oldPMT = parentModTransField != null ? parentModTransField.value : "";
+
+					if (parentModTransField == null) {
+						parentModTransField = {field: "parentmodtrans", value: getParentModTrans()};
+						dynamicFields.push(parentModTransField);
+					} else {
+						parentModTransField.value = getParentModTrans();
+					}
+
+					ectx.properties.undo.change(Custom(isUndo -> {
+						parentField.value = isUndo ? oldValue : newValue;
+						select.val(parentField.value.toLowerCase());
+						parentModTransField.value = oldPMT;
+						propagatePropertyChanged(ectx, "parent");
+					}));
+				});
+			}
 		}
 	}
 	#end

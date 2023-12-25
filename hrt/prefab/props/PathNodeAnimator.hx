@@ -203,14 +203,18 @@ class PathNodeAnimator {
 						node.syncProps();
 					}
 				}
+			} else {
+				// Reset the transforms
 			}
 		}
 	}
 
 	public function regeneratePath() {
 		// Unregister everything
-		for (_ => node in path) {
-			node.unregisterEventHandlers();
+		if (path != null) {
+			for (_ => node in path) {
+				node.unregisterEventHandlers();
+			}
 		}
 		path = [];
 		pathBegin = null;
