@@ -24,6 +24,7 @@
 	<script src="libs/jstree/jstree.js"></script>
 	<script src="libs/spectrum.js"></script>
 	<script src="libs/select2.js"></script>
+	<script type="text/javascript" src="https://spectorcdn.babylonjs.com/spector.bundle.js"></script>
 
 	<!-- Toggle the following line to enable webgl debugging at the cost of performance -->
 	<!-- <script src="libs/webgl-debug.js"></script> -->
@@ -45,7 +46,7 @@
 		require.nodeRequire = require;
 		amdRequire.config({ baseUrl: 'libs/monaco' });
 		amdRequire(['vs/editor/editor.main'], function () { });
-		// var spector = new SPECTOR.Spector();
+		var spector = new SPECTOR.Spector();
 		// spector.displayUI();
 	</script>
 
@@ -72,6 +73,7 @@
 		<menu label="View" class="view">
 			<menu label="Resources" component="hide.view.FileTree" state='{"path":""}'></menu>
 			<menu label="Directory" component="hide.view.FileTree"></menu>
+			<menu label="Creator" component="hide.view.CreatorView"></menu>
 			<separator></separator>
 			<menu label="About" component="hide.view.About"></menu>
 			<menu label="Debug" class="debug"></menu>

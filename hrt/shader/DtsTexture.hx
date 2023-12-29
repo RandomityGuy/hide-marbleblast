@@ -12,6 +12,7 @@ class DtsTexture extends hxsl.Shader {
 		@const var additive:Bool;
 		@const var killAlpha:Bool;
 		@const var specularAlpha:Bool;
+		@const var fixAlpha:Bool = false;
 		@range(0, 1) @param var killAlphaThreshold:Float;
 		@param var texture:Sampler2D;
 		@const var normalizeNormals:Bool;
@@ -40,6 +41,8 @@ class DtsTexture extends hxsl.Shader {
 			if (specularAlpha)
 				specColor *= c.aaa;
 			pixelColor.a *= c.a * currentOpacity;
+			if (fixAlpha)
+				pixelColor.a = 1;
 		}
 	}
 

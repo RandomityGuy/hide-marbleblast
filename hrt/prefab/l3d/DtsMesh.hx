@@ -390,6 +390,7 @@ class DtsMesh extends TorqueObject {
 	var ctxObject:Object;
 
 	var isInstanced:Bool = false;
+	var isForPreview:Bool = false;
 
 	var meshInstances:Array<DtsMeshInstance> = [];
 
@@ -481,6 +482,16 @@ class DtsMesh extends TorqueObject {
 				if (flags & 1 > 0 || flags & 2 > 0)
 					texture.wrap = Wrap.Repeat;
 				this.materials[i].texture = texture;
+
+				if (isForPreview) {
+					this.materials[i].mainPass.enableLights = false;
+
+					// Huge hacks
+					if (this.materials[i].blendMode != Add) {
+						var alphaShader = new h3d.shader.AlphaChannel();
+						this.materials[i].mainPass.addShader(alphaShader);
+					}
+				}
 			}
 		}
 
@@ -716,10 +727,15 @@ class DtsMesh extends TorqueObject {
 				var dtsshader = new DtsTexture();
 				dtsshader.texture = texture;
 				dtsshader.currentOpacity = 1;
+				// if (isForPreview) {
+				// 	dtsshader.fixAlpha = true;
+				// }
+
 				// if (this.identifier == "Tornado")
 				dtsshader.normalizeNormals = false; // These arent normalized
 				material.mainPass.removeShader(material.textureShader);
 				material.mainPass.addShader(dtsshader);
+
 				// TODO TRANSLUENCY SHIT
 			}
 			material.shadows = false;
@@ -728,6 +744,10 @@ class DtsMesh extends TorqueObject {
 				dtsshader.currentOpacity = 1;
 				// if (this.identifier == "Tornado")
 				dtsshader.normalizeNormals = false; // These arent normalized
+
+				// if (isForPreview) {
+				// 	dtsshader.fixAlpha = true;
+				// }
 				// Make a 1x1 white texture
 				#if hl
 				var bitmap = new hxd.BitmapData(1, 1);

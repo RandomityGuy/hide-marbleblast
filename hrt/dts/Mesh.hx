@@ -7,6 +7,18 @@ import hrt.dif.math.Point3F;
 import hrt.dif.math.Box3F;
 
 @:publicFields
+class Cluster {
+	var startPrimitive:Int;
+	var endPrimitive:Int;
+	var normal:Point3F;
+	var k:Float;
+	var frontCluster:Int;
+	var backCluster:Int;
+
+	public function new() {}
+}
+
+@:publicFields
 class Mesh {
 	var meshType:Int;
 	var numFrames:Int;
@@ -30,6 +42,11 @@ class Mesh {
 	var boneIndices:Array<Int>;
 	var weights:Array<Float>;
 	var nodeIndices:Array<Int>;
+	var clusters:Array<Cluster>;
+	var startCluster:Int;
+	var firstVert:Int;
+	var numVerts:Int;
+	var firstTVert:Int;
 
 	public function new() {}
 
@@ -100,6 +117,45 @@ class Mesh {
 		vertsPerFrame = reader.readS32();
 		type = reader.readS32();
 
+		reader.guard();
+	}
+
+	function readSorted(reader:DtsAlloc, version:Int) {
+		readStandard(reader, version);
+		clusters = [];
+		var numClusters = reader.readS32();
+		for (i in 0...numClusters) {
+			var cluster = new Cluster();
+			cluster.startPrimitive = reader.readS32();
+			cluster.endPrimitive = reader.readS32();
+			cluster.normal = reader.readPoint3F();
+			cluster.k = reader.readF32();
+			cluster.frontCluster = reader.readS32();
+			cluster.backCluster = reader.readS32();
+			clusters.push(cluster);
+		}
+		var sz = reader.readS32();
+
+		function readS32s(s:Int) {
+			var its = [];
+			for (i in 0...s) {
+				its.push(reader.readS32());
+			}
+			return its;
+		}
+
+		var ints = readS32s(sz);
+		startCluster = sz != 0 ? ints[0] : -1;
+		sz = reader.readS32();
+		ints = readS32s(sz);
+		firstVert = sz != 0 ? ints[0] : -1;
+		sz = reader.readS32();
+		ints = readS32s(sz);
+		numVerts = sz != 0 ? ints[0] : -1;
+		sz = reader.readS32();
+		ints = readS32s(sz);
+		firstTVert = sz != 0 ? ints[0] : -1;
+		reader.readS32();
 		reader.guard();
 	}
 
@@ -178,6 +234,8 @@ class Mesh {
 			mesh.readStandard(reader, version);
 		else if (mesh.meshType == 1)
 			mesh.readSkinned(reader, version);
+		else if (mesh.meshType == 3)
+			mesh.readSorted(reader, version);
 		else if (mesh.meshType == 4)
 			return null;
 		else

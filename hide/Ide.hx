@@ -186,6 +186,9 @@ class Ide {
 			syncMousePosition(e);
 			var view = getViewAt(mouseX, mouseY);
 			var items : Array<String> = [for(f in e.dataTransfer.files) Reflect.field(f, "path")];
+			var txt = e.dataTransfer.getData("text/plain");
+			if (txt != null && txt != "")
+				items.push(txt);
 			if(view != null && view.onDragDrop(items, drop)) {
 				e.preventDefault();
 				e.stopPropagation();
@@ -409,6 +412,7 @@ class Ide {
 			if( subView == null && views.length == 0 ) {
 				open("hide.view.FileTree",{path:""});
 			}
+			open("hide.view.CreatorView", {});
 			if( firstInit ) {
 				firstInit = false;
 				for( file in nw.App.argv ) {

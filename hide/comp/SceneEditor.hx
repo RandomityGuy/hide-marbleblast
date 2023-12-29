@@ -1748,6 +1748,10 @@ class SceneEditor {
 						p.path = StringTools.replace(StringTools.replace(s.shapefile.toLowerCase(), "marble/", ""), "platinum/", "");
 						p.skin = s.skin == "" ? null : s.skin;
 
+						p.customFields = hrt.mis.TorqueConfig.getDataBlock(s.name).fields.filter(x -> x.defaultValue != null).map(x -> {
+							return {field: x.name, value: '${x.defaultValue}'};
+						});
+
 						if (onMake != null)
 							onMake(p);
 						addElements([p]);
@@ -2814,7 +2818,7 @@ class SceneEditor {
 		var paths = [];
 		for (path in items) {
 			var ext = haxe.io.Path.extension(path).toLowerCase();
-			if (supported.exists(ext) || ext == "fbx" || ext == "hmd" || ext == "json")
+			if (StringTools.startsWith(path, "CREATE:") || supported.exists(ext) || ext == "fbx" || ext == "hmd" || ext == "json")
 				paths.push(path);
 		}
 		if (paths.length == 0)
@@ -2826,11 +2830,43 @@ class SceneEditor {
 
 	function createDroppedElement(path:String, parent:PrefabElement):Object3D {
 		var obj3d:Object3D;
-		var relative = ide.makeRelative(path);
 
 		var mi = parent.getPrefabByName("MissionGroup");
 		if (mi == null)
 			mi = parent;
+
+		if (StringTools.startsWith(path, "CREATE:")) {
+			var split = path.split(":");
+			var classname = split[1];
+			var datablock = split[2];
+			var skin = split[3];
+			var shapefile = split[4];
+
+			var pmodel = hrt.prefab.Library.getRegistered().get(classname.toLowerCase());
+
+			var p:hrt.prefab.l3d.DtsMesh = cast Type.createInstance(pmodel.cl, [mi]);
+			@:privateAccess p.type = classname.toLowerCase();
+			p.name = "";
+			p.customFieldProvider = datablock;
+			p.path = StringTools.replace(StringTools.replace(shapefile.toLowerCase(), "marble/", ""), "platinum/", "");
+			p.skin = skin == "" ? null : skin;
+
+			var dbDef = hrt.mis.TorqueConfig.getDataBlock(datablock);
+
+			p.customFields = hrt.mis.TorqueConfig.getDataBlock(datablock).fields.filter(x -> x.defaultValue != null).map(x -> {
+				return {field: x.name, value: '${x.defaultValue}'};
+			});
+			if (dbDef.fieldMap.exists("skin") && p.skin != null && p.customFields.find(x -> x.field == "skin") == null)
+				p.customFields.push({field: "skin", value: p.skin});
+
+			var skinDef = p.customFields.find(x -> x.field == "skin");
+			if (skinDef != null && p.skin != null && skinDef.value != p.skin)
+				skinDef.value = p.skin;
+
+			return p;
+		}
+
+		var relative = ide.makeRelative(path);
 
 		var prefabType = hrt.prefab.Library.getPrefabType(path);
 		if (prefabType == "interiorinstance") {
@@ -2862,15 +2898,15 @@ class SceneEditor {
 	function dropElements(paths:Array<String>, parent:PrefabElement) {
 		scene.setCurrent();
 		var localMat = h3d.Matrix.I();
-		if (scene.hasFocus()) {
-			localMat = getPickTransform(parent);
-			if (localMat == null)
-				return;
+		// if (scene.hasFocus()) {
+		localMat = getPickTransform(parent);
+		if (localMat == null)
+			return;
 
-			localMat.tx = hxd.Math.round(localMat.tx * 10) / 10;
-			localMat.ty = hxd.Math.round(localMat.ty * 10) / 10;
-			localMat.tz = hxd.Math.floor(localMat.tz * 10) / 10;
-		}
+		localMat.tx = hxd.Math.round(localMat.tx * 10) / 10;
+		localMat.ty = hxd.Math.round(localMat.ty * 10) / 10;
+		localMat.tz = hxd.Math.floor(localMat.tz * 10) / 10;
+		// }
 
 		var elts:Array<PrefabElement> = [];
 		for (path in paths) {
