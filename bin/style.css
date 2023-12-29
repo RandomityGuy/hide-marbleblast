@@ -2543,9 +2543,11 @@ div.gradient-box {
 }
 
 .creator-tree {
-  min-width: 270px;
+  min-width: 180px;
   max-width: 340px;
   margin: auto;
+  container-name: creator-grid-container;
+  container-type: inline-size;
 }
 
 .creator-category-container {
@@ -2582,12 +2584,14 @@ div.gradient-box {
 
 .creator-grid {
   overflow-y: scroll;
-  max-height: 70vh;
+  max-height: 80vh;
   display: grid;
   grid-column-gap: 10px;
   grid-row-gap: 10px;
   grid-template-columns: repeat(auto-fill, 60px);
   justify-content: space-evenly;
+  padding-bottom: 50px;
+  overflow-x: hidden;
 }
 
 .creator-tree dl {
@@ -2607,7 +2611,7 @@ div.gradient-box {
 }
 
 .creator-item:hover::after {
-  position: absolute;
+  position: sticky;
   content: attr(data-tooltip);
   background-color: #333;
   color: white;
@@ -2638,6 +2642,24 @@ div.gradient-box {
   justify-content: space-around;
   border: 1px solid #444;
   background-color: #444;
+}
+
+@container creator-grid-container (min-width: 180px) and (max-width: 200px) {
+  .creator-back {
+    grid-column-end: 3;
+  }
+}
+
+@container creator-grid-container (min-width: 200px) and (max-width: 275px) {
+  .creator-back {
+    grid-column-end: 4;
+  }
+}
+
+@container creator-grid-container (min-width: 275px) {
+  .creator-back {
+    grid-column-end: 5;
+  }
 }
 
 .creator-back:hover {
