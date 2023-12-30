@@ -2671,3 +2671,30 @@ div.gradient-box {
   color: white;
   background-color: #424242;
 }
+
+.welcome-content {
+  padding: 5%
+}
+
+.welcome-content h1 {
+  text-align: center;
+}
+
+.welcome-options {
+  padding: 5%;
+}
+
+.welcome-recent-options {
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome-recent-options span {
+  color: #02aeda;
+  cursor: pointer;
+}
+
+.welcome-start-options span {
+  color: #02aeda;
+  cursor: pointer;
+}

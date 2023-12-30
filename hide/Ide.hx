@@ -412,6 +412,7 @@ class Ide {
 			if( subView == null && views.length == 0 ) {
 				open("hide.view.FileTree",{path:""});
 			}
+			open("hide.view.Welcome", {});
 			if( firstInit ) {
 				firstInit = false;
 				for( file in nw.App.argv ) {

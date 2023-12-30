@@ -250,6 +250,17 @@ class Prefab extends FileView {
 	function get_properties()
 		return sceneEditor.properties;
 
+	override function destroy() {
+		super.destroy();
+		if (hide.Ide.inst.getViews(Prefab).length == 0) {
+			var cviews = hide.Ide.inst.getViews(hide.view.CreatorView);
+			for (v in cviews) {
+				v.close();
+			}
+			hide.Ide.inst.open("hide.view.Welcome", {});
+		}
+	}
+
 	override function onDisplay() {
 		if (sceneEditor != null)
 			sceneEditor.dispose();

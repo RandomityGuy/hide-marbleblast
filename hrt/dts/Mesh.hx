@@ -105,7 +105,7 @@ class Mesh {
 		indices = [];
 		var numIndices = reader.readU32();
 		for (i in 0...numIndices) {
-			indices.push(reader.readS16());
+			indices.push(reader.readU16());
 		}
 
 		mindices = [];

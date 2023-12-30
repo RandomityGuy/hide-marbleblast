@@ -2304,7 +2304,12 @@ class SceneEditor {
 				}
 				if (p is TorqueObject) {
 					var to = cast(p, TorqueObject);
-					anchor[0].childNodes[1].textContent = '${to.getEditorClassName()} - ${p.name}';
+					if (to.customFieldProvider != null) {
+						var db = hrt.mis.TorqueConfig.getDataBlock(to.customFieldProvider);
+						anchor[0].childNodes[1].textContent = '${to.getEditorClassName()} - ${db != null ? db.name : "(unknown)"} - ${p.name}';
+					} else {
+						anchor[0].childNodes[1].textContent = '${to.getEditorClassName()} - ${p.name}';
+					}
 				}
 				if (p is InteriorPath) {
 					anchor[0].childNodes[1].textContent = 'Path - ${p.name}';
@@ -3910,7 +3915,8 @@ class SceneEditor {
 		for (s in selectablePrefabs) {
 			var int:h3d.scene.Interactive = cast getInteractive(s);
 			if (int != null && int.preciseShape != null) {
-				var m = @:privateAccess int.invPos;
+				var intPar = int.parent; // Cause we messed up
+				var m = @:privateAccess intPar.invPos;
 
 				ray.transform(m);
 				var hit = int.preciseShape.rayIntersection(ray, true);
