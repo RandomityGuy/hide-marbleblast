@@ -56,7 +56,7 @@ class MissionInfoEditor extends Popup {
 		}
 
 		for (field in fieldDefs) {
-			if (field.gameDep != null && !field.gameDep.contains(mi.gameType))
+			if (field.gameDep != null && !field.gameDep.contains(mi._gameType))
 				continue;
 			if (field.isSeparator) {
 				var elem = new Element('<tr><td></td><td><h3>${field.display}</h3></td><td></td></tr>').appendTo(tbody);
@@ -70,7 +70,7 @@ class MissionInfoEditor extends Popup {
 				}
 			} else {
 				if (!field.serialize) {
-					if (field.fieldName == "gameMode") {
+					if (field.fieldName == "gameMode" && mi._gameType == "PQ") {
 						var elem = new Element('
 						<tr>
 							<td style="width: 5px;"><input type="checkbox" id="exportcheck"/></td>
@@ -181,9 +181,8 @@ class MissionInfoEditor extends Popup {
 							}
 							field.dependencyFunc() ? elem.show() : elem.hide();
 						}
-					} else {
-						if (field.fieldName == "game") {
-							var elem = new Element('
+					} else if (field.fieldName == "game") {
+						var elem = new Element('
 						<tr>
 							<td style="width: 5px;"><input type="checkbox" id="exportcheck"/></td>
 							<td>Game</td>
@@ -197,38 +196,38 @@ class MissionInfoEditor extends Popup {
 							</select>
 							</td>
 						</tr>');
-							elem.appendTo(tbody);
+						elem.appendTo(tbody);
 
-							var gameSel = elem.find('#gameSel');
-							var exportcheck = elem.find('#exportcheck');
-							if (mi.exportFields.exists(field.fieldName)) {
-								exportcheck.prop('checked', true);
+						var gameSel = elem.find('#gameSel');
+						var exportcheck = elem.find('#exportcheck');
+						if (mi.exportFields.exists(field.fieldName)) {
+							exportcheck.prop('checked', true);
+						}
+						exportcheck.change((_) -> {
+							if (exportcheck.prop('checked')) {
+								mi.exportFields.set(field.fieldName, true);
+							} else {
+								mi.exportFields.remove(field.fieldName);
 							}
-							exportcheck.change((_) -> {
-								if (exportcheck.prop('checked')) {
-									mi.exportFields.set(field.fieldName, true);
-								} else {
-									mi.exportFields.remove(field.fieldName);
-								}
-							});
+						});
 
-							if (field.getterFn().toLowerCase().indexOf("ultra") >= 0) {
-								gameSel.val("ultra");
-							} else if (field.getterFn().toLowerCase().indexOf("platinum") >= 0) {
-								gameSel.val("platinum");
-							} else if (field.getterFn().toLowerCase().indexOf("platinumquest") >= 0) {
-								gameSel.val("platinumquest");
-							} else if (field.getterFn().toLowerCase().indexOf("custom") >= 0) {
-								gameSel.val("custom");
-							}
+						if (field.getterFn().toLowerCase().indexOf("ultra") >= 0) {
+							gameSel.val("ultra");
+						} else if (field.getterFn().toLowerCase().indexOf("platinum") >= 0) {
+							gameSel.val("platinum");
+						} else if (field.getterFn().toLowerCase().indexOf("platinumquest") >= 0) {
+							gameSel.val("platinumquest");
+						} else if (field.getterFn().toLowerCase().indexOf("custom") >= 0) {
+							gameSel.val("custom");
+						}
 
-							gameSel.change((_) -> {
-								field.setterFn(gameSel.val());
-								exportcheck.prop('checked', true);
-								propagateFieldDeps(field.fieldName);
-							});
-						} else if (field.fieldName == "customRadarRule") {
-							var elem = new Element('
+						gameSel.change((_) -> {
+							field.setterFn(gameSel.val());
+							exportcheck.prop('checked', true);
+							propagateFieldDeps(field.fieldName);
+						});
+					} else if (field.fieldName == "customRadarRule") {
+						var elem = new Element('
 							<tr>
 								<td style="width: 5px;"><input type="checkbox" id="exportcheck"/></td>
 								<td>Custom Radar Rule</td>
@@ -241,104 +240,104 @@ class MissionInfoEditor extends Popup {
 								<label>Powerups</label><input type="checkbox" id="crrpw"/><br/>
 								</td>
 							</tr>');
-							elem.appendTo(tbody);
-							var crrgem = elem.find('#crrgem');
-							var crrtt = elem.find('#crrtt');
-							var crrpad = elem.find('#crrpad');
-							var crrcheck = elem.find('#crrcheck');
-							var crrcannon = elem.find('#crrcannon');
-							var crrpw = elem.find('#crrpw');
-							var exportcheck = elem.find('#exportcheck');
-							if (mi.exportFields.exists(field.fieldName)) {
-								exportcheck.prop('checked', true);
-							}
-							exportcheck.change((_) -> {
-								if (exportcheck.prop('checked')) {
-									mi.exportFields.set(field.fieldName, true);
-								} else {
-									mi.exportFields.remove(field.fieldName);
-								}
-							});
-
-							if (field.getterFn().indexOf("$Radar") >= 0) {
-								// Its a radar rule defined by |
-								var ruleValue = field.getterFn().toLowerCase();
-								if (ruleValue.indexOf("$radar::flags::gems") >= 0)
-									crrgem.prop('checked', true);
-								if (ruleValue.indexOf("$radar::flags::timetravels") >= 0)
-									crrtt.prop('checked', true);
-								if (ruleValue.indexOf("$radar::flags::endpads") >= 0)
-									crrpad.prop('checked', true);
-								if (ruleValue.indexOf("$radar::flags::checkpoints") >= 0)
-									crrcheck.prop('checked', true);
-								if (ruleValue.indexOf("$radar::flags::cannons") >= 0)
-									crrcannon.prop('checked', true);
-								if (ruleValue.indexOf("$radar::flags::powerups") >= 0)
-									crrpw.prop('checked', true);
+						elem.appendTo(tbody);
+						var crrgem = elem.find('#crrgem');
+						var crrtt = elem.find('#crrtt');
+						var crrpad = elem.find('#crrpad');
+						var crrcheck = elem.find('#crrcheck');
+						var crrcannon = elem.find('#crrcannon');
+						var crrpw = elem.find('#crrpw');
+						var exportcheck = elem.find('#exportcheck');
+						if (mi.exportFields.exists(field.fieldName)) {
+							exportcheck.prop('checked', true);
+						}
+						exportcheck.change((_) -> {
+							if (exportcheck.prop('checked')) {
+								mi.exportFields.set(field.fieldName, true);
 							} else {
-								var ruleInt = Std.parseInt(field.getterFn());
-								if ((ruleInt & 1) != 0)
-									crrgem.prop('checked', true);
-								if ((ruleInt & 2) != 0)
-									crrtt.prop('checked', true);
-								if ((ruleInt & 4) != 0)
-									crrpad.prop('checked', true);
-								if ((ruleInt & 8) != 0)
-									crrcheck.prop('checked', true);
-								if ((ruleInt & 16) != 0)
-									crrcannon.prop('checked', true);
-								if ((ruleInt & 32) != 0)
-									crrpw.prop('checked', true);
+								mi.exportFields.remove(field.fieldName);
 							}
+						});
 
-							function buildRadarRule() {
-								var rule = 0;
-								if (crrgem.is(':checked'))
-									rule |= 1;
-								if (crrtt.is(':checked'))
-									rule |= 2;
-								if (crrpad.is(':checked'))
-									rule |= 4;
-								if (crrcheck.is(':checked'))
-									rule |= 8;
-								if (crrcannon.is(':checked'))
-									rule |= 16;
-								if (crrpw.is(':checked'))
-									rule |= 32;
-								return '${rule}';
-							}
-							crrgem.change((_) -> {
-								field.setterFn(buildRadarRule());
-								exportcheck.prop('checked', true);
-								propagateFieldDeps(field.fieldName);
-							});
-							crrtt.change((_) -> {
-								field.setterFn(buildRadarRule());
-								exportcheck.prop('checked', true);
-								propagateFieldDeps(field.fieldName);
-							});
-							crrpad.change((_) -> {
-								field.setterFn(buildRadarRule());
-								exportcheck.prop('checked', true);
-								propagateFieldDeps(field.fieldName);
-							});
-							crrcheck.change((_) -> {
-								field.setterFn(buildRadarRule());
-								exportcheck.prop('checked', true);
-								propagateFieldDeps(field.fieldName);
-							});
-							crrcannon.change((_) -> {
-								field.setterFn(buildRadarRule());
-								exportcheck.prop('checked', true);
-								propagateFieldDeps(field.fieldName);
-							});
-							crrpw.change((_) -> {
-								field.setterFn(buildRadarRule());
-								exportcheck.prop('checked', true);
-								propagateFieldDeps(field.fieldName);
-							});
-						} else if (field.fieldName == "gemGroups") {
-							var elem = new Element('
+						if (field.getterFn().indexOf("$Radar") >= 0) {
+							// Its a radar rule defined by |
+							var ruleValue = field.getterFn().toLowerCase();
+							if (ruleValue.indexOf("$radar::flags::gems") >= 0)
+								crrgem.prop('checked', true);
+							if (ruleValue.indexOf("$radar::flags::timetravels") >= 0)
+								crrtt.prop('checked', true);
+							if (ruleValue.indexOf("$radar::flags::endpads") >= 0)
+								crrpad.prop('checked', true);
+							if (ruleValue.indexOf("$radar::flags::checkpoints") >= 0)
+								crrcheck.prop('checked', true);
+							if (ruleValue.indexOf("$radar::flags::cannons") >= 0)
+								crrcannon.prop('checked', true);
+							if (ruleValue.indexOf("$radar::flags::powerups") >= 0)
+								crrpw.prop('checked', true);
+						} else {
+							var ruleInt = Std.parseInt(field.getterFn());
+							if ((ruleInt & 1) != 0)
+								crrgem.prop('checked', true);
+							if ((ruleInt & 2) != 0)
+								crrtt.prop('checked', true);
+							if ((ruleInt & 4) != 0)
+								crrpad.prop('checked', true);
+							if ((ruleInt & 8) != 0)
+								crrcheck.prop('checked', true);
+							if ((ruleInt & 16) != 0)
+								crrcannon.prop('checked', true);
+							if ((ruleInt & 32) != 0)
+								crrpw.prop('checked', true);
+						}
+
+						function buildRadarRule() {
+							var rule = 0;
+							if (crrgem.is(':checked'))
+								rule |= 1;
+							if (crrtt.is(':checked'))
+								rule |= 2;
+							if (crrpad.is(':checked'))
+								rule |= 4;
+							if (crrcheck.is(':checked'))
+								rule |= 8;
+							if (crrcannon.is(':checked'))
+								rule |= 16;
+							if (crrpw.is(':checked'))
+								rule |= 32;
+							return '${rule}';
+						}
+						crrgem.change((_) -> {
+							field.setterFn(buildRadarRule());
+							exportcheck.prop('checked', true);
+							propagateFieldDeps(field.fieldName);
+						});
+						crrtt.change((_) -> {
+							field.setterFn(buildRadarRule());
+							exportcheck.prop('checked', true);
+							propagateFieldDeps(field.fieldName);
+						});
+						crrpad.change((_) -> {
+							field.setterFn(buildRadarRule());
+							exportcheck.prop('checked', true);
+							propagateFieldDeps(field.fieldName);
+						});
+						crrcheck.change((_) -> {
+							field.setterFn(buildRadarRule());
+							exportcheck.prop('checked', true);
+							propagateFieldDeps(field.fieldName);
+						});
+						crrcannon.change((_) -> {
+							field.setterFn(buildRadarRule());
+							exportcheck.prop('checked', true);
+							propagateFieldDeps(field.fieldName);
+						});
+						crrpw.change((_) -> {
+							field.setterFn(buildRadarRule());
+							exportcheck.prop('checked', true);
+							propagateFieldDeps(field.fieldName);
+						});
+					} else if (field.fieldName == "gemGroups") {
+						var elem = new Element('
 						<tr>
 							<td style="width: 5px;"><input type="checkbox" id="exportcheck"/></td>
 							<td>Gem Groups</td>
@@ -350,39 +349,39 @@ class MissionInfoEditor extends Popup {
 							</select>
 							</td>
 						</tr>');
-							elem.appendTo(tbody);
+						elem.appendTo(tbody);
 
-							var ggSel = elem.find('#gemGroupSel');
-							var exportcheck = elem.find('#exportcheck');
-							if (mi.exportFields.exists(field.fieldName)) {
-								exportcheck.prop('checked', true);
+						var ggSel = elem.find('#gemGroupSel');
+						var exportcheck = elem.find('#exportcheck');
+						if (mi.exportFields.exists(field.fieldName)) {
+							exportcheck.prop('checked', true);
+						}
+						exportcheck.change((_) -> {
+							if (exportcheck.prop('checked')) {
+								mi.exportFields.set(field.fieldName, true);
+							} else {
+								mi.exportFields.remove(field.fieldName);
 							}
-							exportcheck.change((_) -> {
-								if (exportcheck.prop('checked')) {
-									mi.exportFields.set(field.fieldName, true);
-								} else {
-									mi.exportFields.remove(field.fieldName);
-								}
-							});
+						});
 
-							ggSel.val(field.getterFn());
+						ggSel.val(field.getterFn());
 
-							ggSel.change((_) -> {
-								field.setterFn(ggSel.val());
-								exportcheck.prop('checked', true);
-								propagateFieldDeps(field.fieldName);
-							});
+						ggSel.change((_) -> {
+							field.setterFn(ggSel.val());
+							exportcheck.prop('checked', true);
+							propagateFieldDeps(field.fieldName);
+						});
 
-							if (field.dependency != null) {
-								if (fieldDeps.exists(field.dependency)) {
-									fieldDeps.get(field.dependency).push({field: field, elem: elem});
-								} else {
-									fieldDeps.set(field.dependency, [{field: field, elem: elem}]);
-								}
-								field.dependencyFunc() ? elem.show() : elem.hide();
+						if (field.dependency != null) {
+							if (fieldDeps.exists(field.dependency)) {
+								fieldDeps.get(field.dependency).push({field: field, elem: elem});
+							} else {
+								fieldDeps.set(field.dependency, [{field: field, elem: elem}]);
 							}
-						} else {
-							var elem = !field.isBigText ? new Element('
+							field.dependencyFunc() ? elem.show() : elem.hide();
+						}
+					} else {
+						var elem = !field.isBigText ? new Element('
 						<tr>
 							<td style="width: 5px;"><input type="checkbox" id="exportcheck"/></td>
 							<td>${field.display}</td>
@@ -393,44 +392,43 @@ class MissionInfoEditor extends Popup {
 							<td>${field.display}</td>
 							<td><textarea></textarea></td>
 						</tr>');
-							elem.appendTo(tbody);
-							var exportcheck = elem.find('#exportcheck');
-							if (mi.exportFields.exists(field.fieldName)) {
-								exportcheck.prop('checked', true);
-							}
-							exportcheck.change((_) -> {
-								if (exportcheck.prop('checked')) {
-									mi.exportFields.set(field.fieldName, true);
-								} else {
-									mi.exportFields.remove(field.fieldName);
-								}
-							});
-
-							var inp = field.isBigText ? elem.find('textarea') : elem.find('#inpfield');
-							if (field.type == "Bool") {
-								inp.change((_) -> {
-									field.setterFn(inp.prop('checked'));
-									exportcheck.prop('checked', true);
-									propagateFieldDeps(field.fieldName);
-								});
-								inp.prop('checked', field.getterFn());
+						elem.appendTo(tbody);
+						var exportcheck = elem.find('#exportcheck');
+						if (mi.exportFields.exists(field.fieldName)) {
+							exportcheck.prop('checked', true);
+						}
+						exportcheck.change((_) -> {
+							if (exportcheck.prop('checked')) {
+								mi.exportFields.set(field.fieldName, true);
 							} else {
-								inp.change((_) -> {
-									field.setterFn(inp.val());
-									exportcheck.prop('checked', true);
-									propagateFieldDeps(field.fieldName);
-								});
-								inp.val(field.getterFn());
+								mi.exportFields.remove(field.fieldName);
 							}
+						});
 
-							if (field.dependency != null) {
-								if (fieldDeps.exists(field.dependency)) {
-									fieldDeps.get(field.dependency).push({field: field, elem: elem});
-								} else {
-									fieldDeps.set(field.dependency, [{field: field, elem: elem}]);
-								}
-								field.dependencyFunc() ? elem.show() : elem.hide();
+						var inp = field.isBigText ? elem.find('textarea') : elem.find('#inpfield');
+						if (field.type == "Bool") {
+							inp.change((_) -> {
+								field.setterFn(inp.prop('checked'));
+								exportcheck.prop('checked', true);
+								propagateFieldDeps(field.fieldName);
+							});
+							inp.prop('checked', field.getterFn());
+						} else {
+							inp.change((_) -> {
+								field.setterFn(inp.val());
+								exportcheck.prop('checked', true);
+								propagateFieldDeps(field.fieldName);
+							});
+							inp.val(field.getterFn());
+						}
+
+						if (field.dependency != null) {
+							if (fieldDeps.exists(field.dependency)) {
+								fieldDeps.get(field.dependency).push({field: field, elem: elem});
+							} else {
+								fieldDeps.set(field.dependency, [{field: field, elem: elem}]);
 							}
+							field.dependencyFunc() ? elem.show() : elem.hide();
 						}
 					}
 				}

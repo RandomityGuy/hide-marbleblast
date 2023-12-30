@@ -29,6 +29,7 @@ class MisFile {
 	var marbleAttributes:Map<String, String>;
 
 	var activatedPackages:Array<String>;
+	var misPath:String;
 
 	public function new() {}
 
@@ -57,6 +58,8 @@ class MisFile {
 					this.addPath(cast element, childrenDynamic);
 				case MissionElementType.StaticShape:
 					this.addStaticShape(cast element, childrenDynamic);
+				case MissionElementType.SpawnSphere:
+					this.addSpawnSphere(cast element, childrenDynamic);
 				case MissionElementType.Item:
 					this.addItem(cast element, childrenDynamic);
 				case MissionElementType.Trigger:
@@ -115,9 +118,15 @@ class MisFile {
 		}
 		var fname = rawElementPath.substring(rawElementPath.lastIndexOf('/') + 1);
 		rawElementPath = rawElementPath.toLowerCase();
+		if (StringTools.startsWith(rawElementPath, "./")) {
+			rawElementPath = rawElementPath.substring(2);
+			rawElementPath = haxe.io.Path.directory(misPath) + '/' + rawElementPath;
+		}
 		var path = StringTools.replace(rawElementPath.substring(rawElementPath.indexOf('data/')), "\"", "");
 		if (!StringTools.endsWith(path, ".dif"))
 			path += ".dif";
+		if (hxd.res.Loader.currentInstance.fs.exists(path))
+			return path;
 		if (StringTools.contains(path, 'interiors_mbg/'))
 			path = StringTools.replace(path, 'interiors_mbg/', 'interiors/');
 		var dirpath = path.substring(0, path.lastIndexOf('/') + 1);
@@ -349,6 +358,53 @@ class MisFile {
 		mat.multiply(mat, tmat);
 
 		var obj = addDTS(dataBlockLowerCase, "staticshape", mat, _jsonDynamic, element._name != null ? element._name : "", trueScale);
+		obj.dynamicFields = [];
+		obj.customFieldProvider = dataBlockLowerCase;
+		obj.customFields = [];
+
+		var dbDef = TorqueConfig.getDataBlock(dataBlockLowerCase);
+
+		for (f => v in element._dynamicFields) {
+			if (!dbDef.fieldMap.exists(f.toLowerCase())) {
+				obj.dynamicFields.push({field: f, value: v});
+			} else {
+				obj.customFields.push({field: f, value: v});
+			}
+			if (f == "skin")
+				obj.skin = v;
+		}
+	}
+
+	function addSpawnSphere(element:MissionElementStaticShape, _jsonDynamic:Array<Dynamic>) {
+		var dataBlockLowerCase = element.datablock.toLowerCase();
+
+		if (TorqueConfig.getDataBlock(dataBlockLowerCase) == null)
+			return;
+
+		var shapePosition = MisParser.parseVector3(element.position);
+		shapePosition.x = -shapePosition.x;
+		var shapeRotation = MisParser.parseRotation(element.rotation);
+		shapeRotation.x = -shapeRotation.x;
+		shapeRotation.w = -shapeRotation.w;
+		var shapeScale = MisParser.parseVector3(element.scale);
+		var trueScale = shapeScale.clone();
+
+		var zeroScale = shapeScale.x == 0 || shapeScale.y == 0 || shapeScale.z == 0;
+		if (shapeScale.x == 0)
+			shapeScale.x = 0.0015;
+		if (shapeScale.y == 0)
+			shapeScale.y = 0.0015;
+		if (shapeScale.z == 0)
+			shapeScale.z = 0.0015;
+
+		var mat = Matrix.S(shapeScale.x, shapeScale.y, shapeScale.z);
+		var tmp = new Matrix();
+		shapeRotation.toMatrix(tmp);
+		mat.multiply3x4(mat, tmp);
+		var tmat = Matrix.T(shapePosition.x, shapePosition.y, shapePosition.z);
+		mat.multiply(mat, tmat);
+
+		var obj = addDTS(dataBlockLowerCase, "spawnsphere", mat, _jsonDynamic, element._name != null ? element._name : "", trueScale);
 		obj.dynamicFields = [];
 		obj.customFieldProvider = dataBlockLowerCase;
 		obj.customFields = [];

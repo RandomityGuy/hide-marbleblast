@@ -302,6 +302,15 @@ class DifBuilder {
 				return true;
 			}
 
+			if (hrt.mis.TorqueConfig.gameType == "MBU") {
+				if (hxd.res.Loader.currentInstance.exists("data/textures/" + tex + ".jpg")) {
+					return true;
+				}
+				if (hxd.res.Loader.currentInstance.exists("data/textures/" + tex + ".png")) {
+					return true;
+				}
+			}
+
 			return false;
 		}
 
@@ -333,6 +342,15 @@ class DifBuilder {
 			}
 			if (hxd.res.Loader.currentInstance.exists(prevDir + "/" + tex + ".png")) {
 				return prevDir + "/" + tex + ".png";
+			}
+
+			if (hrt.mis.TorqueConfig.gameType == "MBU") {
+				if (hxd.res.Loader.currentInstance.exists("data/textures/" + tex + ".jpg")) {
+					return "data/textures/" + tex + ".jpg";
+				}
+				if (hxd.res.Loader.currentInstance.exists("data/textures/" + tex + ".png")) {
+					return "data/textures/" + tex + ".png";
+				}
 			}
 
 			return null;

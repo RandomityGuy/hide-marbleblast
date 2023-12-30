@@ -261,11 +261,11 @@ class Prefab extends FileView {
 
 		var isMis = StringTools.endsWith(path, ".mis");
 		if (isMis) {
-			var parser = new MisParser(content);
+			var parser = new MisParser(content, path);
 			var misfile = parser.parse();
 			data.loadData(misfile.toHeapsJSON()); // stupid indirection
 		} else if (StringTools.endsWith(path, ".mcs")) {
-			var parser = new McsParser(content);
+			var parser = new McsParser(content, path);
 			var misfile = parser.parse();
 			data.loadData(misfile.toHeapsJSON()); // stupid indirection
 		} else {
@@ -684,7 +684,7 @@ class Prefab extends FileView {
 					if (micast != null) {
 						var mi = new hrt.mis.MissionInfo();
 						mi.fromMissionInfo(micast);
-						mi.gameType = hrt.mis.TorqueConfig.gameType;
+						mi._gameType = hrt.mis.TorqueConfig.gameType;
 						return new hide.comp.MissionInfoEditor(null, e, mi);
 					}
 				}

@@ -12,7 +12,7 @@ class MissionInfo {
 	var desc:String = "Simply Indescribable";
 	@:missionInfoProperty("Game", game = ["PQ"])
 	var game:String;
-	@:missionInfoProperty("Game Mode", game = ["PQ"])
+	@:missionInfoProperty("Game Mode", game = ["PQ", "MBU"])
 	var gameMode:String = "";
 	@:missionInfoProperty(serialize)
 	var level:Int = 1000;
@@ -24,6 +24,16 @@ class MissionInfo {
 	var persistStartHelpTextTime:Int = 0;
 	@:missionInfoProperty(serialize)
 	var type:String = "Custom";
+	@:missionInfoProperty("Difficulty", game = ["MBU"])
+	var difficulty:Int;
+	@:missionInfoProperty("Game Type", game = ["MBU"])
+	var gameType:String = "SinglePlayer";
+	@:missionInfoProperty("Gem Group Count", game = ["MBU"], dependency = "gameMode", dependencyval = "", inverseDependency = true)
+	var numGems:Int;
+	@:missionInfoProperty("Gem Group Radius", game = ["MBU"], dependency = "gameMode", dependencyval = "", inverseDependency = true)
+	var gemGroupRadius:Int;
+	@:missionInfoProperty("Max Gems Per Group", game = ["MBU"], dependency = "gameMode", dependencyval = "", inverseDependency = true)
+	var maxGemsPerGroup:Int;
 
 	// Targets
 	@:missionInfoProperty("Targets", separator = true)
@@ -175,7 +185,7 @@ class MissionInfo {
 	var so:hrt.prefab.l3d.ScriptObject;
 	var exportFields:Map<String, Bool> = [];
 
-	var gameType:String = "PQ";
+	var _gameType:String = "PQ";
 
 	public function new() {}
 }

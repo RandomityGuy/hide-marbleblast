@@ -13,6 +13,7 @@ import hrt.mis.MissionElement.MissionElementTrigger;
 import hrt.mis.MissionElement.MissionElementMarker;
 import hrt.mis.MissionElement.MissionElementItem;
 import hrt.mis.MissionElement.MissionElementStaticShape;
+import hrt.mis.MissionElement.MissionElementSpawnSphere;
 import hrt.mis.MissionElement.MissionElementInteriorInstance;
 import hrt.mis.MissionElement.MissionElementSun;
 import hrt.mis.MissionElement.MissionElementSky;
@@ -34,9 +35,11 @@ class MisParser {
 	var index = 0;
 	var currentElementId = 0;
 	var variables:Map<String, String>;
+	var path:String;
 
-	public function new(text:String) {
+	public function new(text:String, path:String) {
 		this.text = text;
+		this.path = path;
 	}
 
 	public function parse() {
@@ -122,6 +125,7 @@ class MisParser {
 		}
 
 		var mf = new MisFile();
+		mf.misPath = path;
 		mf.root = cast elements[0];
 		mf.marbleAttributes = marbleAttributes;
 		mf.activatedPackages = activatedPackages;
@@ -158,6 +162,8 @@ class MisParser {
 				element = this.readInteriorInstance(name);
 			case "StaticShape":
 				element = this.readStaticShape(name);
+			case "SpawnSphere":
+				element = this.readSpawnSphere(name);
 			case "Item":
 				element = this.readItem(name);
 			case "Path":
@@ -337,6 +343,14 @@ class MisParser {
 	function readStaticShape(name:String) {
 		var obj = new MissionElementStaticShape();
 		obj._type = MissionElementType.StaticShape;
+		obj._name = name;
+		copyFields(obj);
+		return obj;
+	}
+
+	function readSpawnSphere(name:String) {
+		var obj = new MissionElementSpawnSphere();
+		obj._type = MissionElementType.SpawnSphere;
 		obj._name = name;
 		copyFields(obj);
 		return obj;

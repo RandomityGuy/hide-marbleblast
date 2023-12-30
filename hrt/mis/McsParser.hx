@@ -24,9 +24,11 @@ import hrt.mis.MissionElement.MissionElementScriptObject;
 class McsParser {
 	var text:String;
 	var misParser:MisParser;
+	var path:String;
 
-	public function new(text:String) {
+	public function new(text:String, path:String) {
 		this.text = text;
+		this.path = path;
 	}
 
 	public function parse() {
@@ -39,7 +41,7 @@ class McsParser {
 		var minfo = getMissionInfo();
 		minfo.root._name = 'MissionInfo';
 
-		misParser = new MisParser(misData);
+		misParser = new MisParser(misData, path);
 		var mdata = misParser.parse();
 		mdata.root.elements.insert(0, minfo.root);
 		return mdata;
@@ -50,7 +52,7 @@ class McsParser {
 		var indexOfMIStart = this.text.indexOf('new ScriptObject()', indexOfGMI);
 		var infoEnd = this.text.indexOf('};');
 		var miData = this.text.substring(indexOfMIStart, infoEnd + 2);
-		var miParser = new MisParser("//--- OBJECT WRITE BEGIN ---\n" + miData + "//--- OBJECT WRITE END ---\n");
+		var miParser = new MisParser("//--- OBJECT WRITE BEGIN ---\n" + miData + "//--- OBJECT WRITE END ---\n", path);
 		var miRoot = miParser.parse();
 		return miRoot;
 	}

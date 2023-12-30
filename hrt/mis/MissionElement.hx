@@ -8,6 +8,7 @@ enum MissionElementType {
 	Sun;
 	InteriorInstance;
 	StaticShape;
+	SpawnSphere;
 	Item;
 	Path;
 	Marker;
@@ -186,6 +187,30 @@ class MissionElementStaticShape extends MissionElementBase {
 
 	public function write(mw:MisWriter) {
 		mw.writeLine('new StaticShape(${this._name != null ? this._name : ""}) {');
+		mw.indent();
+		mw.writeLine('position = "${this.position}";');
+		mw.writeLine('rotation = "${this.rotation}";');
+		mw.writeLine('scale = "${this.scale}";');
+		mw.writeLine('datablock = "${this.datablock}";');
+		writeDynFields(mw);
+		mw.unindent();
+		mw.writeLine('};');
+	}
+}
+
+@:publicFields
+class MissionElementSpawnSphere extends MissionElementBase {
+	var position:String;
+	var rotation:String;
+	var scale:String;
+	var datablock:String;
+
+	public function new() {
+		_type = MissionElementType.SpawnSphere;
+	}
+
+	public function write(mw:MisWriter) {
+		mw.writeLine('new SpawnSphere(${this._name != null ? this._name : ""}) {');
 		mw.indent();
 		mw.writeLine('position = "${this.position}";');
 		mw.writeLine('rotation = "${this.rotation}";');
