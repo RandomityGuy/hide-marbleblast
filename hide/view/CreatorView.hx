@@ -40,8 +40,6 @@ class CreatorView extends hide.ui.View<{}> {
 			</div>
 			</div>').appendTo(element);
 
-		TorqueConfig.init();
-
 		var creatorSelect = panel.find("#creator-category");
 		var kvi = new haxe.iterators.DynamicAccessKeyValueIterator(TorqueConfig.creatorMenuJson.shapes);
 

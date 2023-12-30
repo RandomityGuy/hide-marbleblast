@@ -622,8 +622,6 @@ class SceneEditor {
 				}
 			}
 		}
-
-		hrt.mis.TorqueConfig.init(); // Load torque stuff
 	}
 
 	public function getSnapStatus():Bool {

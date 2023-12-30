@@ -34,13 +34,10 @@ class TorqueConfig {
 
 	static var datablockDb:Map<String, ShapeCreatorMenuJson>;
 
-	static var _init = false;
-
 	public static var gameType:String;
 
 	public static function init() {
-		if (creatorMenuJson == null) {
-			_init = true;
+		if (hxd.res.Loader.currentInstance.fs.exists("datablocks.json")) {
 			creatorMenuJson = haxe.Json.parse(hxd.res.Loader.currentInstance.fs.get("datablocks.json").getText());
 			gameType = creatorMenuJson.gameType;
 
@@ -74,8 +71,6 @@ class TorqueConfig {
 	}
 
 	public static function getDataBlock(id:String) {
-		if (!_init)
-			init();
 		return datablockDb[id.toLowerCase()];
 	}
 }

@@ -412,7 +412,6 @@ class Ide {
 			if( subView == null && views.length == 0 ) {
 				open("hide.view.FileTree",{path:""});
 			}
-			open("hide.view.CreatorView", {});
 			if( firstInit ) {
 				firstInit = false;
 				for( file in nw.App.argv ) {
@@ -668,6 +667,7 @@ class Ide {
 			}
 			h3d.mat.MaterialSetup.current = render;
 
+			hrt.mis.TorqueConfig.init(); // Load torque stuff
 			initMenu();
 			initLayout();
 		});

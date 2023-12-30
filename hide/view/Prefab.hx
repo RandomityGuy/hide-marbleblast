@@ -254,6 +254,8 @@ class Prefab extends FileView {
 		if (sceneEditor != null)
 			sceneEditor.dispose();
 
+		hide.Ide.inst.open("hide.view.CreatorView", {}); // Open the creator
+
 		data = new hrt.prefab.Library();
 
 		var path = getPath();
