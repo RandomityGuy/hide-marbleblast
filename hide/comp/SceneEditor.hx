@@ -607,7 +607,6 @@ class SceneEditor {
 				reparentElement(children, parent, 0);
 			}
 		});
-		view.keys.register("sceneeditor.editPivot", {name: "Edit Pivot", category: "Scene"}, editPivot);
 		view.keys.register("sceneeditor.gatherToMouse", {name: "Gather to mouse", category: "Scene"}, gatherToMouse);
 
 		// Load display state
@@ -736,7 +735,7 @@ class SceneEditor {
 				cameraController.set(r, null, null, s.getCenter());
 			} else {
 				centroid.scale3(1.0 / objs.length);
-				cameraController.set(centroid.toPoint());
+				cameraController.set(5.0, null, null, centroid.toPoint());
 			}
 		}
 		lastFocusObjects = objs;
@@ -4015,38 +4014,6 @@ class SceneEditor {
 				o = o.parent.to(hrt.prefab.Object3D);
 			}
 			return mat;
-		}
-	}
-
-	function editPivot() {
-		if (curEdit.rootObjects.length == 1) {
-			var ray = scene.s3d.camera.rayFromScreen(scene.s2d.mouseX, scene.s2d.mouseY);
-			var polyColliders = new Array<PolygonBuffer>();
-			var meshes = new Array<Mesh>();
-			for (m in curEdit.rootObjects[0].getMeshes()) {
-				var hmdModel = Std.downcast(m.primitive, HMDModel);
-				if (hmdModel != null) {
-					var optiCollider = Std.downcast(hmdModel.getCollider(), OptimizedCollider);
-					var polyCollider = Std.downcast(optiCollider.b, PolygonBuffer);
-					if (polyCollider != null) {
-						polyColliders.push(polyCollider);
-						meshes.push(m);
-					}
-				}
-			}
-			if (polyColliders.length > 0) {
-				var pivot = getClosestVertex(polyColliders, meshes, ray);
-				if (pivot != null) {
-					pivot.elt = curEdit.rootElements[0];
-					customPivot = pivot;
-				} else {
-					// mouse outside
-				}
-			} else {
-				// no collider found
-			}
-		} else {
-			throw "Can't edit when multiple objects are selected";
 		}
 	}
 
