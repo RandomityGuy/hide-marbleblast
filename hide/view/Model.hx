@@ -562,9 +562,10 @@ class Model extends FileView {
 			var q = new h3d.Quat();
 			q.initDirection(new h3d.Vector(-0.28,0.83,-0.47));
 			var a = q.toEuler();
-			l.rotationX = Math.round(a.x * 180 / Math.PI);
-			l.rotationY = Math.round(a.y * 180 / Math.PI);
-			l.rotationZ = Math.round(a.z * 180 / Math.PI);
+			l.rotationX = q.x;
+			l.rotationY = q.y;
+			l.rotationZ = q.z;
+			l.rotationW = q.w;
 			l.shadows.mode = Dynamic;
 			l.shadows.size = 1024;
 

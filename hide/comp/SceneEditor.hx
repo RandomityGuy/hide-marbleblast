@@ -1934,9 +1934,15 @@ class SceneEditor {
 					}
 
 					if (rot != null) {
-						obj3d.rotationX = quantize(M.radToDeg(euler.x), rotQuant);
-						obj3d.rotationY = quantize(M.radToDeg(euler.y), rotQuant);
-						obj3d.rotationZ = quantize(M.radToDeg(euler.z), rotQuant);
+						var rotQX = quantize(M.radToDeg(euler.x), rotQuant);
+						var rotQY = quantize(M.radToDeg(euler.y), rotQuant);
+						var rotQZ = quantize(M.radToDeg(euler.z), rotQuant);
+						var q = new h3d.Quat();
+						q.initRotation(rotQX, rotQY, rotQZ);
+						obj3d.rotationX = q.x;
+						obj3d.rotationY = q.y;
+						obj3d.rotationZ = q.z;
+						obj3d.rotationW = q.w;
 					}
 
 					if (scale != null) {
@@ -3492,6 +3498,8 @@ class SceneEditor {
 	}
 
 	function makeTransform(mat:h3d.Matrix) {
+		var q = new h3d.Quat();
+		q.initRotateMatrix(mat);
 		var rot = mat.getEulerAngles();
 		var x = mat.tx;
 		var y = mat.ty;
@@ -3500,9 +3508,6 @@ class SceneEditor {
 		var scaleX = s.x;
 		var scaleY = s.y;
 		var scaleZ = s.z;
-		var rotationX = hxd.Math.radToDeg(rot.x);
-		var rotationY = hxd.Math.radToDeg(rot.y);
-		var rotationZ = hxd.Math.radToDeg(rot.z);
 		return {
 			x: x,
 			y: y,
@@ -3510,9 +3515,10 @@ class SceneEditor {
 			scaleX: scaleX,
 			scaleY: scaleY,
 			scaleZ: scaleZ,
-			rotationX: rotationX,
-			rotationY: rotationY,
-			rotationZ: rotationZ
+			rotationX: q.x,
+			rotationY: q.y,
+			rotationZ: q.z,
+			rotationW: q.w
 		};
 	}
 

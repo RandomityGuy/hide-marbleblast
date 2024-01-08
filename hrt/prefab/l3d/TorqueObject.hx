@@ -46,7 +46,8 @@ class TorqueObject extends Object3D {
 		if (sz == 0)
 			sz = 0.0001;
 		m.initScale(sx, sy, sz);
-		m.rotate(hxd.Math.degToRad(rotationX), hxd.Math.degToRad(rotationY), hxd.Math.degToRad(rotationZ));
+		var rot = new Quat(rotationX, rotationY, rotationZ, rotationW);
+		m.multiply(m, rot.toMatrix());
 		m.translate(x, y, z);
 		return m;
 	}
@@ -69,7 +70,7 @@ class TorqueObject extends Object3D {
 		o.scaleX = sx;
 		o.scaleY = sy;
 		o.scaleZ = sz;
-		o.setRotation(hxd.Math.degToRad(rotationX), hxd.Math.degToRad(rotationY), hxd.Math.degToRad(rotationZ));
+		o.setRotationQuat(new Quat(rotationX, rotationY, rotationZ, rotationW));
 		if (propertyProvider != null)
 			propertyProvider.onTransformApplied();
 	}

@@ -101,8 +101,7 @@ class MisConverter {
 		ss.datablock = data.customFieldProvider;
 		ss.position = '${- (data.x ?? 0.0)} ${data.y ?? 0.0} ${data.z ?? 0.0}';
 		ss.scale = '${data.scaleX ?? 1.0} ${data.scaleY ?? 1.0} ${data.scaleZ ?? 1.0}';
-		var quat = new h3d.Quat();
-		quat.initRotation((data.rotationX ?? 0.0) * Math.PI / 180.0, (data.rotationY ?? 0.0) * Math.PI / 180.0, (data.rotationZ ?? 0.0) * Math.PI / 180.0);
+		var quat = new h3d.Quat(data.rotationX ?? 0.0, data.rotationY ?? 0.0, data.rotationZ ?? 0.0, data.rotationW ?? 1.0);
 		quat.x = -quat.x;
 		quat.w = -quat.w;
 		var angle = 2 * Math.acos(quat.w);
@@ -129,8 +128,7 @@ class MisConverter {
 		ss._name = data.name;
 		ss.position = '${- (data.x ?? 0.0)} ${data.y ?? 0.0} ${data.z ?? 0.0}';
 		ss.scale = '${data.scaleX ?? 1.0} ${data.scaleY ?? 1.0} ${data.scaleZ ?? 1.0}';
-		var quat = new h3d.Quat();
-		quat.initRotation((data.rotationX ?? 0.0) * Math.PI / 180.0, (data.rotationY ?? 0.0) * Math.PI / 180.0, (data.rotationZ ?? 0.0) * Math.PI / 180.0);
+		var quat = new h3d.Quat(data.rotationX ?? 0.0, data.rotationY ?? 0.0, data.rotationZ ?? 0.0, data.rotationW ?? 1.0);
 		quat.x = -quat.x;
 		quat.w = -quat.w;
 		var angle = 2 * Math.acos(quat.w);
@@ -159,8 +157,7 @@ class MisConverter {
 		ss.datablock = data.customFieldProvider;
 		ss.position = '${- (data.x ?? 0.0)} ${data.y ?? 0.0} ${data.z ?? 0.0}';
 		ss.scale = '${data.scaleX ?? 1.0} ${data.scaleY ?? 1.0} ${data.scaleZ ?? 1.0}';
-		var quat = new h3d.Quat();
-		quat.initRotation((data.rotationX ?? 0.0) * Math.PI / 180.0, (data.rotationY ?? 0.0) * Math.PI / 180.0, (data.rotationZ ?? 0.0) * Math.PI / 180.0);
+		var quat = new h3d.Quat(data.rotationX ?? 0.0, data.rotationY ?? 0.0, data.rotationZ ?? 0.0, data.rotationW ?? 1.0);
 		quat.x = -quat.x;
 		quat.w = -quat.w;
 		var angle = 2 * Math.acos(quat.w);
@@ -193,8 +190,7 @@ class MisConverter {
 		t.datablock = data.customFieldProvider;
 		t.position = '${- (data.x ?? 0.0)} ${data.y ?? 0.0} ${data.z ?? 0.0}';
 		t.scale = '${data.scaleX ?? 1.0} ${data.scaleY ?? 1.0} ${data.scaleZ ?? 1.0}';
-		var quat = new h3d.Quat();
-		quat.initRotation((data.rotationX ?? 0.0) * Math.PI / 180.0, (data.rotationY ?? 0.0) * Math.PI / 180.0, (data.rotationZ ?? 0.0) * Math.PI / 180.0);
+		var quat = new h3d.Quat(data.rotationX ?? 0.0, data.rotationY ?? 0.0, data.rotationZ ?? 0.0, data.rotationW ?? 1.0);
 		quat.x = -quat.x;
 		quat.w = -quat.w;
 		var angle = 2 * Math.acos(quat.w);
@@ -223,8 +219,7 @@ class MisConverter {
 		ss._name = data.name;
 		ss.position = '${- (data.x ?? 0.0)} ${data.y ?? 0.0} ${data.z ?? 0.0}';
 		ss.scale = '${data.scaleX ?? 1.0} ${data.scaleY ?? 1.0} ${data.scaleZ ?? 1.0}';
-		var quat = new h3d.Quat();
-		quat.initRotation((data.rotationX ?? 0.0) * Math.PI / 180.0, (data.rotationY ?? 0.0) * Math.PI / 180.0, (data.rotationZ ?? 0.0) * Math.PI / 180.0);
+		var quat = new h3d.Quat(data.rotationX ?? 0.0, data.rotationY ?? 0.0, data.rotationZ ?? 0.0, data.rotationW ?? 1.0);
 		quat.x = -quat.x;
 		quat.w = -quat.w;
 		var angle = 2 * Math.acos(quat.w);
@@ -258,8 +253,7 @@ class MisConverter {
 			marker._name = ch.name;
 			marker.position = '${- (ch.x ?? 0.0)} ${ch.y ?? 0.0} ${ch.z ?? 0.0}';
 			marker.scale = '${ch.scaleX ?? 1.0} ${ch.scaleY ?? 1.0} ${ch.scaleZ ?? 1.0}';
-			var quat = new h3d.Quat();
-			quat.initRotation((ch.rotationX ?? 0.0) * Math.PI / 180.0, (ch.rotationY ?? 0.0) * Math.PI / 180.0, (ch.rotationZ ?? 0.0) * Math.PI / 180.0);
+			var quat = new h3d.Quat(data.rotationX ?? 0.0, data.rotationY ?? 0.0, data.rotationZ ?? 0.0, data.rotationW ?? 1.0);
 			quat.x = -quat.x;
 			quat.w = -quat.w;
 			var angle = 2 * Math.acos(quat.w);
@@ -297,8 +291,7 @@ class MisConverter {
 		ss.scale = '1 1 1';
 		ss.baseposition = '${- (data.x ?? 0.0)} ${data.y ?? 0.0} ${data.z ?? 0.0}';
 		ss.basescale = '${data.scaleX ?? 1.0} ${data.scaleY ?? 1.0} ${data.scaleZ ?? 1.0}';
-		var quat = new h3d.Quat();
-		quat.initRotation((data.rotationX ?? 0.0) * Math.PI / 180.0, (data.rotationY ?? 0.0) * Math.PI / 180.0, (data.rotationZ ?? 0.0) * Math.PI / 180.0);
+		var quat = new h3d.Quat(data.rotationX ?? 0.0, data.rotationY ?? 0.0, data.rotationZ ?? 0.0, data.rotationW ?? 1.0);
 		quat.x = -quat.x;
 		quat.w = -quat.w;
 		var angle = 2 * Math.acos(quat.w);

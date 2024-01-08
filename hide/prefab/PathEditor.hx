@@ -340,9 +340,15 @@ class PathEditor {
 					obj3d.x = quantize(newMat.tx, posQuant);
 					obj3d.y = quantize(newMat.ty, posQuant);
 					obj3d.z = quantize(newMat.tz, posQuant);
-					obj3d.rotationX = quantize(hxd.Math.radToDeg(rot.x), rotQuant);
-					obj3d.rotationY = quantize(hxd.Math.radToDeg(rot.y), rotQuant);
-					obj3d.rotationZ = quantize(hxd.Math.radToDeg(rot.z), rotQuant);
+					var rotQX = quantize(hxd.Math.radToDeg(rot.x), rotQuant);
+					var rotQY = quantize(hxd.Math.radToDeg(rot.y), rotQuant);
+					var rotQZ = quantize(hxd.Math.radToDeg(rot.z), rotQuant);
+					var q = new h3d.Quat();
+					q.initRotation(rotQX, rotQY, rotQZ);
+					obj3d.rotationX = q.x;
+					obj3d.rotationY = q.y;
+					obj3d.rotationZ = q.z;
+					obj3d.rotationW = q.w;
 					if (scale != null) {
 						inline function scaleSnap(x:Float) {
 							if (K.isDown(K.CTRL)) {

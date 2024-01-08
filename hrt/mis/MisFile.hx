@@ -2,6 +2,7 @@ package hrt.mis;
 
 import h3d.Vector;
 import h3d.Matrix;
+import h3d.Quat;
 import hrt.mis.MissionElement.MissionElementSimGroup;
 import hrt.mis.MissionElement.MissionElementPathedInterior;
 import hrt.mis.MissionElement.MissionElementPath;
@@ -187,9 +188,10 @@ class MisFile {
 			scaleX: s.x,
 			scaleY: s.y,
 			scaleZ: s.z,
-			rotationX: rot.x * 180.0 / Math.PI,
-			rotationY: rot.y * 180.0 / Math.PI,
-			rotationZ: rot.z * 180.0 / Math.PI,
+			rotationX: interiorRotation.x,
+			rotationY: interiorRotation.y,
+			rotationZ: interiorRotation.z,
+			rotationW: interiorRotation.w,
 			dynamicFields: []
 		};
 
@@ -241,9 +243,10 @@ class MisFile {
 			scaleX: s.x,
 			scaleY: s.y,
 			scaleZ: s.z,
-			rotationX: rot.x * 180.0 / Math.PI,
-			rotationY: rot.y * 180.0 / Math.PI,
-			rotationZ: rot.z * 180.0 / Math.PI,
+			rotationX: interiorRotation.x,
+			rotationY: interiorRotation.y,
+			rotationZ: interiorRotation.z,
+			rotationW: interiorRotation.w,
 			initialTargetPosition: targetPos,
 			initialPathPosition: pathPos,
 			pathType: switch (targetPos) {
@@ -303,9 +306,10 @@ class MisFile {
 				scaleX: s.x,
 				scaleY: s.y,
 				scaleZ: s.z,
-				rotationX: rot.x * 180.0 / Math.PI,
-				rotationY: rot.y * 180.0 / Math.PI,
-				rotationZ: rot.z * 180.0 / Math.PI,
+				rotationX: shapeRotation.x,
+				rotationY: shapeRotation.y,
+				rotationZ: shapeRotation.z,
+				rotationW: shapeRotation.w,
 				seqNum: MisParser.parseNumber(marker.seqnum),
 				msToNext: MisParser.parseNumber(marker.mstonext),
 				smoothingType: switch (marker.smoothingtype) {
@@ -357,7 +361,7 @@ class MisFile {
 		var tmat = Matrix.T(shapePosition.x, shapePosition.y, shapePosition.z);
 		mat.multiply(mat, tmat);
 
-		var obj = addDTS(dataBlockLowerCase, "staticshape", mat, _jsonDynamic, element._name != null ? element._name : "", trueScale);
+		var obj = addDTS(dataBlockLowerCase, "staticshape", mat, shapeRotation, _jsonDynamic, element._name != null ? element._name : "", trueScale);
 		obj.dynamicFields = [];
 		obj.customFieldProvider = dataBlockLowerCase;
 		obj.customFields = [];
@@ -404,7 +408,7 @@ class MisFile {
 		var tmat = Matrix.T(shapePosition.x, shapePosition.y, shapePosition.z);
 		mat.multiply(mat, tmat);
 
-		var obj = addDTS(dataBlockLowerCase, "spawnsphere", mat, _jsonDynamic, element._name != null ? element._name : "", trueScale);
+		var obj = addDTS(dataBlockLowerCase, "spawnsphere", mat, shapeRotation, _jsonDynamic, element._name != null ? element._name : "", trueScale);
 		obj.dynamicFields = [];
 		obj.customFieldProvider = dataBlockLowerCase;
 		obj.customFields = [];
@@ -451,7 +455,7 @@ class MisFile {
 		var tmat = Matrix.T(shapePosition.x, shapePosition.y, shapePosition.z);
 		mat.multiply(mat, tmat);
 
-		var itemObj = addDTS(dataBlockLowerCase, "item", mat, _jsonDynamic, element._name != null ? element._name : "", trueScale);
+		var itemObj = addDTS(dataBlockLowerCase, "item", mat, shapeRotation, _jsonDynamic, element._name != null ? element._name : "", trueScale);
 		itemObj.isStatic = element.isStatic;
 		itemObj.rotate = element.rotate;
 		itemObj.collideable = element.collideable;
@@ -500,9 +504,10 @@ class MisFile {
 			scaleX: s.x,
 			scaleY: s.y,
 			scaleZ: s.z,
-			rotationX: rot.x * 180.0 / Math.PI,
-			rotationY: rot.y * 180.0 / Math.PI,
-			rotationZ: rot.z * 180.0 / Math.PI,
+			rotationX: quat.x,
+			rotationY: quat.y,
+			rotationZ: quat.z,
+			rotationW: quat.w,
 			origin: {
 				x: origin.x,
 				y: origin.y,
@@ -580,9 +585,10 @@ class MisFile {
 			scaleX: trueScale.x,
 			scaleY: trueScale.y,
 			scaleZ: trueScale.z,
-			rotationX: rot.x * 180.0 / Math.PI,
-			rotationY: rot.y * 180.0 / Math.PI,
-			rotationZ: rot.z * 180.0 / Math.PI,
+			rotationX: shapeRotation.x,
+			rotationY: shapeRotation.y,
+			rotationZ: shapeRotation.z,
+			rotationW: shapeRotation.w,
 		}
 		_jsonDynamic.push(obj);
 		obj.dynamicFields = [];
@@ -592,11 +598,9 @@ class MisFile {
 		}
 	}
 
-	function addDTS(datablock:String, type:String, mat:Matrix, _jsonDynamic:Array<Dynamic>, name:String, actualScale:Vector):Dynamic {
+	function addDTS(datablock:String, type:String, mat:Matrix, rot:Quat, _jsonDynamic:Array<Dynamic>, name:String, actualScale:Vector):Dynamic {
 		var dbData = TorqueConfig.getDataBlock(datablock);
 		var dtsPath = StringTools.replace(StringTools.replace(dbData.shapefile.toLowerCase(), "marble/", ""), "platinum/", "");
-
-		var rot = mat.getEulerAngles();
 
 		var obj:Dynamic = {
 			type: type,
@@ -609,9 +613,10 @@ class MisFile {
 			scaleX: actualScale.x,
 			scaleY: actualScale.y,
 			scaleZ: actualScale.z,
-			rotationX: rot.x * 180.0 / Math.PI,
-			rotationY: rot.y * 180.0 / Math.PI,
-			rotationZ: rot.z * 180.0 / Math.PI,
+			rotationX: rot.x,
+			rotationY: rot.y,
+			rotationZ: rot.z,
+			rotationW: rot.w
 		}
 		_jsonDynamic.push(obj);
 		return obj;

@@ -129,7 +129,7 @@ class Light extends Object3D {
 		o.x = x;
 		o.y = y;
 		o.z = z;
-		o.setRotation(hxd.Math.degToRad(rotationX), hxd.Math.degToRad(rotationY), hxd.Math.degToRad(rotationZ));
+		o.setRotationQuat(new h3d.Quat(rotationX, rotationY, rotationZ, rotationW));
 	}
 
 	function initTexture( path : String, ?wrap : h3d.mat.Data.Wrap ) {

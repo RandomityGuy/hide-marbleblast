@@ -257,7 +257,9 @@ class Prefab extends FileView {
 			for (v in cviews) {
 				v.close();
 			}
-			hide.Ide.inst.open("hide.view.Welcome", {});
+			haxe.Timer.delay(() -> {
+				hide.Ide.inst.open("hide.view.Welcome", {});
+			}, 500);
 		}
 	}
 

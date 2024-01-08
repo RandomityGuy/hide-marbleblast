@@ -86,6 +86,8 @@ class CreatorView extends hide.ui.View<{}> {
 				return;
 			var e:haxe.DynamicAccess<Array<hrt.mis.TorqueConfig.ShapeCreatorMenuJson>> = cast TorqueConfig.creatorMenuJson.shapes;
 			var shapes = e.get(category);
+			if (shapes == null)
+				return;
 
 			creatorGrid.empty();
 

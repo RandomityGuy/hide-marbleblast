@@ -314,7 +314,8 @@ class PathNodeAnimator {
 	function getPathTransform(node:PathNode, t:Float) {
 		var pos = null;
 		var rot = new Matrix();
-		rot.initRotation(node.prefab.rotationX * Math.PI / 180, node.prefab.rotationY * Math.PI / 180, node.prefab.rotationZ * Math.PI / 180);
+		var q = new h3d.Quat(node.prefab.rotationX, node.prefab.rotationY, node.prefab.rotationZ, node.prefab.rotationW);
+		rot = q.toMatrix();
 		var scale = null;
 		if (node.usePosition) {
 			pos = getPathPosition(node, t);
