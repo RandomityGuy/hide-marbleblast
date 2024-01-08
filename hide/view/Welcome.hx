@@ -31,7 +31,10 @@ class Welcome extends hide.ui.View<{}> {
 		for (opt in hide.Ide.inst.ideConfig.recentProjects) {
 			var optElement = new Element('<span><div class="ico icon ico-folder"></div> ${opt}</span>');
 			optElement.on('click', () -> {
-				@:privateAccess hide.Ide.inst.setProject(opt);
+				if (sys.FileSystem.exists(haxe.io.Path.join([opt, "datablocks.json"])))
+					@:privateAccess hide.Ide.inst.setProject(opt);
+				else
+					js.Browser.alert("Chosen directory does not appear to contain datablock definitions.");
 			});
 			optElement.appendTo(recentOptions);
 		}
@@ -43,7 +46,10 @@ class Welcome extends hide.ui.View<{}> {
 					return;
 				if (StringTools.endsWith(dir, "/res") || StringTools.endsWith(dir, "\\res"))
 					dir = dir.substr(0, -4);
-				@:privateAccess hide.Ide.inst.setProject(dir);
+				if (sys.FileSystem.exists(haxe.io.Path.join([dir, "datablocks.json"])))
+					@:privateAccess hide.Ide.inst.setProject(dir);
+				else
+					js.Browser.alert("Chosen directory does not appear to contain datablock definitions.");
 			}, true);
 		});
 	}

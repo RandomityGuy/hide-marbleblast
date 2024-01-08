@@ -998,7 +998,10 @@ class Ide {
 				if( dir == null ) return;
 				if( StringTools.endsWith(dir,"/res") || StringTools.endsWith(dir,"\\res") )
 					dir = dir.substr(0,-4);
-				setProject(dir);
+				if (sys.FileSystem.exists(haxe.io.Path.join([dir, "datablocks.json"])))
+					setProject(dir);
+				else
+					js.Browser.alert("Chosen directory does not appear to contain datablock definitions.");
 			}, true);
 		});
 		menu.find(".project .clear").click(function(_) {
