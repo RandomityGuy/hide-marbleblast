@@ -1082,31 +1082,10 @@ class SceneEditor {
 			var isObj = current != null && (current.to(Object3D) != null || current.to(Object2D) != null);
 			var isRef = isReference(current);
 
-			if (current != null) {
-				menuItems.push({
-					label: "Enable",
-					checked: current.enabled,
-					stayOpen: true,
-					click: function() setEnabled(curEdit.elements, !current.enabled)
-				});
-				menuItems.push({
-					label: "Editor only",
-					checked: current.editorOnly,
-					stayOpen: true,
-					click: function() setEditorOnly(curEdit.elements, !current.editorOnly)
-				});
-				menuItems.push({
-					label: "In game only",
-					checked: current.inGameOnly,
-					stayOpen: true,
-					click: function() setInGameOnly(curEdit.elements, !current.inGameOnly)
-				});
-			}
-
 			if (isObj) {
 				menuItems = menuItems.concat([
 					{
-						label: "Show in editor",
+						label: "Visible",
 						checked: !isHidden(current),
 						stayOpen: true,
 						click: function() setVisible(curEdit.elements, isHidden(current)),
@@ -1134,12 +1113,6 @@ class SceneEditor {
 							keys: view.config.get("key.group")
 						},
 					]);
-			}
-
-			if (current != null) {
-				var menu = getTagMenu(current);
-				if (menu != null)
-					menuItems.push({label: "Tag", menu: menu});
 			}
 
 			menuItems.push({isSeparator: true, label: ""});
