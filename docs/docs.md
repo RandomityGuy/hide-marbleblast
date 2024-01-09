@@ -7,8 +7,8 @@ TODO
 
 ## Preparing your Marble Blast
 The datablocks folder contains the necessary json configuration files that you must put in your copy of Marble Blast to enable the editor's support for it.  
-For Marble Blast Gold: Copy datablocks-mbg.json folder to MBG/marble folder and rename it to datablocks.json
-For PlatinumQuest: Copy datablocks-pq.json folder to PlatinumQuest/platinum folder and rename it to datablocks.json
+For Marble Blast Gold: Copy datablocks-mbg.json folder to MBG/marble folder and rename it to datablocks.json  
+For PlatinumQuest: Copy datablocks-pq.json folder to PlatinumQuest/platinum folder and rename it to datablocks.json  
 For Marble Blast Ultra: The mbu folder contains the compatible folder structure that you must open in the editor instead. MBU support is strictly limited to that folder due to file format differences in the OpenMBU distribution.
 
 ## Starting
