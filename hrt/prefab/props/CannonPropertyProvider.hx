@@ -35,7 +35,7 @@ class CannonPropertyProvider extends PropertyProvider {
 	}
 
 	function updateCannonParams(ctx:Context) {
-		var rotQuat = ctx.local3d.getRotationQuat();
+		var rotQuat = ctx.local3d.getRotationQuat().clone();
 		rotQuat.x *= -1;
 		rotQuat.w *= -1;
 		var rotMat = new Matrix();
