@@ -24,6 +24,9 @@ class MisConverter {
 			case "staticshape":
 				return convertStaticShape(data);
 
+			case 'spawnsphere':
+				return convertSpawnSphere(data);
+
 			case "tsstatic":
 				return convertTSStatic(data);
 
@@ -97,6 +100,34 @@ class MisConverter {
 
 	function convertStaticShape(data:Dynamic) {
 		var ss = new hrt.mis.MissionElement.MissionElementStaticShape();
+		ss._name = data.name;
+		ss.datablock = data.customFieldProvider;
+		ss.position = '${- (data.x ?? 0.0)} ${data.y ?? 0.0} ${data.z ?? 0.0}';
+		ss.scale = '${data.scaleX ?? 1.0} ${data.scaleY ?? 1.0} ${data.scaleZ ?? 1.0}';
+		var quat = new h3d.Quat(data.rotationX ?? 0.0, data.rotationY ?? 0.0, data.rotationZ ?? 0.0, data.rotationW ?? 1.0);
+		quat.x = -quat.x;
+		quat.w = -quat.w;
+		var angle = 2 * Math.acos(quat.w);
+		var s = Math.sqrt(1 - quat.w * quat.w);
+		var x, y, z;
+		if (s < 0.001) {
+			x = quat.x;
+			y = quat.y;
+			z = quat.z;
+		} else {
+			x = quat.x / s;
+			y = quat.y / s;
+			z = quat.z / s;
+		}
+		angle = (angle * -180.0 / Math.PI) % 360.0;
+		ss.rotation = '${x} ${y} ${z} ${angle}';
+		convertDynFields(data, ss);
+
+		return ss;
+	}
+
+	function convertSpawnSphere(data:Dynamic) {
+		var ss = new hrt.mis.MissionElement.MissionElementSpawnSphere();
 		ss._name = data.name;
 		ss.datablock = data.customFieldProvider;
 		ss.position = '${- (data.x ?? 0.0)} ${data.y ?? 0.0} ${data.z ?? 0.0}';

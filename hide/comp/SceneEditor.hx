@@ -802,7 +802,7 @@ class SceneEditor {
 	}
 
 	public function loadSavedCameraController3D(force:Bool = false) {
-		var wantedClass:Class<CameraControllerBase> = CamController;
+		var wantedClass:Class<CameraControllerBase> = FPSController;
 		var cam = @:privateAccess view.getDisplayState("Camera");
 		if (cam != null && cam.camTypeIndex != null) {
 			if (cam.camTypeIndex >= 0 && cam.camTypeIndex < CameraControllerEditor.controllersClasses.length) {
@@ -1753,14 +1753,19 @@ class SceneEditor {
 				if (pmodel.inf.fileSource != null) {
 					ide.chooseFile(pmodel.inf.fileSource, function(path) {
 						// Ew hardcoded lol
-						if (p is hrt.prefab.l3d.Interior)
-							cast(p, hrt.prefab.l3d.Interior).path = path;
-						if (p is hrt.prefab.l3d.PathedInterior)
-							cast(p, hrt.prefab.l3d.PathedInterior).path = path;
-						if (p is hrt.prefab.l3d.TSStatic) {
-							cast(p, hrt.prefab.l3d.TSStatic).path = path;
+						if (StringTools.startsWith(path, "../")) {
+							// Invalid, out of our root directory
+							js.Browser.window.alert("Please select a file within the project folder.");
+						} else {
+							if (p is hrt.prefab.l3d.Interior)
+								cast(p, hrt.prefab.l3d.Interior).path = path;
+							if (p is hrt.prefab.l3d.PathedInterior)
+								cast(p, hrt.prefab.l3d.PathedInterior).path = path;
+							if (p is hrt.prefab.l3d.TSStatic) {
+								cast(p, hrt.prefab.l3d.TSStatic).path = path;
+							}
+							addElements([p]);
 						}
-						addElements([p]);
 					});
 				} else
 					addElements([p]);
