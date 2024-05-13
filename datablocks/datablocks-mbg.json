@@ -1,0 +1,341 @@
+{
+    "gameType": "MBG",
+    "shapes": {
+        "Gems": [
+            {
+                "name": "GemItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "GemItemBlue",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "blue",
+                "fields": []
+            },
+            {
+                "name": "GemItemRed",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "red",
+                "fields": []
+            },
+            {
+                "name": "GemItemYellow",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "yellow",
+                "fields": []
+            },
+            {
+                "name": "GemItemPink",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "base",
+                "fields": []
+            },
+            {
+                "name": "GemItemPurple",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "purple",
+                "fields": []
+            },
+            {
+                "name": "GemItemGreen",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "Green",
+                "fields": []
+            },
+            {
+                "name": "GemItemTurquoise",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "Turquoise",
+                "fields": []
+            },
+            {
+                "name": "GemItemOrange",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "orange",
+                "fields": []
+            },
+            {
+                "name": "GemItemBlack",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "black",
+                "fields": []
+            }
+        ],
+        "PowerUps": [
+            {
+                "name": "SuperJumpItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/superjump.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "SuperBounceItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/superbounce.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "SuperSpeedItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/superspeed.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "ShockAbsorberItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/shockabsorber.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "HelicopterItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/images/helicopter.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "TimeTravelItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/timetravel.dts",
+                "skin": "",
+                "fields": [
+                    {
+                        "defaultValue": 5000,
+                        "desc": "Bonus time to add.",
+                        "display": "Time Bonus",
+                        "name": "timeBonus",
+                        "type": "time"
+                    }
+                ]
+            },
+            {
+                "name": "AntiGravityItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/antiGravity.dts",
+                "skin": "",
+                "fields": []
+            }
+        ],
+        "Buttons": [
+            {
+                "name": "PushButton",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/buttons/pushButton.dts",
+                "skin": "",
+                "fields": []
+            }
+        ],
+        "Hazards": [
+            {
+                "name": "TrapDoor",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/hazards/trapdoor.dts",
+                "skin": "",
+                "fields": [
+                    {
+                        "defaultValue": 5000,
+                        "desc": "How long it takes the trapdoor to reopen.",
+                        "display": "Reset Time",
+                        "name": "resetTime",
+                        "type": "time"
+                    }
+                ]
+            },
+            {
+                "name": "DuctFan",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/hazards/ductfan.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "SmallDuctFan",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/hazards/ductfan.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "Tornado",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/hazards/tornado.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "oilslick",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/hazards/oilslick.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "LandMine",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/hazards/landmine.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "TriangleBumper",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/bumpers/pball_tri.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "RoundBumper",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/bumpers/pball_round.dts",
+                "skin": "",
+                "fields": []
+            }
+        ],
+        "Pads": [
+            {
+                "name": "StartPad",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/pads/startArea.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "EndPad",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/pads/endArea.dts",
+                "skin": "",
+                "fields": []
+            }
+        ],
+        "Signs": [
+            {
+                "name": "SignCaution",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/cautionsign.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "SignCautionCaution",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/cautionsign.dts",
+                "skin": "caution",
+                "fields": []
+            },
+            {
+                "name": "SignCautionDanger",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/cautionsign.dts",
+                "skin": "danger",
+                "fields": []
+            },
+            {
+                "name": "SignFinish",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/finishlinesign.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "SignPlain",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/plainsign.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "SignPlainUp",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/plainsign.dts",
+                "skin": "up",
+                "fields": []
+            },
+            {
+                "name": "SignPlainDown",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/plainsign.dts",
+                "skin": "down",
+                "fields": []
+            },
+            {
+                "name": "SignPlainLeft",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/plainsign.dts",
+                "skin": "left",
+                "fields": []
+            },
+            {
+                "name": "SignPlainRight",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/plainsign.dts",
+                "skin": "right",
+                "fields": []
+            }
+        ]
+    },
+    "triggers": [
+        {
+            "fields": [],
+            "name": "DefaultTrigger"
+        },
+        {
+            "fields": [],
+            "name": "InBoundsTrigger"
+        },
+        {
+            "fields": [],
+            "name": "OutOfBoundsTrigger"
+        },
+        {
+            "fields": [
+                {
+                    "defaultValue": "Help Text",
+                    "desc": "Text that is shown to the player when they enter the trigger.",
+                    "display": "Help Text",
+                    "name": "text",
+                    "type": "string"
+                }
+            ],
+            "name": "HelpTrigger"
+        },
+        {
+            "fields": [
+                {
+                    "defaultValue": 0,
+                    "desc": "Time along path the trigger will start traveling towards. -1 for looping forwards, -2 for looping backwards.",
+                    "display": "Target Time",
+                    "name": "targetTime",
+                    "type": "int"
+                },
+                {
+                    "defaultValue": 0,
+                    "desc": "If the player enters a TriggerGotoDelayTarget after this trigger, the platform will continue to this time.",
+                    "display": "Delay Target Time",
+                    "name": "delayTargetTime",
+                    "type": "time"
+                }
+            ],
+            "name": "TriggerGotoTarget"
+        },
+        {
+            "fields": [],
+            "name": "TriggerGotoDelayTarget"
+        }
+    ]
+}

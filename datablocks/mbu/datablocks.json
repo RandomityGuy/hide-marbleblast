@@ -1,0 +1,443 @@
+{
+    "gameType": "MBU",
+    "shapes": {
+        "Astrolabe": [
+            {
+                "name": "AstrolabeShape",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/astrolabe/Astrolabe.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "AstrolabeCloudsBeginnerShape",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/astrolabe/astrolabe_clouds_beginner.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "AstrolabeCloudsIntermediateShape",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/astrolabe/astrolabe_clouds_intermediate.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "AstrolabeCloudsAdvancedShape",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/astrolabe/astrolabe_clouds_advanced.dts",
+                "skin": "",
+                "fields": []
+            }
+        ],
+        "Glass": [
+            {
+                "name": "Glass_3Shape",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/structures/glass_3.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "Glass_6Shape",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/structures/glass_6.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "Glass_9Shape",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/structures/glass_9.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "Glass_12Shape",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/structures/glass_12.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "Glass_15Shape",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/structures/glass_15.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "Glass_18Shape",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/structures/glass_18.dts",
+                "skin": "",
+                "fields": []
+            }
+        ],
+        "Gems": [
+            {
+                "name": "GemItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "GemItem_5pts",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "blue",
+                "fields": []
+            },
+            {
+                "name": "GemItem_2pts",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/gem.dts",
+                "skin": "yellow",
+                "fields": []
+            }
+        ],
+        "PowerUps": [
+            {
+                "name": "SuperJumpItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/superjump.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "SuperSpeedItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/superspeed.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "HelicopterItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/images/helicopter.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "TimeTravelItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/timetravel.dts",
+                "skin": "",
+                "fields": [
+                    {
+                        "defaultValue": 5000,
+                        "desc": "Bonus time to add.",
+                        "display": "Time Bonus",
+                        "name": "timeBonus",
+                        "type": "time"
+                    }
+                ]
+            },
+            {
+                "name": "AntiGravityItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/antiGravity.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "NoRespawnAntiGravityItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/antiGravity.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "MegaMarbleItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/images/megamarble.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "BlastItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/images/blast.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "EasterEggItem",
+                "classname": "Item",
+                "shapefile": "marble/data/shapes/items/egg.dts",
+                "skin": "",
+                "fields": []
+            }
+        ],
+        "Hazards": [
+            {
+                "name": "TrapDoor",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/hazards/trapdoor.dts",
+                "skin": "",
+                "fields": [
+                    {
+                        "defaultValue": 5000,
+                        "desc": "How long it takes the trapdoor to reopen.",
+                        "display": "Reset Time",
+                        "name": "resetTime",
+                        "type": "time"
+                    }
+                ]
+            },
+            {
+                "name": "DuctFan",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/hazards/ductfan.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "SmallDuctFan",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/hazards/ductfan.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "RoundBumper",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/bumpers/pball_round.dts",
+                "skin": "",
+                "fields": []
+            }
+        ],
+        "Pads": [
+            {
+                "name": "StartPad",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/pads/startArea.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "EndPad",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/pads/endArea.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "CheckpointShape",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/pads/checkpad.dts",
+                "skin": "",
+                "fields": []
+            }
+        ],
+        "Signs": [
+            {
+                "name": "SignCaution",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/cautionsign.dts",
+                "skin": "",
+                "fields": []
+            },
+            {
+                "name": "SignCautionCaution",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/cautionsign.dts",
+                "skin": "caution",
+                "fields": []
+            },
+            {
+                "name": "SignCautionDanger",
+                "classname": "StaticShape",
+                "shapefile": "marble/data/shapes/signs/cautionsign.dts",
+                "skin": "danger",
+                "fields": []
+            }
+        ],
+        "SpawnSpheres": [
+            {
+                "name": "CameraSpawnSphereMarker",
+                "classname": "SpawnSphere",
+                "shapefile": "marble/data/shapes/markers/octahedron.dts",
+                "skin": "",
+                "fields": [
+                    {
+                        "name": "hidden",
+                        "defaultValue": 0,
+                        "type": "boolean",
+                        "display": "Hidden",
+                        "desc": ""
+                    },
+                    {
+                        "name": "radius",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Radius",
+                        "desc": ""
+                    },
+                    {
+                        "name": "sphereWeight",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Sphere Weight",
+                        "desc": ""
+                    },
+                    {
+                        "name": "indoorWeight",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Indoor Weight",
+                        "desc": ""
+                    },
+                    {
+                        "name": "outdoorWeight",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Outdoor Weight",
+                        "desc": ""
+                    }
+                ]
+            },
+            {
+                "name": "SpawnSphereMarker",
+                "classname": "SpawnSphere",
+                "shapefile": "marble/data/shapes/markers/octahedron.dts",
+                "skin": "",
+                "fields": [
+                    {
+                        "name": "hidden",
+                        "defaultValue": 0,
+                        "type": "boolean",
+                        "display": "Hidden",
+                        "desc": ""
+                    },
+                    {
+                        "name": "radius",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Radius",
+                        "desc": ""
+                    },
+                    {
+                        "name": "sphereWeight",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Sphere Weight",
+                        "desc": ""
+                    },
+                    {
+                        "name": "indoorWeight",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Indoor Weight",
+                        "desc": ""
+                    },
+                    {
+                        "name": "outdoorWeight",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Outdoor Weight",
+                        "desc": ""
+                    }
+                ]
+            },
+            {
+                "name": "GemSpawnSphereMarker",
+                "classname": "SpawnSphere",
+                "shapefile": "marble/data/shapes/markers/octahedron.dts",
+                "skin": "",
+                "fields": [
+                    {
+                        "name": "hidden",
+                        "defaultValue": 0,
+                        "type": "boolean",
+                        "display": "Hidden",
+                        "desc": ""
+                    },
+                    {
+                        "name": "radius",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Radius",
+                        "desc": ""
+                    },
+                    {
+                        "name": "sphereWeight",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Sphere Weight",
+                        "desc": ""
+                    },
+                    {
+                        "name": "indoorWeight",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Indoor Weight",
+                        "desc": ""
+                    },
+                    {
+                        "name": "outdoorWeight",
+                        "defaultValue": 100,
+                        "type": "int",
+                        "display": "Outdoor Weight",
+                        "desc": ""
+                    }
+                ]
+            }
+        ]
+    },
+    "triggers": [
+        {
+            "fields": [],
+            "name": "DefaultTrigger"
+        },
+        {
+            "fields": [],
+            "name": "InBoundsTrigger"
+        },
+        {
+            "fields": [],
+            "name": "OutOfBoundsTrigger"
+        },
+        {
+            "fields": [],
+            "name": "CheckpointTrigger"
+        },
+        {
+            "fields": [
+                {
+                    "defaultValue": "Help Text",
+                    "desc": "Text that is shown to the player when they enter the trigger.",
+                    "display": "Help Text",
+                    "name": "text",
+                    "type": "string"
+                }
+            ],
+            "name": "HelpTrigger"
+        },
+        {
+            "fields": [
+                {
+                    "defaultValue": 0,
+                    "desc": "Time along path the trigger will start traveling towards. -1 for looping forwards, -2 for looping backwards.",
+                    "display": "Target Time",
+                    "name": "targetTime",
+                    "type": "int"
+                },
+                {
+                    "defaultValue": 0,
+                    "desc": "If the player enters a TriggerGotoDelayTarget after this trigger, the platform will continue to this time.",
+                    "display": "Delay Target Time",
+                    "name": "delayTargetTime",
+                    "type": "time"
+                }
+            ],
+            "name": "TriggerGotoTarget"
+        },
+        {
+            "fields": [],
+            "name": "TriggerGotoDelayTarget"
+        }
+    ]
+}
