@@ -33,7 +33,7 @@ class Object3D extends Prefab {
 		rotationX = t.rotationX;
 		rotationY = t.rotationY;
 		rotationZ = t.rotationZ;
-		rotationZ = t.rotationW;
+		rotationW = t.rotationW;
 	}
 
 	public function saveTransform() {
