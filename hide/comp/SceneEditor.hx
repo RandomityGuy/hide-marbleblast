@@ -1038,7 +1038,7 @@ class SceneEditor {
 			}
 
 			var newItems = getNewContextMenu(current);
-			var menuItems:Array<hide.comp.ContextMenu.ContextMenuItem> = [{label: "New...", menu: newItems},];
+			var menuItems:Array<hide.comp.ContextMenu.ContextMenuItem> = [];
 
 			var triggerMenuItems:Array<hide.comp.ContextMenu.ContextMenuItem> = buildTriggerCreateMenu(current);
 			var shapeMenuItems:Array<hide.comp.ContextMenu.ContextMenuItem> = buildShapeCreateMenu(current);
@@ -1600,7 +1600,6 @@ class SceneEditor {
 		});
 
 		var menuItems:Array<hide.comp.ContextMenu.ContextMenuItem> = [
-			{label: "New...", menu: newItems},
 			{
 				label: "Create...",
 				menu: [
@@ -1849,8 +1848,7 @@ class SceneEditor {
 			var objects3d = [
 				for (o in curEdit.rootElements) {
 					var obj3d = o.to(hrt.prefab.Object3D);
-					if (obj3d != null)
-						obj3d;
+					if (obj3d != null) obj3d;
 				}
 			];
 			var sceneObjs = [for (o in objects3d) getContext(o).local3d];
@@ -1962,8 +1960,7 @@ class SceneEditor {
 			var objects2d = [
 				for (o in curEdit.rootElements) {
 					var obj = o.to(hrt.prefab.Object2D);
-					if (obj != null)
-						obj;
+					if (obj != null) obj;
 				}
 			];
 			var sceneObjs = [for (o in objects2d) getContext(o).local2d];
@@ -2934,8 +2931,7 @@ class SceneEditor {
 		var objects3d = [
 			for (o in curEdit.rootElements) {
 				var obj3d = o.to(hrt.prefab.Object3D);
-				if (obj3d != null && !obj3d.locked)
-					obj3d;
+				if (obj3d != null && !obj3d.locked) obj3d;
 			}
 		];
 		if (objects3d.length == 0)
@@ -2983,8 +2979,7 @@ class SceneEditor {
 		var objects3d = [
 			for (o in curEdit.rootElements) {
 				var obj3d = o.to(hrt.prefab.Object3D);
-				if (obj3d != null && !obj3d.locked)
-					obj3d;
+				if (obj3d != null && !obj3d.locked) obj3d;
 			}
 		];
 		if (objects3d.length == 0)
