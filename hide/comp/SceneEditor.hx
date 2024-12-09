@@ -1915,7 +1915,7 @@ class SceneEditor {
 						var rotQY = quantize(M.radToDeg(euler.y), rotQuant);
 						var rotQZ = quantize(M.radToDeg(euler.z), rotQuant);
 						var q = new h3d.Quat();
-						q.initRotation(rotQX, rotQY, rotQZ);
+						q.initRotation(hxd.Math.degToRad(rotQX), hxd.Math.degToRad(rotQY), hxd.Math.degToRad(rotQZ));
 						obj3d.rotationX = q.x;
 						obj3d.rotationY = q.y;
 						obj3d.rotationZ = q.z;

@@ -310,8 +310,10 @@ class PathedInterior extends TorqueObject {
 
 	override function tick(ctx:Context, elapsedTime:Float, dt:Float) {
 		super.tick(ctx, elapsedTime, dt);
-		var mat = getTransformAtTime(getLocalTime(elapsedTime));
-		innerMesh.setTransform(mat);
+		if (this.pathObj != null) {
+			var mat = getTransformAtTime(getLocalTime(elapsedTime));
+			innerMesh.setTransform(mat);
+		}
 	}
 
 	function getLocalTime(t:Float) {

@@ -89,7 +89,9 @@ class PathNodePropertyProvider extends PropertyProvider {
 	function drawPath() {
 		if (g == null)
 			return;
-		var nextNode = obj.customFields.find(x -> x.field == 'nextnode').value;
+		var nextNode = obj.customFields.find(x -> x.field == 'nextnode')?.value;
+		if (nextNode == null)
+			return;
 		var rootObj:Prefab = obj.parent;
 		while (rootObj.parent != null)
 			rootObj = rootObj.parent;
