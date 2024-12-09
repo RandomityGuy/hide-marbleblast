@@ -160,12 +160,25 @@ class TorqueObject extends Object3D {
 		}
 	}
 
+	public function setName(name:String) {
+		this.renderObject.name = name;
+	}
+
 	public function addDynFieldsEdit(ectx:EditContext) {
 		var db = customFieldProvider != null ? hrt.mis.TorqueConfig.getDataBlock(customFieldProvider) : null;
 
 		var torqueToHideFieldType = [
-			"string" => "text", "boolean" => "checkbox", "time" => "number", "float" => "number", "Point3F" => "Point3F", "enum" => "enum",
-			"object" => "object", "int" => "number", "AngAxisF" => "AngAxisF", "MatrixF" => "MatrixF", "ItemData" => "text"
+			"string" => "text",
+			"boolean" => "checkbox",
+			"time" => "number",
+			"float" => "number",
+			"Point3F" => "Point3F",
+			"enum" => "enum",
+			"object" => "object",
+			"int" => "number",
+			"AngAxisF" => "AngAxisF",
+			"MatrixF" => "MatrixF",
+			"ItemData" => "text"
 		];
 
 		var props = new hide.Element('

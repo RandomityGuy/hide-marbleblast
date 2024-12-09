@@ -15,6 +15,10 @@ class Trigger extends TorqueObject {
 		return "Trigger";
 	}
 
+	public override function setName(name:String) {
+		this.ctxObject.name = name;
+	}
+
 	override function makeInstance(ctx:Context):Context {
 		ctx = ctx.clone(this);
 

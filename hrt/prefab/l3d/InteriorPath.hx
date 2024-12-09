@@ -14,6 +14,7 @@ class InteriorPathMarker extends TorqueObject {
 	public var interiorPath:InteriorPath;
 
 	var mesh:h3d.scene.Mesh;
+	var ctxObject:h3d.scene.Object;
 
 	override function getEditorClassName():String {
 		return "Marker";
@@ -29,10 +30,16 @@ class InteriorPathMarker extends TorqueObject {
 		mesh.material.color.set(0, 0, 1, 1);
 		mesh.scale(0.2);
 
+		ctxObject = obj;
+
 		ctx.local3d = obj;
 		ctx.local3d.name = name;
 		updateInstance(ctx);
 		return ctx;
+	}
+
+	public override function setName(name:String) {
+		this.ctxObject.name = name;
 	}
 
 	override function save() {

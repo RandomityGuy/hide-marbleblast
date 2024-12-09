@@ -33,6 +33,10 @@ class PathedInterior extends TorqueObject {
 		return true;
 	}
 
+	public override function setName(name:String) {
+		this.ctxObject.name = name;
+	}
+
 	override function getEditorClassName():String {
 		return "PathedInterior";
 	}

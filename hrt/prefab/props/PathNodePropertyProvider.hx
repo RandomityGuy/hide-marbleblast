@@ -197,7 +197,7 @@ class PathNodePropertyProvider extends PropertyProvider {
 				// obj.parent.children.push(sp);
 
 				sp.dynamicFields = [];
-				sp.customFieldProvider = "BezierHandle";
+				sp.customFieldProvider = "bezierhandle";
 				sp.customFields = [];
 
 				obj.setCustomFieldValue('bezierhandle1', obj.name + "_Bezierhandle1" + suffix);
@@ -229,7 +229,7 @@ class PathNodePropertyProvider extends PropertyProvider {
 				sp.z = splinePos.z;
 
 				sp.dynamicFields = [];
-				sp.customFieldProvider = "BezierHandle";
+				sp.customFieldProvider = "bezierhandle";
 				sp.customFields = [];
 
 				obj.setCustomFieldValue('bezierhandle2', obj.name + "_Bezierhandle2" + suffix);

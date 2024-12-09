@@ -1131,7 +1131,14 @@ class SceneEditor {
 		tree.onRename = function(e, name) {
 			var oldName = e.name;
 			e.name = name;
+			var to = cast(e, hrt.prefab.l3d.TorqueObject);
+			if (to != null) {
+				to.setName(name);
+			}
 			undo.change(Field(e, "name", oldName), function() {
+				if (to != null) {
+					to.setName(oldName);
+				}
 				tree.refresh();
 				// refreshScene();
 			});
@@ -1641,7 +1648,7 @@ class SceneEditor {
 					var p:hrt.prefab.l3d.Trigger = cast Type.createInstance(pmodel.cl, [parent]);
 					@:privateAccess p.type = "trigger";
 					p.name = "";
-					p.customFieldProvider = t.name;
+					p.customFieldProvider = t.name.toLowerCase();
 
 					if (onMake != null)
 						onMake(p);
@@ -1713,12 +1720,12 @@ class SceneEditor {
 						var p:hrt.prefab.l3d.DtsMesh = cast Type.createInstance(pmodel.cl, [parent]);
 						@:privateAccess p.type = s.classname.toLowerCase();
 						p.name = "";
-						p.customFieldProvider = s.name;
+						p.customFieldProvider = s.name.toLowerCase();
 						p.path = StringTools.replace(StringTools.replace(s.shapefile.toLowerCase(), "marble/", ""), "platinum/", "");
 						p.skin = s.skin == "" ? null : s.skin;
 
 						p.customFields = hrt.mis.TorqueConfig.getDataBlock(s.name).fields.filter(x -> x.defaultValue != null).map(x -> {
-							return {field: x.name, value: '${x.defaultValue}'};
+							return {field: x.name.toLowerCase(), value: '${x.defaultValue}'};
 						});
 
 						if (onMake != null)
@@ -2830,14 +2837,14 @@ class SceneEditor {
 			var p:hrt.prefab.l3d.DtsMesh = cast Type.createInstance(pmodel.cl, [mi]);
 			@:privateAccess p.type = classname.toLowerCase();
 			p.name = "";
-			p.customFieldProvider = datablock;
+			p.customFieldProvider = datablock.toLowerCase();
 			p.path = StringTools.replace(StringTools.replace(shapefile.toLowerCase(), "marble/", ""), "platinum/", "");
 			p.skin = skin == "" ? null : skin;
 
 			var dbDef = hrt.mis.TorqueConfig.getDataBlock(datablock);
 
 			p.customFields = hrt.mis.TorqueConfig.getDataBlock(datablock).fields.filter(x -> x.defaultValue != null).map(x -> {
-				return {field: x.name, value: '${x.defaultValue}'};
+				return {field: x.name.toLowerCase(), value: '${x.defaultValue}'};
 			});
 			if (dbDef.fieldMap.exists("skin") && p.skin != null && p.customFields.find(x -> x.field == "skin") == null)
 				p.customFields.push({field: "skin", value: p.skin});

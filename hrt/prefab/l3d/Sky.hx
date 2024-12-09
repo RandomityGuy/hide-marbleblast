@@ -11,6 +11,7 @@ class Sky extends TorqueObject {
 	@:s var useSkyTextures:Bool;
 
 	var skyShader:hrt.shader.Skybox;
+	var ctxObject:h3d.scene.Object;
 
 	public override function loadFromPath(p:String) {
 		materialList = p;
@@ -21,12 +22,17 @@ class Sky extends TorqueObject {
 		return "Sky";
 	}
 
+	public override function setName(name:String) {
+		this.ctxObject.name = name;
+	}
+
 	override function makeInstance(ctx:Context):Context {
 		if (materialList != null) {
 			var texture = createSkyboxCubeTextured(this.materialList);
 			if (texture != null) {
 				ctx = ctx.clone(this);
 				var rootObject = new h3d.scene.Object(ctx.local3d);
+				ctxObject = rootObject;
 
 				var sky = new h3d.prim.Sphere(1, 128, 128);
 				sky.addNormals();

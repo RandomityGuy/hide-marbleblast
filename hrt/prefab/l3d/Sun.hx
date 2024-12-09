@@ -10,6 +10,7 @@ class Sun extends TorqueObject {
 	@:s var diffuse:Int;
 
 	var sunlight:hrt.shader.DirLight;
+	var ctxObject:h3d.scene.Object;
 
 	public function new(?parent) {
 		super(parent);
@@ -18,6 +19,10 @@ class Sun extends TorqueObject {
 
 	override function getEditorClassName():String {
 		return "Sun";
+	}
+
+	public override function setName(name:String) {
+		this.ctxObject.name = name;
 	}
 
 	override function makeInstance(ctx:Context):Context {
@@ -33,6 +38,7 @@ class Sun extends TorqueObject {
 			sunlight.color = Vector.fromColor(diffuse);
 		}
 		ctx.local3d.name = name;
+		ctxObject = ctx.local3d;
 
 		#if editor
 		ctx.custom = hrt.impl.EditorTools.create3DIcon(ctx.local3d, hide.Ide.inst.getHideResPath("icons/PointLight.png"), 0.5, Light);

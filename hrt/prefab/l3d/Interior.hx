@@ -264,6 +264,10 @@ class Interior extends TorqueObject {
 		return true;
 	}
 
+	public override function setName(name:String) {
+		this.ctxObject.name = name;
+	}
+
 	override function makeInstance(ctx:Context):Context {
 		if (path != null) {
 			ctx = ctx.clone(this);
