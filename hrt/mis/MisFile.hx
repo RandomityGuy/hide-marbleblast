@@ -167,24 +167,17 @@ class MisFile {
 		if (interiorScale.z == 0)
 			interiorScale.z = 0.0015;
 
-		var mat = Matrix.S(interiorScale.x, interiorScale.y, interiorScale.z);
-		var tmp = new Matrix();
-		interiorRotation.toMatrix(tmp);
-		mat.multiply3x4(mat, tmp);
-		var tmat = Matrix.T(interiorPosition.x, interiorPosition.y, interiorPosition.z);
-		mat.multiply(mat, tmat);
 		// itr.loadFromPath(difPath);
 
-		var rot = mat.getEulerAngles();
 		var s = trueScale;
 
 		var obj:Dynamic = {
 			type: "interiorinstance",
 			name: element._name != null ? element._name : "",
 			path: difPath,
-			x: mat.tx,
-			y: mat.ty,
-			z: mat.tz,
+			x: interiorPosition.x,
+			y: interiorPosition.y,
+			z: interiorPosition.z,
 			scaleX: s.x,
 			scaleY: s.y,
 			scaleZ: s.z,
@@ -216,14 +209,6 @@ class MisFile {
 		var interiorScale = MisParser.parseVector3(element.basescale);
 		var trueScale = interiorScale.clone();
 
-		var mat = Matrix.S(interiorScale.x, interiorScale.y, interiorScale.z);
-		var tmp = new Matrix();
-		interiorRotation.toMatrix(tmp);
-		mat.multiply3x4(mat, tmp);
-		var tmat = Matrix.T(interiorPosition.x, interiorPosition.y, interiorPosition.z);
-		mat.multiply(mat, tmat);
-
-		var rot = mat.getEulerAngles();
 		var s = trueScale;
 
 		var targetPos = element.initialtargetposition != ""
@@ -237,9 +222,9 @@ class MisFile {
 			name: element._name != null ? element._name : "",
 			path: difPath,
 			so: MisParser.parseNumber(element.interiorindex),
-			x: mat.tx,
-			y: mat.ty,
-			z: mat.tz,
+			x: interiorPosition.x,
+			y: interiorPosition.y,
+			z: interiorPosition.z,
 			scaleX: s.x,
 			scaleY: s.y,
 			scaleZ: s.z,
@@ -287,22 +272,14 @@ class MisFile {
 			if (shapeScale.z == 0)
 				shapeScale.z = 0.0015;
 
-			var mat = Matrix.S(shapeScale.x, shapeScale.y, shapeScale.z);
-			var tmp = new Matrix();
-			shapeRotation.toMatrix(tmp);
-			mat.multiply3x4(mat, tmp);
-			var tmat = Matrix.T(shapePosition.x, shapePosition.y, shapePosition.z);
-			mat.multiply(mat, tmat);
-
-			var rot = mat.getEulerAngles();
 			var s = trueScale;
 
 			var obj:Dynamic = {
 				type: "marker",
 				name: marker._name != null ? marker._name : "",
-				x: mat.tx,
-				y: mat.ty,
-				z: mat.tz,
+				x: shapePosition.x,
+				y: shapePosition.y,
+				z: shapePosition.z,
 				scaleX: s.x,
 				scaleY: s.y,
 				scaleZ: s.z,
@@ -354,14 +331,7 @@ class MisFile {
 		if (shapeScale.z == 0)
 			shapeScale.z = 0.0015;
 
-		var mat = Matrix.S(shapeScale.x, shapeScale.y, shapeScale.z);
-		var tmp = new Matrix();
-		shapeRotation.toMatrix(tmp);
-		mat.multiply3x4(mat, tmp);
-		var tmat = Matrix.T(shapePosition.x, shapePosition.y, shapePosition.z);
-		mat.multiply(mat, tmat);
-
-		var obj = addDTS(dataBlockLowerCase, "staticshape", mat, shapeRotation, _jsonDynamic, element._name != null ? element._name : "", trueScale);
+		var obj = addDTS(dataBlockLowerCase, "staticshape", shapePosition, shapeRotation, _jsonDynamic, element._name != null ? element._name : "", trueScale);
 		obj.dynamicFields = [];
 		obj.customFieldProvider = dataBlockLowerCase;
 		obj.customFields = [];
@@ -401,14 +371,7 @@ class MisFile {
 		if (shapeScale.z == 0)
 			shapeScale.z = 0.0015;
 
-		var mat = Matrix.S(shapeScale.x, shapeScale.y, shapeScale.z);
-		var tmp = new Matrix();
-		shapeRotation.toMatrix(tmp);
-		mat.multiply3x4(mat, tmp);
-		var tmat = Matrix.T(shapePosition.x, shapePosition.y, shapePosition.z);
-		mat.multiply(mat, tmat);
-
-		var obj = addDTS(dataBlockLowerCase, "spawnsphere", mat, shapeRotation, _jsonDynamic, element._name != null ? element._name : "", trueScale);
+		var obj = addDTS(dataBlockLowerCase, "spawnsphere", shapePosition, shapeRotation, _jsonDynamic, element._name != null ? element._name : "", trueScale);
 		obj.dynamicFields = [];
 		obj.customFieldProvider = dataBlockLowerCase;
 		obj.customFields = [];
@@ -448,14 +411,7 @@ class MisFile {
 		if (shapeScale.z == 0)
 			shapeScale.z = 0.0015;
 
-		var mat = Matrix.S(shapeScale.x, shapeScale.y, shapeScale.z);
-		var tmp = new Matrix();
-		shapeRotation.toMatrix(tmp);
-		mat.multiply3x4(mat, tmp);
-		var tmat = Matrix.T(shapePosition.x, shapePosition.y, shapePosition.z);
-		mat.multiply(mat, tmat);
-
-		var itemObj = addDTS(dataBlockLowerCase, "item", mat, shapeRotation, _jsonDynamic, element._name != null ? element._name : "", trueScale);
+		var itemObj = addDTS(dataBlockLowerCase, "item", shapePosition, shapeRotation, _jsonDynamic, element._name != null ? element._name : "", trueScale);
 		itemObj.isStatic = element.isStatic;
 		itemObj.rotate = element.rotate;
 		itemObj.collideable = element.collideable;
@@ -482,18 +438,12 @@ class MisFile {
 		var d2 = new Vector(-coordinates[6], coordinates[7], coordinates[8]);
 		var d3 = new Vector(-coordinates[9], coordinates[10], coordinates[11]);
 
-		var mat = new Matrix();
 		var quat = MisParser.parseRotation(element.rotation);
 		quat.x = -quat.x;
 		quat.w = -quat.w;
-		quat.toMatrix(mat);
 		var scale = MisParser.parseVector3(element.scale);
-		mat.scale(scale.x, scale.y, scale.z);
 		var pos = MisParser.parseVector3(element.position);
 		pos.x = -pos.x;
-
-		var rot = mat.getEulerAngles();
-		var s = mat.getScale();
 
 		var obj:Dynamic = {
 			type: "trigger",
@@ -501,9 +451,9 @@ class MisFile {
 			x: pos.x,
 			y: pos.y,
 			z: pos.z,
-			scaleX: s.x,
-			scaleY: s.y,
-			scaleZ: s.z,
+			scaleX: scale.x,
+			scaleY: scale.y,
+			scaleZ: scale.z,
 			rotationX: quat.x,
 			rotationY: quat.y,
 			rotationZ: quat.z,
@@ -563,15 +513,7 @@ class MisFile {
 		if (shapeScale.z == 0)
 			shapeScale.z = 0.0015;
 
-		var mat = Matrix.S(shapeScale.x, shapeScale.y, shapeScale.z);
-		var tmp = new Matrix();
-		shapeRotation.toMatrix(tmp);
-		mat.multiply3x4(mat, tmp);
-		var tmat = Matrix.T(shapePosition.x, shapePosition.y, shapePosition.z);
-		mat.multiply(mat, tmat);
-
 		var dtsPath = StringTools.replace(StringTools.replace(getProperFilepath(element.shapename), "marble/", ""), "platinum/", "");
-		var rot = mat.getEulerAngles();
 
 		var obj:Dynamic = {
 			type: 'tsstatic',
@@ -579,9 +521,9 @@ class MisFile {
 			path: dtsPath,
 			shapePath: dtsPath,
 			skin: null,
-			x: mat.tx,
-			y: mat.ty,
-			z: mat.tz,
+			x: shapePosition.x,
+			y: shapePosition.y,
+			z: shapePosition.z,
 			scaleX: trueScale.x,
 			scaleY: trueScale.y,
 			scaleZ: trueScale.z,
@@ -598,7 +540,7 @@ class MisFile {
 		}
 	}
 
-	function addDTS(datablock:String, type:String, mat:Matrix, rot:Quat, _jsonDynamic:Array<Dynamic>, name:String, actualScale:Vector):Dynamic {
+	function addDTS(datablock:String, type:String, position:Vector, rot:Quat, _jsonDynamic:Array<Dynamic>, name:String, actualScale:Vector):Dynamic {
 		var dbData = TorqueConfig.getDataBlock(datablock);
 		var dtsPath = StringTools.replace(StringTools.replace(dbData.shapefile.toLowerCase(), "marble/", ""), "platinum/", "");
 
@@ -607,9 +549,9 @@ class MisFile {
 			name: name,
 			path: dtsPath,
 			skin: dbData.skin == "" ? null : dbData.skin,
-			x: mat.tx,
-			y: mat.ty,
-			z: mat.tz,
+			x: position.x,
+			y: position.y,
+			z: position.z,
 			scaleX: actualScale.x,
 			scaleY: actualScale.y,
 			scaleZ: actualScale.z,
