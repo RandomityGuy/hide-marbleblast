@@ -41,6 +41,7 @@ class ParentingAnimator {
 			var noRotStr = obj.getDynamicFieldValue("parentnorot");
 			var parentModTransStr = obj.getDynamicFieldValue("parentmodtrans");
 			parentOffset = MisParser.parseVector3(parentOffsetStr);
+			parentOffset.x = -parentOffset.x;
 			parentOffset.w = 0;
 
 			if (parentModTransStr != "") {
