@@ -331,7 +331,6 @@ class MissionElementPathedInterior extends MissionElementBase {
 		mw.writeLine('position = "${this.position}";');
 		mw.writeLine('rotation = "${this.rotation}";');
 		mw.writeLine('scale = "${this.scale}";');
-		mw.writeLine('datablock = "${this.datablock}";');
 		mw.writeLine('interiorResource = "${this.interiorresource}";');
 		mw.writeLine('interiorIndex = ${this.interiorindex};');
 		mw.writeLine('basePosition = "${this.baseposition}";');

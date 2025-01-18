@@ -248,6 +248,7 @@ class MisFile {
 		for (f => v in element._dynamicFields) {
 			obj.dynamicFields.push({field: f, value: v});
 		}
+		obj.dynamicFields.push({field: 'datablock', value: element.datablock});
 
 		_jsonDynamic.push(obj);
 	}
