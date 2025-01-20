@@ -1,5 +1,6 @@
 package hrt.prefab.l3d;
 
+#if savehide
 enum abstract DecalMode(String) {
 	var Default;
 	var BeforeTonemapping;
@@ -8,58 +9,58 @@ enum abstract DecalMode(String) {
 }
 
 class Decal extends Object3D {
-
-	@:s var albedoMap : String;
-	@:s var normalMap : String;
-	@:s var pbrMap : String;
-	@:s var albedoStrength : Float = 1.0;
-	@:s var normalStrength: Float = 1.0;
-	@:s var pbrStrength: Float = 1.0;
-	@:s var emissiveStrength: Float = 0.0;
-	@:s var fadePower : Float = 1.0;
-	@:s var fadeStart : Float = 0;
-	@:s var fadeEnd : Float = 1.0;
-	@:s var emissive : Float = 0.0;
-	@:s var renderMode : DecalMode = Default;
-	@:s var centered : Bool = true;
-	@:s var autoAlpha : Bool = true;
-	@:c var blendMode : h2d.BlendMode = Alpha;
-	@:s var normalFade : Bool = false;
-	@:s var normalFadeStart : Float = 0;
-	@:s var normalFadeEnd : Float = 1;
+	@:s var albedoMap:String;
+	@:s var normalMap:String;
+	@:s var pbrMap:String;
+	@:s var albedoStrength:Float = 1.0;
+	@:s var normalStrength:Float = 1.0;
+	@:s var pbrStrength:Float = 1.0;
+	@:s var emissiveStrength:Float = 0.0;
+	@:s var fadePower:Float = 1.0;
+	@:s var fadeStart:Float = 0;
+	@:s var fadeEnd:Float = 1.0;
+	@:s var emissive:Float = 0.0;
+	@:s var renderMode:DecalMode = Default;
+	@:s var centered:Bool = true;
+	@:s var autoAlpha:Bool = true;
+	@:c var blendMode:h2d.BlendMode = Alpha;
+	@:s var normalFade:Bool = false;
+	@:s var normalFadeStart:Float = 0;
+	@:s var normalFadeEnd:Float = 1;
 
 	override function save() {
-		var obj : Dynamic = super.save();
-		if(blendMode != Alpha) obj.blendMode = blendMode.getIndex();
+		var obj:Dynamic = super.save();
+		if (blendMode != Alpha)
+			obj.blendMode = blendMode.getIndex();
 		return obj;
 	}
 
-	override function load( obj : Dynamic ) {
+	override function load(obj:Dynamic) {
 		super.load(obj);
 		blendMode = obj.blendMode != null ? h2d.BlendMode.createByIndex(obj.blendMode) : Alpha;
 	}
 
-	override function makeInstance(ctx:Context) : Context {
+	override function makeInstance(ctx:Context):Context {
 		ctx = ctx.clone(this);
 		var mesh = new h3d.scene.pbr.Decal(h3d.prim.Cube.defaultUnitCube(), ctx.local3d);
 
 		switch (renderMode) {
 			case Default, Terrain:
 				var shader = mesh.material.mainPass.getShader(h3d.shader.pbr.VolumeDecal.DecalPBR);
-				if( shader == null ) {
+				if (shader == null) {
 					shader = new h3d.shader.pbr.VolumeDecal.DecalPBR();
 					mesh.material.mainPass.addShader(shader);
 				}
 			case BeforeTonemapping:
 				var shader = mesh.material.mainPass.getShader(h3d.shader.pbr.VolumeDecal.DecalOverlay);
-				if( shader == null ) {
+				if (shader == null) {
 					shader = new h3d.shader.pbr.VolumeDecal.DecalOverlay();
 					mesh.material.mainPass.addShader(shader);
 				}
 				mesh.material.mainPass.setPassName("beforeTonemappingDecal");
 			case AfterTonemapping:
 				var shader = mesh.material.mainPass.getShader(h3d.shader.pbr.VolumeDecal.DecalOverlay);
-				if( shader == null ) {
+				if (shader == null) {
 					shader = new h3d.shader.pbr.VolumeDecal.DecalOverlay();
 					mesh.material.mainPass.addShader(shader);
 				}
@@ -80,7 +81,7 @@ class Decal extends Object3D {
 		var mesh = Std.downcast(ctx.local3d, h3d.scene.Mesh);
 		mesh.material.mainPass.setBlendMode(blendMode);
 
-		inline function commonSetup(shader: h3d.shader.pbr.VolumeDecal.BaseDecal) {
+		inline function commonSetup(shader:h3d.shader.pbr.VolumeDecal.BaseDecal) {
 			shader.fadePower = fadePower;
 			shader.fadeStart = fadeStart;
 			shader.fadeEnd = fadeEnd;
@@ -92,47 +93,47 @@ class Decal extends Object3D {
 		switch (renderMode) {
 			case Default, Terrain:
 				var shader = mesh.material.mainPass.getShader(h3d.shader.pbr.VolumeDecal.DecalPBR);
-				if( shader != null ){
+				if (shader != null) {
 					shader.albedoTexture = albedoMap != null ? ctx.loadTexture(albedoMap) : null;
 					shader.normalTexture = normalMap != null ? ctx.loadTexture(normalMap) : null;
-					if(shader.albedoTexture != null) shader.albedoTexture.wrap = Repeat;
-					if(shader.normalTexture != null) shader.normalTexture.wrap = Repeat;
+					if (shader.albedoTexture != null)
+						shader.albedoTexture.wrap = Repeat;
+					if (shader.normalTexture != null)
+						shader.normalTexture.wrap = Repeat;
 					shader.albedoStrength = albedoStrength;
 					shader.normalStrength = normalStrength;
 					shader.pbrStrength = pbrStrength;
 					shader.emissiveStrength = emissiveStrength;
-					shader.USE_ALBEDO = albedoStrength != 0&& shader.albedoTexture != null;
+					shader.USE_ALBEDO = albedoStrength != 0 && shader.albedoTexture != null;
 					shader.USE_NORMAL = normalStrength != 0 && shader.normalTexture != null;
 					shader.CENTERED = centered;
 					commonSetup(shader);
 				}
 				var pbrTexture = pbrMap != null ? ctx.loadTexture(pbrMap) : null;
-				if( pbrTexture != null ) {
+				if (pbrTexture != null) {
 					var propsTexture = mesh.material.mainPass.getShader(h3d.shader.pbr.PropsTexture);
-					if( propsTexture == null )
+					if (propsTexture == null)
 						propsTexture = mesh.material.mainPass.addShader(new h3d.shader.pbr.PropsTexture());
 					propsTexture.texture = pbrTexture;
 					propsTexture.texture.wrap = Repeat;
 					propsTexture.emissiveValue = emissive;
-				}
-				else {
-					mesh.material.mainPass.removeShader(mesh.material.mainPass.getShader( h3d.shader.pbr.PropsTexture));
+				} else {
+					mesh.material.mainPass.removeShader(mesh.material.mainPass.getShader(h3d.shader.pbr.PropsTexture));
 				}
 				if (renderMode == Default) {
 					if (emissiveStrength != 0) {
 						mesh.material.mainPass.setPassName("emissiveDecal");
-					}
-					else
+					} else
 						mesh.material.mainPass.setPassName("decal");
-				}
-				else {
+				} else {
 					mesh.material.mainPass.setPassName("terrainDecal");
 				}
 			case BeforeTonemapping, AfterTonemapping:
 				var shader = mesh.material.mainPass.getShader(h3d.shader.pbr.VolumeDecal.DecalOverlay);
-				if( shader != null ){
+				if (shader != null) {
 					shader.colorTexture = albedoMap != null ? ctx.loadTexture(albedoMap) : null;
-					if(shader.colorTexture != null) shader.colorTexture.wrap = Repeat;
+					if (shader.colorTexture != null)
+						shader.colorTexture.wrap = Repeat;
 					shader.CENTERED = centered;
 					shader.GAMMA_CORRECT = renderMode == BeforeTonemapping;
 					shader.AUTO_ALPHA = autoAlpha;
@@ -142,21 +143,21 @@ class Decal extends Object3D {
 		}
 	}
 
-	override function updateInstance( ctx : Context, ?propName : String ) {
-		super.updateInstance(ctx,propName);
+	override function updateInstance(ctx:Context, ?propName:String) {
+		super.updateInstance(ctx, propName);
 		updateRenderParams(ctx);
 	}
 
 	#if editor
-	override function getHideProps() : HideProps {
-		return { icon : "paint-brush", name : "Decal" };
+	override function getHideProps():HideProps {
+		return {icon: "paint-brush", name: "Decal"};
 	}
 
-	override function setSelected( ctx : Context, b : Bool ) {
-		if( b ) {
+	override function setSelected(ctx:Context, b:Bool) {
+		if (b) {
 			var obj = ctx.shared.getSelfObject(this);
-			if(obj != null) {
-				var wire = new h3d.scene.Box(0xFFFFFFFF,obj);
+			if (obj != null) {
+				var wire = new h3d.scene.Box(0xFFFFFFFF, obj);
 				wire.name = "_highlight";
 				wire.material.setDefaultProps("ui");
 				wire.ignoreCollide = true;
@@ -170,20 +171,21 @@ class Decal extends Object3D {
 				wireCenter.material.mainPass.depthTest = Always;
 			}
 		} else {
-			clearSelection( ctx );
+			clearSelection(ctx);
 		}
 		return true;
 	}
 
-	function clearSelection( ctx : Context ) {
+	function clearSelection(ctx:Context) {
 		var obj = ctx.shared.getSelfObject(this);
-		if(obj == null) return;
-		var objs = obj.findAll( o -> if(o.name == "_highlight") o else null );
-		for( o in objs )
+		if (obj == null)
+			return;
+		var objs = obj.findAll(o -> if (o.name == "_highlight") o else null);
+		for (o in objs)
 			o.remove();
 	}
 
-	override function edit( ctx : EditContext ) {
+	override function edit(ctx:EditContext) {
 		super.edit(ctx);
 
 		var pbrParams = '<dt>Albedo</dt><dd><input type="texturepath" field="albedoMap"/>
@@ -197,7 +199,6 @@ class Decal extends Object3D {
 
 					<dt>Emissive</dt><dd> <input type="range" min="0" max="10" field="emissive"/>
 					<br/><input type="range" min="0" max="1" field="emissiveStrength"/></dd>';
-
 
 		var overlayParams = '<dt>Color</dt><dd><input type="texturepath" field="albedoMap"/></dd>
 						<dt>Emissive</dt><dd> <input type="range" min="0" max="10" field="emissive"/></dd>
@@ -215,8 +216,8 @@ class Decal extends Object3D {
 				<div class="group" name="Decal">
 					<dl>
 						<dt>Centered</dt><dd><input type="checkbox" field="centered"/></dd>'
-						+ params +
-						'<dt>Render Mode</dt>
+				+ params
+				+ '<dt>Render Mode</dt>
 						<dd><select field="renderMode">
 							<option value="Default">Default</option>
 							<option value="BeforeTonemapping">Before Tonemapping</option>
@@ -242,14 +243,13 @@ class Decal extends Object3D {
 					<dt>Normal end</dt><dd> <input type="range" min="0" max="1" field="normalFadeEnd"/></dd>
 				</div>
 			</div>
-			'),this, function(pname) {
-				if( pname == "renderMode" ) {
-					clearSelection( ctx.rootContext );
-					ctx.rebuildPrefab(this);
-					ctx.rebuildProperties();
-				}
-				else
-					ctx.onChange(this, pname);
+			'), this, function(pname) {
+					if (pname == "renderMode") {
+						clearSelection(ctx.rootContext);
+						ctx.rebuildPrefab(this);
+						ctx.rebuildProperties();
+					} else
+						ctx.onChange(this, pname);
 			});
 		}
 
@@ -258,5 +258,5 @@ class Decal extends Object3D {
 	#end
 
 	static var _ = Library.register("advancedDecal", Decal);
-
 }
+#end

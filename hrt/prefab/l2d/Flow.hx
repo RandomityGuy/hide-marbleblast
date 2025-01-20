@@ -1,14 +1,16 @@
 package hrt.prefab.l2d;
+
 import hxd.Math;
+
 using Lambda;
 
+#if savehide
 class Flow extends Object2D {
+	@:s public var width:Int = 0;
+	@:s public var height:Int = 0;
 
-	@:s public var width : Int = 0;
-	@:s public var height : Int = 0;
-
-	@:s var vAlign : Int = 0;
-	@:s var hAlign : Int = 0;
+	@:s var vAlign:Int = 0;
+	@:s var hAlign:Int = 0;
 
 	override function makeInstance(ctx:Context):Context {
 		ctx = ctx.clone(this);
@@ -18,15 +20,15 @@ class Flow extends Object2D {
 		return ctx;
 	}
 
-	override function updateInstance( ctx: Context, ?propName : String ) {
+	override function updateInstance(ctx:Context, ?propName:String) {
 		super.updateInstance(ctx, propName);
 		var flow = (cast ctx.local2d : h2d.Flow);
-		if( height > 0 ) {
+		if (height > 0) {
 			flow.minHeight = flow.maxHeight = height;
 		} else {
 			flow.minHeight = flow.maxHeight = null;
 		}
-		if( width > 0 ) {
+		if (width > 0) {
 			flow.minWidth = flow.maxWidth = width;
 		} else {
 			flow.minWidth = flow.maxWidth = null;
@@ -50,8 +52,7 @@ class Flow extends Object2D {
 	}
 
 	#if editor
-
-	override function edit( ctx : EditContext ) {
+	override function edit(ctx:EditContext) {
 		super.edit(ctx);
 
 		var parameters = new hide.Element('<div class="group" name="Parameters"></div>');
@@ -91,7 +92,7 @@ class Flow extends Object2D {
 			updateDisabled();
 			updateInstance(ctx.getContext(this), "hAlign");
 		});
-		
+
 		new hide.Element('<dt>Vertical Align</dt>').appendTo(gr);
 		var vElement = new hide.Element('<dd></dd>').appendTo(gr);
 		var topAlign = new hide.Element('<input type="button" style="width: 50px" value="Top" /> ').appendTo(vElement);
@@ -135,11 +136,11 @@ class Flow extends Object2D {
 		});
 	}
 
-	override function getHideProps() : HideProps {
-		return { icon : "square", name : "Flow" };
+	override function getHideProps():HideProps {
+		return {icon: "square", name: "Flow"};
 	}
 	#end
 
 	static var _ = Library.register("flow", Flow);
-
 }
+#end

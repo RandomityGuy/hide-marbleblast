@@ -50,9 +50,9 @@ class Shader extends Prefab {
 					val = Utils.getTextureFromValue(val);
 				}
 				else {
-					var childNoise = getOpt(hrt.prefab.l2d.NoiseGenerator, v.name);
-					if(childNoise != null)
-						val = childNoise.toTexture();
+					// var childNoise = getOpt(hrt.prefab.l2d.NoiseGenerator, v.name);
+					// if(childNoise != null)
+					// 	val = childNoise.toTexture();
 				}
 			default:
 			}
@@ -230,7 +230,7 @@ class Shader extends Prefab {
 		return {
 			icon : "cog",
 			name : name,
-			fileSource : cl == DynamicShader ? ["hx"] : null,
+			fileSource :  null,
 			allowParent : function(p) return p.to(Object2D) != null || p.to(Object3D) != null || p.to(Material) != null
 		};
 	}

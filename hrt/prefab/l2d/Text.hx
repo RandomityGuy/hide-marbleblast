@@ -1,47 +1,47 @@
 package hrt.prefab.l2d;
 
+#if savehide
 class Text extends Object2D {
-
 	// parameters
-	@:s var color : Int = 0xFFFFFF;
-	@:s var size : Int = 12;
-	@:s var cutoff : Float = 0.5;
-	@:s var smoothing : Float = 1 / 32;
-	@:s var align : Int = 0;
+	@:s var color:Int = 0xFFFFFF;
+	@:s var size:Int = 12;
+	@:s var cutoff:Float = 0.5;
+	@:s var smoothing:Float = 1 / 32;
+	@:s var align:Int = 0;
 
-	@:s var maxWidth : Float = 0;
+	@:s var maxWidth:Float = 0;
 
-	@:s var pathFont : String;
+	@:s var pathFont:String;
 
 	// TextShadow
-	@:s var enableTextShadow : Bool = false;
-	@:s var tsDx: Float = 0;
-	@:s var tsDy: Float = 0;
-	@:s var tsColor: Int;
-	@:s var tsAlpha: Float = 1;
+	@:s var enableTextShadow:Bool = false;
+	@:s var tsDx:Float = 0;
+	@:s var tsDy:Float = 0;
+	@:s var tsColor:Int;
+	@:s var tsAlpha:Float = 1;
 
 	// DropShadow
-	@:s var enableDropShadow : Bool = false;
-	@:s var dsDistance: Float = 0;
-	@:s var dsAngle: Float = 0;
-	@:s var dsColor: Int;
-	@:s var dsAlpha: Float = 1;
-	@:s var dsRadius: Float = 0;
-	@:s var dsGain: Float = 1;
-	@:s var dsQuality: Float = 1;
-	@:s var dsSmoothColor: Bool = true;
+	@:s var enableDropShadow:Bool = false;
+	@:s var dsDistance:Float = 0;
+	@:s var dsAngle:Float = 0;
+	@:s var dsColor:Int;
+	@:s var dsAlpha:Float = 1;
+	@:s var dsRadius:Float = 0;
+	@:s var dsGain:Float = 1;
+	@:s var dsQuality:Float = 1;
+	@:s var dsSmoothColor:Bool = true;
 
 	#if editor
-	@:s var text : String = "";
+	@:s var text:String = "";
 	#end
 
 	override public function load(v:Dynamic) {
 		super.load(v);
-		if( v.blendMode == null )
+		if (v.blendMode == null)
 			blendMode = Alpha;
 	}
 
-	override function updateInstance( ctx: Context, ?propName : String ) {
+	override function updateInstance(ctx:Context, ?propName:String) {
 		super.updateInstance(ctx, propName);
 		var h2dText = (cast ctx.local2d : h2d.HtmlText);
 		h2dText.visible = visible;
@@ -60,16 +60,7 @@ class Text extends Object2D {
 		}
 
 		if (enableDropShadow) {
-			h2dText.filter = new h2d.filter.DropShadow(
-				dsDistance,
-				dsAngle,
-				dsColor,
-				dsAlpha,
-				dsRadius,
-				dsGain,
-				dsQuality,
-				dsSmoothColor
-			);
+			h2dText.filter = new h2d.filter.DropShadow(dsDistance, dsAngle, dsColor, dsAlpha, dsRadius, dsGain, dsQuality, dsSmoothColor);
 		} else
 			h2dText.filter = null;
 
@@ -85,25 +76,25 @@ class Text extends Object2D {
 		if (font != null)
 			h2dText.font = font;
 		#if editor
-			if (propName == null || propName == "text") {
-				h2dText.text = text;
-			}
-			var int = Std.downcast(h2dText.getChildAt(0),h2d.Interactive);
-			if( int != null ) {
-				@:privateAccess {
-					h2dText.rebuild();
-					int.width = h2dText.calcWidth;
-					int.height = h2dText.calcHeight;
-					switch (h2dText.textAlign) {
-						case Center:
-							int.x = -int.width/2;
-						case Right:
-							int.x = -int.width;
-						default:
-							int.x = 0;
-					}
+		if (propName == null || propName == "text") {
+			h2dText.text = text;
+		}
+		var int = Std.downcast(h2dText.getChildAt(0), h2d.Interactive);
+		if (int != null) {
+			@:privateAccess {
+				h2dText.rebuild();
+				int.width = h2dText.calcWidth;
+				int.height = h2dText.calcHeight;
+				switch (h2dText.textAlign) {
+					case Center:
+						int.x = -int.width / 2;
+					case Right:
+						int.x = -int.width;
+					default:
+						int.x = 0;
 				}
 			}
+		}
 		#end
 	}
 
@@ -118,7 +109,7 @@ class Text extends Object2D {
 		return ctx;
 	}
 
-	public dynamic function loadFont() : h2d.Font {
+	public dynamic function loadFont():h2d.Font {
 		var f = defaultLoadFont(pathFont, size, cutoff, smoothing);
 		if (f == null) {
 			if (pathFont != null && pathFont.length > 0) {
@@ -127,29 +118,31 @@ class Text extends Object2D {
 			} else {
 				return null;
 			}
-		}
-		else return f;
+		} else
+			return f;
 	}
 
-	public static dynamic function defaultLoadFont( pathFont : String, size : Int, cutoff : Float, smoothing : Float ) : h2d.Font {
+	public static dynamic function defaultLoadFont(pathFont:String, size:Int, cutoff:Float, smoothing:Float):h2d.Font {
 		return null;
 	}
 
 	#if editor
-
 	override function makeInteractive(ctx:Context):h2d.Interactive {
 		var local2d = ctx.local2d;
-		if(local2d == null)
+		if (local2d == null)
 			return null;
 		var text = cast(local2d, h2d.Text);
-		@:privateAccess { text.rebuild(); text.updateSize(); }
+		@:privateAccess {
+			text.rebuild();
+			text.updateSize();
+		}
 		@:privateAccess var int = new h2d.Interactive(text.calcWidth, text.calcHeight);
 		text.addChildAt(int, 0);
 		int.propagateEvents = true;
 		return int;
 	}
 
-	override function edit( ctx : EditContext ) {
+	override function edit(ctx:EditContext) {
 		super.edit(ctx);
 
 		var parameters = new hide.Element('<div class="group" name="Parameters"></div>');
@@ -196,7 +189,8 @@ class Text extends Object2D {
 		var fileInput = new hide.Element('<input type="text" field="pathFont" style="width:165px" />').appendTo(element);
 
 		var tfile = new hide.comp.FileSelect(["fnt"], null, fileInput);
-		if (this.pathFont != null && this.pathFont.length > 0) tfile.path = this.pathFont;
+		if (this.pathFont != null && this.pathFont.length > 0)
+			tfile.path = this.pathFont;
 		tfile.onChange = function() {
 			this.pathFont = tfile.path;
 			updateInstance(ctx.getContext(this), "src");
@@ -246,12 +240,11 @@ class Text extends Object2D {
 		});
 	}
 
-	override function getHideProps() : HideProps {
-		return { icon : "square", name : "Text" };
+	override function getHideProps():HideProps {
+		return {icon: "square", name: "Text"};
 	}
-
 	#end
 
 	static var _ = Library.register("text", Text);
-
 }
+#end

@@ -1,25 +1,25 @@
 package hrt.shader;
 
+#if savehide
 class RefractionPropsShader extends hxsl.Shader {
 	static var SRC = {
-		@param var intensityInput : Float;
-		@param var albedoMultInput : Float;
-
-		var intensity : Float;
-		var albedoMult : Float;
-
+		@param var intensityInput:Float;
+		@param var albedoMultInput:Float;
+		var intensity:Float;
+		var albedoMult:Float;
 		function fragment() {
 			intensity = intensityInput;
 			albedoMult = albedoMultInput;
 		}
 	}
 }
+
 class Refraction extends hrt.prefab.Shader {
+	@:s var intensity:Float = 0.25;
+	@:s var albedoMult:Float = 1.0;
 
-	@:s var intensity : Float = 0.25;
-	@:s var albedoMult : Float = 1.0;
+	var shader:RefractionPropsShader;
 
-	var shader : RefractionPropsShader;
 	public function new(?parent) {
 		super(parent);
 
@@ -32,22 +32,21 @@ class Refraction extends hrt.prefab.Shader {
 		return ctx;
 	}
 
-	function getMaterials( ctx : hrt.prefab.Context ) {
-		if( Std.isOfType(parent, hrt.prefab.Material) ) {
-			var material : hrt.prefab.Material = cast parent;
+	function getMaterials(ctx:hrt.prefab.Context) {
+		if (Std.isOfType(parent, hrt.prefab.Material)) {
+			var material:hrt.prefab.Material = cast parent;
 			return material.getMaterials(ctx);
-		}
-		else {
+		} else {
 			return ctx.local3d.getMaterials();
 		}
 	}
 
-	override function updateInstance( ctx : hrt.prefab.Context, ?propName : String ) {
+	override function updateInstance(ctx:hrt.prefab.Context, ?propName:String) {
 		shader.intensityInput = intensity * 0.025;
 		shader.albedoMultInput = albedoMult;
-		for( m in getMaterials(ctx) ) {
+		for (m in getMaterials(ctx)) {
 			var s = m.mainPass.getShader(RefractionPropsShader);
-			if( s == null ) {
+			if (s == null) {
 				m.mainPass.addShader(shader);
 				m.mainPass.setPassName("refraction");
 			}
@@ -55,13 +54,15 @@ class Refraction extends hrt.prefab.Shader {
 	}
 
 	#if editor
-	override function getHideProps() : hide.prefab.HideProps {
-		return { 	icon : "cog",
-					name : "Refraction",
-					allowParent : function(p) return p.to(hrt.prefab.Material) != null };
+	override function getHideProps():hide.prefab.HideProps {
+		return {
+			icon: "cog",
+			name: "Refraction",
+			allowParent: function(p) return p.to(hrt.prefab.Material) != null
+		};
 	}
 
-	override function edit( ctx : hide.prefab.EditContext ) {
+	override function edit(ctx:hide.prefab.EditContext) {
 		super.edit(ctx);
 
 		var props = new hide.Element('
@@ -80,3 +81,4 @@ class Refraction extends hrt.prefab.Shader {
 
 	static var _ = hrt.prefab.Library.register("refraction", Refraction);
 }
+#end

@@ -1,16 +1,16 @@
 package hrt.prefab.l2d;
 
+#if savehide
 class Bitmap extends Object2D {
-
 	// parameters
-	@:s var color : Int = 0xFFFFFF;
-	@:s var src : String;
-	@:s var dx : Float = 0;
-	@:s var dy : Float = 0;
+	@:s var color:Int = 0xFFFFFF;
+	@:s var src:String;
+	@:s var dx:Float = 0;
+	@:s var dy:Float = 0;
 
-	var tex : h3d.mat.Texture;
+	var tex:h3d.mat.Texture;
 
-	override function updateInstance( ctx: Context, ?propName : String ) {
+	override function updateInstance(ctx:Context, ?propName:String) {
 		super.updateInstance(ctx, propName);
 		var bmp = (cast ctx.local2d : h2d.Bitmap);
 		bmp.visible = visible;
@@ -22,7 +22,7 @@ class Bitmap extends Object2D {
 				tex = ctx.loadTexture(src);
 				bmp.tile = h2d.Tile.fromTexture(this.tex);
 			} else {
-				bmp.tile = h2d.Tile.fromColor(0xFF00FF,32,32,0.5);
+				bmp.tile = h2d.Tile.fromColor(0xFF00FF, 32, 32, 0.5);
 			}
 		}
 		bmp.color = h3d.Vector.fromColor(color);
@@ -31,8 +31,8 @@ class Bitmap extends Object2D {
 		bmp.tile.setCenterRatio(cRatio[0], cRatio[1]);
 		bmp.blendMode = blendMode;
 		#if editor
-		var int = Std.downcast(bmp.getChildAt(0),h2d.Interactive);
-		if( int != null ) {
+		var int = Std.downcast(bmp.getChildAt(0), h2d.Interactive);
+		if (int != null) {
 			int.width = bmp.tile.width;
 			int.height = bmp.tile.height;
 			int.x = bmp.tile.dx;
@@ -51,15 +51,14 @@ class Bitmap extends Object2D {
 		return ctx;
 	}
 
-	static public function getCenterRatio(dx : Float, dy : Float) {
+	static public function getCenterRatio(dx:Float, dy:Float) {
 		return [0.5 + hxd.Math.clamp(dx, -0.5, 0.5), 0.5 + hxd.Math.clamp(dy, -0.5, 0.5)];
 	}
 
 	#if editor
-
 	override function makeInteractive(ctx:Context):h2d.Interactive {
 		var local2d = ctx.local2d;
-		if(local2d == null)
+		if (local2d == null)
 			return null;
 		var bmp = cast(local2d, h2d.Bitmap);
 		var int = new h2d.Interactive(bmp.tile.width, bmp.tile.height);
@@ -70,7 +69,7 @@ class Bitmap extends Object2D {
 		return int;
 	}
 
-	override function edit( ctx : EditContext ) {
+	override function edit(ctx:EditContext) {
 		super.edit(ctx);
 
 		ctx.properties.add(new hide.Element('<div class="group" name="Parameters">
@@ -84,12 +83,11 @@ class Bitmap extends Object2D {
 		});
 	}
 
-	override function getHideProps() : HideProps {
-		return { icon : "square", name : "Bitmap" };
+	override function getHideProps():HideProps {
+		return {icon: "square", name: "Bitmap"};
 	}
-
 	#end
 
 	static var _ = Library.register("bitmap", Bitmap);
-
 }
+#end

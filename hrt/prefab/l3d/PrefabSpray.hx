@@ -1,23 +1,19 @@
 package hrt.prefab.l3d;
+
+#if savehide
 import hrt.prefab.l3d.Spray;
 #if !editor
-
 class PrefabSpray extends Spray {
-
 	static var _ = Library.register("prefabSpray", PrefabSpray);
-
 }
-
 #else
-
 import h3d.Vector;
 import hxd.Key as K;
 
 class PrefabSpray extends Spray {
-
-
 	var PREFAB_SPRAY_CONFIG_FILE = "prefabSprayProps.json";
-	var PREFAB_SPRAY_CONFIG_PATH(get, null) : String;
+	var PREFAB_SPRAY_CONFIG_PATH(get, null):String;
+
 	function get_PREFAB_SPRAY_CONFIG_PATH() {
 		return hide.Ide.inst.resourceDir + "/" + PREFAB_SPRAY_CONFIG_FILE;
 	}
@@ -27,21 +23,21 @@ class PrefabSpray extends Spray {
 		return super.save();
 	}
 
-	override function getHideProps() : HideProps {
-		return { icon : "paint-brush", name : "PrefabSpray", hideChildren : p -> return Std.isOfType(p, Object3D) };
+	override function getHideProps():HideProps {
+		return {icon: "paint-brush", name: "PrefabSpray", hideChildren: p -> return Std.isOfType(p, Object3D)};
 	}
 
-	override function edit( ectx : EditContext ) {
-
+	override function edit(ectx:EditContext) {
 		invParent = getAbsPos().clone();
 		invParent.invert();
 
-		if (defaultConfig == null) defaultConfig = getDefaultConfig();
+		if (defaultConfig == null)
+			defaultConfig = getDefaultConfig();
 		if (sceneEditor == null) {
-			allSetGroups = if( sys.FileSystem.exists(PREFAB_SPRAY_CONFIG_PATH) )
-				try hide.Ide.inst.parseJSON(sys.io.File.getContent(PREFAB_SPRAY_CONFIG_PATH)) catch( e : Dynamic ) throw e+" (in "+PREFAB_SPRAY_CONFIG_PATH+")";
-			else
-				[];
+			allSetGroups = if (sys.FileSystem.exists(PREFAB_SPRAY_CONFIG_PATH)) try
+				hide.Ide.inst.parseJSON(sys.io.File.getContent(PREFAB_SPRAY_CONFIG_PATH))
+			catch (e:Dynamic)
+				throw e + " (in " + PREFAB_SPRAY_CONFIG_PATH + ")"; else [];
 		}
 		sceneEditor = ectx.scene.editor;
 
@@ -56,7 +52,8 @@ class PrefabSpray extends Spray {
 		function updateSelectPreset() {
 			selectPresetElt.empty();
 			var allSetGroupsName = [null];
-			for (g in allSetGroups) allSetGroupsName.push(g.name);
+			for (g in allSetGroups)
+				allSetGroupsName.push(g.name);
 			for (presetValue in allSetGroupsName) {
 				var selected = (currentPresetName == presetValue);
 				var presetName = (presetValue == null) ? "No preset" : presetValue;
@@ -72,52 +69,54 @@ class PrefabSpray extends Spray {
 		var setsList = new hide.Element('<div align="center" ></div>').appendTo(preset);
 
 		selectElement = new hide.Element('<select multiple size="6" style="width: 300px" ></select>').appendTo(props);
-		function createPrefabElement(path: String) {
+		function createPrefabElement(path:String) {
 			var elt = new hide.Element('<option value="$path">${extractItemName(path)}</option>');
 			elt.contextmenu(function(e) {
 				e.preventDefault();
 				new hide.comp.ContextMenu([
-					{ label : "Swap Prefab", click : function() hide.Ide.inst.chooseFile(["prefab", "l3d"] , function (newPath) {
-						removeSourcePath(elt.val());
-						addSourcePath(newPath);
-						for (child in children) {
-							var prefab = child.to(hrt.prefab.Object3D);
-							if (prefab != null && prefab.source == elt.val()) {
-								prefab.source = newPath;
-							}
-						}
-						elt.val(newPath);
-						elt.html(extractItemName(newPath));
-						sceneEditor.refresh();
-						undo.change(Custom(function(undo) {
-							if(undo) {
-								removeSourcePath(newPath);
-								addSourcePath(path);
-								for (child in children) {
-									var prefab = child.to(hrt.prefab.Object3D);
-									if (prefab != null && prefab.source == elt.val()) {
-										prefab.source = path;
-									}
+					{
+						label: "Swap Prefab",
+						click: function() hide.Ide.inst.chooseFile(["prefab", "l3d"], function(newPath) {
+							removeSourcePath(elt.val());
+							addSourcePath(newPath);
+							for (child in children) {
+								var prefab = child.to(hrt.prefab.Object3D);
+								if (prefab != null && prefab.source == elt.val()) {
+									prefab.source = newPath;
 								}
-								elt.val(path);
-								elt.html(extractItemName(path));
-								sceneEditor.refresh();
 							}
-							else {
-								removeSourcePath(elt.val());
-								addSourcePath(newPath);
-								for (child in children) {
-									var prefab = child.to(hrt.prefab.Object3D);
-									if (prefab != null && prefab.source == elt.val()) {
-										prefab.source = newPath;
+							elt.val(newPath);
+							elt.html(extractItemName(newPath));
+							sceneEditor.refresh();
+							undo.change(Custom(function(undo) {
+								if (undo) {
+									removeSourcePath(newPath);
+									addSourcePath(path);
+									for (child in children) {
+										var prefab = child.to(hrt.prefab.Object3D);
+										if (prefab != null && prefab.source == elt.val()) {
+											prefab.source = path;
+										}
 									}
+									elt.val(path);
+									elt.html(extractItemName(path));
+									sceneEditor.refresh();
+								} else {
+									removeSourcePath(elt.val());
+									addSourcePath(newPath);
+									for (child in children) {
+										var prefab = child.to(hrt.prefab.Object3D);
+										if (prefab != null && prefab.source == elt.val()) {
+											prefab.source = newPath;
+										}
+									}
+									elt.val(newPath);
+									elt.html(extractItemName(newPath));
+									sceneEditor.refresh();
 								}
-								elt.val(newPath);
-								elt.html(extractItemName(newPath));
-								sceneEditor.refresh();
-							}
-						}));
-					}) },
+							}));
+						})
+					},
 				]);
 				return false;
 			});
@@ -127,7 +126,7 @@ class PrefabSpray extends Spray {
 		function onChangeSet() {
 			selectElement.empty();
 			for (m in currentSources.copy()) {
-				var path : String = null;
+				var path:String = null;
 				if (Std.isOfType(m, String)) { // retro-compatibility
 					path = cast m;
 					currentSources.remove(m);
@@ -140,8 +139,8 @@ class PrefabSpray extends Spray {
 			updateConfig();
 		}
 
-		var selectedSetElt : hide.Element = null;
-		function setSet(set: Spray.Set, setElt : hide.Element) {
+		var selectedSetElt:hide.Element = null;
+		function setSet(set:Spray.Set, setElt:hide.Element) {
 			currentSetName = (set != null) ? set.name : null;
 			currentSet = set;
 			if (selectedSetElt != null)
@@ -152,7 +151,7 @@ class PrefabSpray extends Spray {
 			onChangeSet();
 		}
 
-		function onChangePreset(init : Bool = false) {
+		function onChangePreset(init:Bool = false) {
 			if (currentPresetName != null) {
 				var tmp = allSetGroups.filter(g -> g.name == currentPresetName);
 				if (tmp.length > 0)
@@ -168,25 +167,30 @@ class PrefabSpray extends Spray {
 				if (!init)
 					currentSetName = setGroup.sets[0].name;
 				for (s in setGroup.sets) {
-					var setElt = new hide.Element('<div style="margin: 5px; padding: 10px; border: solid 1px #444444; display: inline-block;" ></div>').appendTo(setsList);
-					var inputSetElt = new hide.Element('<input type="text" style="width: 75px; border: none; padding: 0; text-align: center;" value="${s.name}" />').appendTo(setElt);
+					var setElt = new hide.Element('<div style="margin: 5px; padding: 10px; border: solid 1px #444444; display: inline-block;" ></div>')
+						.appendTo(setsList);
+					var inputSetElt = new hide.Element('<input type="text" style="width: 75px; border: none; padding: 0; text-align: center;" value="${s.name}" />')
+						.appendTo(setElt);
 					setElt.on("click", function(e) {
 						setSet(s, setElt);
 					});
 					inputSetElt.on("change", function(e) {
-						var value : String = inputSetElt.val();
+						var value:String = inputSetElt.val();
 						if (value != null && value.length > 0) {
 							s.name = value;
 						} else {
 							inputSetElt.val(s.name);
 						}
 					});
-					if (s.name == currentSetName) setSet(s, setElt);
+					if (s.name == currentSetName)
+						setSet(s, setElt);
 				}
-				var addSet = new hide.Element('<div style="margin: 5px; padding: 10px; border: solid 1px #444444; display: inline-block;" >Add set</div>').appendTo(setsList);
+				var addSet = new hide.Element('<div style="margin: 5px; padding: 10px; border: solid 1px #444444; display: inline-block;" >Add set</div>')
+					.appendTo(setsList);
 				addSet.on("click", function(e) {
 					var name = hide.Ide.inst.ask("Name set:");
-					if (name == null || name.length == 0) return;
+					if (name == null || name.length == 0)
+						return;
 					setGroup.sets.push({
 						name: name,
 						sources: [],
@@ -199,7 +203,8 @@ class PrefabSpray extends Spray {
 		}
 		selectPresetElt.on("change", function() {
 			var value = selectPresetElt.val();
-			if (value == "null") value = null;
+			if (value == "null")
+				value = null;
 			if (value == "#add") {
 				var name = hide.Ide.inst.ask("Name preset:");
 				var groups = allSetGroups.filter(g -> g.name == name);
@@ -207,11 +212,13 @@ class PrefabSpray extends Spray {
 					return;
 				allSetGroups.push({
 					name: name,
-					sets: [{
-						name: "SetName",
-						sources: [],
-						config: getDefaultConfig()
-					}]
+					sets: [
+						{
+							name: "SetName",
+							sources: [],
+							config: getDefaultConfig()
+						}
+					]
 				});
 				currentPresetName = name;
 				currentSetName = "SetName";
@@ -224,11 +231,14 @@ class PrefabSpray extends Spray {
 		});
 
 		editPresetName.on("click", function() {
-			if (currentPresetName == null) return;
+			if (currentPresetName == null)
+				return;
 			var preset = allSetGroups.filter(s -> s.name == currentPresetName);
-			if (preset.length == 0) return;
+			if (preset.length == 0)
+				return;
 			var name = hide.Ide.inst.ask("New name preset:");
-			if (name == null || name.length == 0) return;
+			if (name == null || name.length == 0)
+				return;
 			preset[0].name = name;
 			currentPresetName = name;
 			updateSelectPreset();
@@ -236,10 +246,12 @@ class PrefabSpray extends Spray {
 		});
 
 		deletePreset.on("click", function() {
-			if (currentPresetName == null) return;
+			if (currentPresetName == null)
+				return;
 			var preset = allSetGroups.filter(s -> s.name == currentPresetName);
-			if (preset.length == 0) return;
-			if(hide.Ide.inst.confirm("Are-you sure ?")) {
+			if (preset.length == 0)
+				return;
+			if (hide.Ide.inst.confirm("Are-you sure ?")) {
 				allSetGroups.remove(preset[0]);
 				currentPresetName = null;
 				currentSetName = null;
@@ -289,7 +301,6 @@ class PrefabSpray extends Spray {
 			else {
 				interactive.cancelEvents = true;
 			}
-
 		}).prop("checked", currentConfig.enableBrush);
 
 		options.find("#select").click(function(_) {
@@ -300,7 +311,7 @@ class PrefabSpray extends Spray {
 		});
 		options.find("#add").click(function(_) {
 			hide.Ide.inst.chooseFiles(["prefab", "l3d"], function(paths) {
-				for( path in paths ) {
+				for (path in paths) {
 					addSourcePath(path);
 					createPrefabElement(path);
 				}
@@ -310,14 +321,15 @@ class PrefabSpray extends Spray {
 		options.find("#toground").click(function(_) {
 			var ctx = ectx.getContext(this);
 			var mso = cast(ctx.local3d, Spray.SprayObject);
-			undo.change(Custom(function(undo) {
-			}));
-			for( c in this.children ) {
+			undo.change(Custom(function(undo) {}));
+			for (c in this.children) {
 				var obj = c.to(Object3D);
-				if( obj == null ) continue;
+				if (obj == null)
+					continue;
 				setGroundPos(ectx, obj);
 				var ctx = ectx.getContext(obj);
-				if( ctx != null ) obj.applyTransform(ctx.local3d);
+				if (ctx != null)
+					obj.applyTransform(ctx.local3d);
 				wasEdited = true;
 			}
 			mso.redraw();
@@ -335,7 +347,7 @@ class PrefabSpray extends Spray {
 		options.find("#clean").click(function(_) {
 			if (hide.Ide.inst.confirm("Are you sure to remove all prefabs for this PrefabSpray ?")) {
 				var prefabs = [];
-				for( c in children ) {
+				for (c in children) {
 					prefabs.push(c);
 				}
 				sceneEditor.deleteElements(prefabs);
@@ -343,26 +355,25 @@ class PrefabSpray extends Spray {
 			}
 		});
 
-
 		ectx.properties.add(props, this, function(pname) {});
 
 		var optionsGroup = new hide.Element('<div class="group" id="groupConfig" name="Options"><dl></dl></div>');
 		optionsGroup.append(hide.comp.PropsEditor.makePropsList([
-				{ name: "density", t: PInt(1, 25), def: currentConfig.density },
-				{ name: "step", t: PFloat(0, 50), def: currentConfig.step },
-				{ name: "densityOffset", t: PInt(0, 10), def: currentConfig.densityOffset },
-				{ name: "radius", t: PFloat(0, 50), def: currentConfig.radius },
-				{ name: "deleteRadius", t: PFloat(0, 50), def: currentConfig.deleteRadius },
-				{ name: "scale", t: PFloat(0, 10), def: currentConfig.scale },
-				{ name: "scaleOffset", t: PFloat(0, 1), def: currentConfig.scaleOffset },
-				{ name: "rotation", t: PFloat(0, 180), def: currentConfig.rotation },
-				{ name: "rotationOffset", t: PFloat(0, 30), def: currentConfig.rotationOffset },
-				{ name: "zOffset", t: PFloat(0, 10), def: currentConfig.zOffset },
-				{ name: "orientTerrain", t: PFloat(0, 1), def: currentConfig.orientTerrain },
-				{ name: "tiltAmount", t: PFloat(0, 1), def: currentConfig.tiltAmount },
-			]));
+			{name: "density", t: PInt(1, 25), def: currentConfig.density},
+			{name: "step", t: PFloat(0, 50), def: currentConfig.step},
+			{name: "densityOffset", t: PInt(0, 10), def: currentConfig.densityOffset},
+			{name: "radius", t: PFloat(0, 50), def: currentConfig.radius},
+			{name: "deleteRadius", t: PFloat(0, 50), def: currentConfig.deleteRadius},
+			{name: "scale", t: PFloat(0, 10), def: currentConfig.scale},
+			{name: "scaleOffset", t: PFloat(0, 1), def: currentConfig.scaleOffset},
+			{name: "rotation", t: PFloat(0, 180), def: currentConfig.rotation},
+			{name: "rotationOffset", t: PFloat(0, 30), def: currentConfig.rotationOffset},
+			{name: "zOffset", t: PFloat(0, 10), def: currentConfig.zOffset},
+			{name: "orientTerrain", t: PFloat(0, 1), def: currentConfig.orientTerrain},
+			{name: "tiltAmount", t: PFloat(0, 1), def: currentConfig.tiltAmount},
+		]));
 		ectx.properties.add(optionsGroup, this, function(pname) {
-			var value = sceneEditor.properties.element.find("input[field="+ pname + "]").val();
+			var value = sceneEditor.properties.element.find("input[field=" + pname + "]").val();
 			Reflect.setField(currentConfig, pname, Std.parseFloat(value));
 		});
 
@@ -383,7 +394,7 @@ class PrefabSpray extends Spray {
 				fieldValue = Reflect.field(defaultConfig, fieldName);
 				Reflect.setField(CONFIG, fieldName, fieldValue);
 			}
-			var input = sceneEditor.properties.element.find("input[field="+ fieldName + "]");
+			var input = sceneEditor.properties.element.find("input[field=" + fieldName + "]");
 			input.val(fieldValue);
 			input.change();
 		}
@@ -391,16 +402,13 @@ class PrefabSpray extends Spray {
 		sceneEditor.properties.element.find("#repeatPrefab").prop("checked", CONFIG.dontRepeatItem);
 	}
 
-
-
-	override function addSourcePath(path : String) {
-		var source = { path: path, isRef : true };
+	override function addSourcePath(path:String) {
+		var source = {path: path, isRef: true};
 		if (currentSources.filter(p -> p.path == path).length == 0)
 			currentSources.push(source);
 	}
 
 	static var _ = Library.register("prefabSpray", PrefabSpray);
-
 }
-
+#end
 #end

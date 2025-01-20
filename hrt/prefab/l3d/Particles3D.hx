@@ -1,8 +1,8 @@
 package hrt.prefab.l3d;
 
+#if savehide
 class Particles3D extends Object3D {
-
-	@:s var data : Any;
+	@:s var data:Any;
 
 	public function new(?parent) {
 		super(parent);
@@ -11,40 +11,43 @@ class Particles3D extends Object3D {
 
 	override function createObject(ctx:Context) {
 		var parts = new h3d.parts.GpuParticles(ctx.local3d);
-		if( source != null ) {
+		if (source != null) {
 			var src = null;
 			try {
 				src = hxd.res.Loader.currentInstance.load(source).toText();
-			} catch(e : Dynamic) { }
-			if(src != null)
+			} catch (e:Dynamic) {}
+			if (src != null)
 				parts.load(haxe.Json.parse(src));
 		}
-		if( data != null )
+		if (data != null)
 			parts.load(data);
-		else if( !parts.getGroups().hasNext() )
+		else if (!parts.getGroups().hasNext())
 			parts.addGroup().isRelative = true;
 		return parts;
 	}
 
 	#if editor
-
 	override function setSelected(ctx:Context, b:Bool):Bool {
 		return true;
 	}
 
 	override function edit(ectx:EditContext) {
 		super.edit(ectx);
-		if(source == null) {
+		if (source == null) {
 			var ctx = ectx.getContext(this);
-			if( ctx == null ) return;
-			var parts = cast(ctx.local3d,h3d.parts.GpuParticles);
+			if (ctx == null)
+				return;
+			var parts = cast(ctx.local3d, h3d.parts.GpuParticles);
 
 			function undo(f) {
-				ectx.properties.undo.change(Custom(function(redo) { f(redo); data = parts.save(); }));
+				ectx.properties.undo.change(Custom(function(redo) {
+					f(redo);
+					data = parts.save();
+				}));
 				data = parts.save();
 			}
 
-			function addGroup( g : h3d.parts.GpuParticles.GpuPartGroup ) {
+			function addGroup(g:h3d.parts.GpuParticles.GpuPartGroup) {
 				var e = new Element('
 					<div class="section">
 						<h1><span>${g.name}</span> &nbsp;<input type="checkbox" field="enable"/></h1>
@@ -71,7 +74,7 @@ class Particles3D extends Object3D {
 									<dt>Mode</dt><dd><select field="emitMode"/></dd>
 									<dt>Count</dt><dd><input type="range" field="nparts" min="0" max="1000" step="1"/></dd>
 									<dt>Distance</dt><dd><input type="range" field="emitDist" min="0" max="10"/></dd>
-									<dt>Angle</dt><dd><input type="range" field="emitAngle" min="${-Math.PI/2}" max="${Math.PI}"/></dd>
+									<dt>Angle</dt><dd><input type="range" field="emitAngle" min="${- Math.PI / 2}" max="${Math.PI}"/></dd>
 									<dt>Sync</dt><dd><input type="range" field="emitSync" min="0" max="1"/></dd>
 									<dt>Delay</dt><dd><input type="range" field="emitDelay" min="0" max="10"/></dd>
 									<dt>Loop</dt><dd><input type="checkbox" field="emitLoop"/></dd>
@@ -132,39 +135,50 @@ class Particles3D extends Object3D {
 				e.find("h1").contextmenu(function(ev) {
 					var groups = @:privateAccess parts.groups;
 					var index = groups.indexOf(g);
-					function moveIndex(d:Int,history=true) {
+					function moveIndex(d:Int, history = true) {
 						var index = groups.indexOf(g);
 						parts.removeGroup(g);
 						parts.addGroup(g, index + d);
-						if( history ) undo(function(undo) moveIndex(undo ? -d : d,false));
+						if (history)
+							undo(function(undo) moveIndex(undo ? -d : d, false));
 						ectx.rebuildProperties();
 					}
 					new hide.comp.ContextMenu([
-						{ label : "Enable", checked : g.enable, click : function() { g.enable = !g.enable; e.find("[field=enable]").prop("checked", g.enable); } },
-						{ label : "Copy", click : function() ectx.ide.setClipboard(g.save()) },
-						{ label : "Paste", enabled : ectx.ide.getClipboard() != null, click : function() {
-							var prev = g.save();
-							var next = ectx.ide.getClipboard();
-							g.load(@:privateAccess h3d.parts.GpuParticles.VERSION, next);
-							undo(function(undo) {
-								g.load(@:privateAccess h3d.parts.GpuParticles.VERSION, undo ? prev : next);
-								ectx.rebuildProperties();
-							});
-							ectx.rebuildProperties();
-						} },
-						{ label : "MoveUp", enabled : index > 0, click : function() moveIndex(-1) },
-						{ label : "MoveDown", enabled : index < groups.length - 1, click : function() moveIndex(1) },
-						{ label : "Delete", click : function() {
-							parts.removeGroup(g);
-							e.remove();
-							undo(function(undo) {
-								if( undo )
-									parts.addGroup(g, index);
-								else
-									parts.removeGroup(g);
-								ectx.rebuildProperties();
-							});
+						{label: "Enable", checked: g.enable, click: function() {
+							g.enable = !g.enable;
+							e.find("[field=enable]").prop("checked", g.enable);
 						}},
+						{label: "Copy", click: function() ectx.ide.setClipboard(g.save())},
+						{
+							label: "Paste",
+							enabled: ectx.ide.getClipboard() != null,
+							click: function() {
+								var prev = g.save();
+								var next = ectx.ide.getClipboard();
+								g.load(@:privateAccess h3d.parts.GpuParticles.VERSION, next);
+								undo(function(undo) {
+									g.load(@:privateAccess h3d.parts.GpuParticles.VERSION, undo ? prev : next);
+									ectx.rebuildProperties();
+								});
+								ectx.rebuildProperties();
+							}
+						},
+						{label: "MoveUp", enabled: index > 0, click: function() moveIndex(-1)},
+						{label: "MoveDown", enabled: index < groups.length - 1, click: function() moveIndex(1)},
+						{
+							label: "Delete",
+							click: function() {
+								parts.removeGroup(g);
+								e.remove();
+								undo(function(undo) {
+									if (undo)
+										parts.addGroup(g, index);
+									else
+										parts.removeGroup(g);
+									ectx.rebuildProperties();
+								});
+							}
+						},
 					]);
 					ev.preventDefault();
 				});
@@ -172,11 +186,11 @@ class Particles3D extends Object3D {
 				e = ectx.properties.add(e, g, function(_) {
 					data = parts.save();
 				});
-				ectx.properties.addMaterial( parts.materials[Lambda.indexOf({ iterator : parts.getGroups }, g)], e.find(".material > .content") );
+				ectx.properties.addMaterial(parts.materials[Lambda.indexOf({iterator: parts.getGroups}, g)], e.find(".material > .content"));
 				return e;
 			}
 
-			for( g in parts.getGroups() )
+			for (g in parts.getGroups())
 				addGroup(g);
 
 			var extra = new Element('
@@ -192,12 +206,12 @@ class Particles3D extends Object3D {
 
 			extra.find(".new").click(function(_) {
 				var g = parts.addGroup();
-				g.name = "Group#" + Lambda.count({ iterator : parts.getGroups });
+				g.name = "Group#" + Lambda.count({iterator: parts.getGroups});
 				g.isRelative = true;
 				addGroup(g);
 				ectx.rebuildProperties();
 				undo(function(undo) {
-					if( undo )
+					if (undo)
 						parts.removeGroup(g);
 					else
 						parts.addGroup(g);
@@ -205,8 +219,7 @@ class Particles3D extends Object3D {
 				});
 			}, null);
 			ectx.properties.add(extra);
-		}
-		else {
+		} else {
 			var element = new hide.Element('
 			<div class="group" name="Reference">
 				<dl>
@@ -215,7 +228,7 @@ class Particles3D extends Object3D {
 			</div>');
 			ectx.properties.add(element, this, function(pname) {
 				ectx.onChange(this, pname);
-				if(pname == "source")
+				if (pname == "source")
 					ectx.rebuildPrefab(this);
 			});
 		}
@@ -223,5 +236,5 @@ class Particles3D extends Object3D {
 	#end
 
 	static var _ = Library.register("particles3D", Particles3D);
-
 }
+#end

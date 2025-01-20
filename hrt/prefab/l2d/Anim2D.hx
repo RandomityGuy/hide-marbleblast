@@ -1,19 +1,19 @@
 package hrt.prefab.l2d;
 
+#if savehide
 class Anim2D extends Object2D {
-
 	// parameters
-	@:s var src : String;
-	@:s var widthFrame : Int = 10;
-	@:s var heightFrame : Int = 10;
-	@:s var fpsAnimation : Int = 30;
-	@:s var nbFrames : Int = 30;
-	@:s var delayStart : Float = 0;
-	@:s var loop : Bool = false;
+	@:s var src:String;
+	@:s var widthFrame:Int = 10;
+	@:s var heightFrame:Int = 10;
+	@:s var fpsAnimation:Int = 30;
+	@:s var nbFrames:Int = 30;
+	@:s var delayStart:Float = 0;
+	@:s var loop:Bool = false;
 
-	var tex : h3d.mat.Texture;
+	var tex:h3d.mat.Texture;
 
-	override function updateInstance( ctx: Context, ?propName : String ) {
+	override function updateInstance(ctx:Context, ?propName:String) {
 		super.updateInstance(ctx, propName);
 
 		var h2dAnim = (cast ctx.local2d : h2d.Anim);
@@ -27,10 +27,10 @@ class Anim2D extends Object2D {
 				var t = h2d.Tile.fromTexture(tex);
 				var tiles = [];
 				var nbFrameRow = Std.int(t.width / widthFrame);
-				for( y in 0...Std.int(t.height / heightFrame) )
-					for( x in 0...nbFrameRow)
+				for (y in 0...Std.int(t.height / heightFrame))
+					for (x in 0...nbFrameRow)
 						if (y * nbFrameRow + x <= nbFrames)
-							tiles.push( t.sub(x * widthFrame, y * heightFrame, widthFrame, heightFrame, -(widthFrame / 2), -(heightFrame / 2)) );
+							tiles.push(t.sub(x * widthFrame, y * heightFrame, widthFrame, heightFrame, -(widthFrame / 2), -(heightFrame / 2)));
 				h2dAnim.play(tiles);
 			} else {
 				h2dAnim.play([]);
@@ -56,7 +56,7 @@ class Anim2D extends Object2D {
 	}
 
 	#if editor
-	override function edit( ctx : EditContext ) {
+	override function edit(ctx:EditContext) {
 		super.edit(ctx);
 
 		ctx.properties.add(new hide.Element('<div class="group" name="Frames">
@@ -73,12 +73,11 @@ class Anim2D extends Object2D {
 		});
 	}
 
-	override function getHideProps() : HideProps {
-		return { icon : "square", name : "Anim2D" };
+	override function getHideProps():HideProps {
+		return {icon: "square", name: "Anim2D"};
 	}
-
 	#end
 
 	static var _ = Library.register("anim2D", Anim2D);
-
 }
+#end

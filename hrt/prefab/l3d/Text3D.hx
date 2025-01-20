@@ -1,10 +1,10 @@
 package hrt.prefab.l3d;
 
+#if savehide
 import h2d.col.Point;
 
 class Text3DPrimitive extends h2d.TileGroup.TileLayerContent {
-
-	override public function add( x : Float, y : Float, r : Float, g : Float, b : Float, a : Float, t : h2d.Tile ) {
+	override public function add(x:Float, y:Float, r:Float, g:Float, b:Float, a:Float, t:h2d.Tile) {
 		@:privateAccess {
 			var sx = x + t.dx;
 			var sy = y + t.dy;
@@ -42,17 +42,22 @@ class Text3DPrimitive extends h2d.TileGroup.TileLayerContent {
 			tmp.push(t.v2);
 
 			var x = x + t.dx, y = y + t.dy;
-			if( x < xMin ) xMin = x;
-			if( y < yMin ) yMin = y;
+			if (x < xMin)
+				xMin = x;
+			if (y < yMin)
+				yMin = y;
 			x += t.width;
 			y += t.height;
-			if( x > xMax ) xMax = x;
-			if( y > yMax ) yMax = y;
+			if (x > xMax)
+				xMax = x;
+			if (y > yMax)
+				yMax = y;
 		}
 	}
 
-	override public function render( engine : h3d.Engine ) {
-		if( tmp == null || tmp.length == 0) return;
+	override public function render(engine:h3d.Engine) {
+		if (tmp == null || tmp.length == 0)
+			return;
 		super.render(engine);
 	}
 
@@ -60,56 +65,49 @@ class Text3DPrimitive extends h2d.TileGroup.TileLayerContent {
 		return h3d.col.Bounds.fromValues(xMin, yMin, 0, xMax, yMax, 0.1);
 	}
 
-	override public function getCollider() : h3d.col.Collider {
+	override public function getCollider():h3d.col.Collider {
 		return getBounds();
 	}
-
 }
 
 class SignedDistanceField3D extends hxsl.Shader {
-
 	static var SRC = {
-
-		@param var alphaCutoff : Float = 0.5;
-		@param var smoothing : Float = 0.04166666666666666666666666666667; // 1/24
-		var pixelColor : Vec4;
-		@param var color : Vec4;
-
-		function median(r : Float, g : Float, b : Float) : Float {
+		@param var alphaCutoff:Float = 0.5;
+		@param var smoothing:Float = 0.04166666666666666666666666666667; // 1/24
+		var pixelColor:Vec4;
+		@param var color:Vec4;
+		function median(r:Float, g:Float, b:Float):Float {
 			return max(min(r, g), min(max(r, g), b));
 		}
-
 		function fragment() {
-			pixelColor = vec4(color.r, color.g, color.b, smoothstep(alphaCutoff - smoothing, alphaCutoff + smoothing, median(pixelColor.r, pixelColor.g, pixelColor.b)));
+			pixelColor = vec4(color.r, color.g, color.b,
+				smoothstep(alphaCutoff - smoothing, alphaCutoff + smoothing, median(pixelColor.r, pixelColor.g, pixelColor.b)));
 		}
 	}
-
 }
 
 class Text3D extends Object3D {
+	@:s var color:Int = 0xFFFFFF;
+	@:s var size:Int = 12;
+	@:s var cutoff:Float = 0.5;
+	@:s var smoothing:Float = 1 / 32;
+	@:s var letterSpacing:Float = 0;
+	@:s var align:Int = 0;
+	@:s var pathFont:String;
 
-	@:s var color : Int = 0xFFFFFF;
-	@:s var size : Int = 12;
-	@:s var cutoff : Float = 0.5;
-	@:s var smoothing : Float = 1 / 32;
-	@:s var letterSpacing : Float = 0;
-	@:s var align : Int = 0;
-	@:s var pathFont : String;
+	@:s public var contentText:String = "Empty string";
 
-	@:s public var contentText : String = "Empty string";
-
-	public function new( ?parent ) {
+	public function new(?parent) {
 		super(parent);
 		type = "text3d";
 	}
 
 	#if editor
-
-	override function getHideProps() : HideProps {
-		return { icon : "font", name : "Text3D" };
+	override function getHideProps():HideProps {
+		return {icon: "font", name: "Text3D"};
 	}
 
-	override function edit( ctx : EditContext ) {
+	override function edit(ctx:EditContext) {
 		super.edit(ctx);
 
 		var parameters = new hide.Element('<div class="group" name="Parameters"></div>');
@@ -121,12 +119,13 @@ class Text3D extends Object3D {
 		var fileInput = new hide.Element('<input type="text" field="pathFont" style="width:165px" />').appendTo(element);
 
 		var tfile = new hide.comp.FileSelect(["fnt"], null, fileInput);
-		if (this.pathFont != null && this.pathFont.length > 0) tfile.path = this.pathFont;
+		if (this.pathFont != null && this.pathFont.length > 0)
+			tfile.path = this.pathFont;
 		tfile.onChange = function() {
 			this.pathFont = tfile.path;
 			updateInstance(ctx.getContext(this), "pathFont");
 		}
-        new hide.Element('<dt>Align</dt>').appendTo(gr);
+		new hide.Element('<dt>Align</dt>').appendTo(gr);
 		var element = new hide.Element('<dd></dd>').appendTo(gr);
 		var leftAlign = new hide.Element('<input type="button" style="width: 50px" value="Left" /> ').appendTo(element);
 		var middleAlign = new hide.Element('<input type="button" style="width: 50px" value="Center" /> ').appendTo(element);
@@ -170,10 +169,9 @@ class Text3D extends Object3D {
 			ctx.onChange(this, pname);
 		});
 	}
-
 	#end
 
-	override function updateInstance( ctx : Context, ?propName : String) {
+	override function updateInstance(ctx:Context, ?propName:String) {
 		super.updateInstance(ctx, propName);
 		if (pathFont == null || pathFont.length == 0) {
 			return;
@@ -181,14 +179,14 @@ class Text3D extends Object3D {
 		var text = loadText();
 		if (text == null || text.length == 0)
 			return;
-		var mesh : h3d.scene.Mesh = cast ctx.local3d;
+		var mesh:h3d.scene.Mesh = cast ctx.local3d;
 		var h2dFont = loadFont();
 		var h2dText = (cast ctx.local2d : h2d.Text);
 		h2dText.font = h2dFont;
 		h2dText.letterSpacing = letterSpacing;
 		h2dText.text = text;
 		h2dText.smooth = true;
-        h2dText.textAlign = switch (align) {
+		h2dText.textAlign = switch (align) {
 			case 1:
 				Center;
 			case 2:
@@ -218,7 +216,7 @@ class Text3D extends Object3D {
 		}
 	}
 
-	public dynamic function loadFont() : h2d.Font {
+	public dynamic function loadFont():h2d.Font {
 		var f = defaultLoadFont(pathFont, size, cutoff, smoothing);
 		if (f == null) {
 			if (pathFont != null && pathFont.length > 0) {
@@ -227,23 +225,23 @@ class Text3D extends Object3D {
 			} else {
 				return null;
 			}
-		}
-		else return f;
+		} else
+			return f;
 	}
 
-	public static dynamic function defaultLoadFont( pathFont : String, size : Int, cutoff : Float, smoothing : Float ) : h2d.Font {
+	public static dynamic function defaultLoadFont(pathFont:String, size:Int, cutoff:Float, smoothing:Float):h2d.Font {
 		return null;
 	}
 
-	public dynamic function loadText() : String {
+	public dynamic function loadText():String {
 		var str = defaultLoadText(contentText);
 		if (str == null) {
 			return contentText;
-		}
-		else return str;
+		} else
+			return str;
 	}
 
-	public static dynamic function defaultLoadText(id: String) : String {
+	public static dynamic function defaultLoadText(id:String):String {
 		return null;
 	}
 
@@ -263,3 +261,4 @@ class Text3D extends Object3D {
 
 	static var _ = Library.register("text3d", Text3D);
 }
+#end

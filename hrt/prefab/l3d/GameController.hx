@@ -1,24 +1,23 @@
 package hrt.prefab.l3d;
 
+#if savehide
 class GameController extends Object3D {
-
-	@:s public var moveSpeed : Float = 1.;
-	@:s public var zOffset : Float = 0.0;
-	@:s public var followGround : Bool = true;
-	@:s public var cameraFollowGround : Bool = true;
-	@:s public var startFullScreen : Bool = true;
-	@:s public var animIdle : String = "idle";
-	@:s public var animMove : String = "walk";
-	@:s public var animJump : String = "jump";
-	@:s public var animFall : String = "fall";
-	@:s public var animSmooth : Float = 0.2;
-	@:s public var jumpPower : Float = 0.;
-	@:s public var jumpPowerHold : Float = 0.;
-	@:s public var jumpPowerHoldTime : Float = 0.;
-	@:s public var gravity : Float = 50.;
+	@:s public var moveSpeed:Float = 1.;
+	@:s public var zOffset:Float = 0.0;
+	@:s public var followGround:Bool = true;
+	@:s public var cameraFollowGround:Bool = true;
+	@:s public var startFullScreen:Bool = true;
+	@:s public var animIdle:String = "idle";
+	@:s public var animMove:String = "walk";
+	@:s public var animJump:String = "jump";
+	@:s public var animFall:String = "fall";
+	@:s public var animSmooth:Float = 0.2;
+	@:s public var jumpPower:Float = 0.;
+	@:s public var jumpPowerHold:Float = 0.;
+	@:s public var jumpPowerHoldTime:Float = 0.;
+	@:s public var gravity:Float = 50.;
 
 	#if editor
-
 	override function makeInstance(ctx:Context):Context {
 		ctx = super.makeInstance(ctx);
 		ctx.local3d.ignoreParentTransform = true;
@@ -55,23 +54,23 @@ class GameController extends Object3D {
 					<dt>Smooth</dt><dd><input type="range" min="0" max="1" field="animSmooth"/></dd>
 				</dl>
 			</div>
-		'),this);
+		'), this);
 
 		var active = false;
 		var lctx = ctx.getContext(this);
 		var obj = lctx.local3d;
 		var camSave = null;
-		var dummy : h3d.scene.Object = null;
+		var dummy:h3d.scene.Object = null;
 		var cam = ctx.scene.s3d.camera;
-		var camRot : h3d.Vector = null;
-		var startCamRot : h3d.Vector = null;
+		var camRot:h3d.Vector = null;
+		var startCamRot:h3d.Vector = null;
 		var zSpeed = 0.;
 		var startJumpTime = 1e9;
 
-		function selectRec( p : Prefab, b : Bool ) {
-			if( !p.setSelected(ctx.getContext(p), b) )
+		function selectRec(p:Prefab, b:Bool) {
+			if (!p.setSelected(ctx.getContext(p), b))
 				return;
-			for( c in p.children )
+			for (c in p.children)
 				selectRec(c, b);
 		}
 
@@ -85,29 +84,33 @@ class GameController extends Object3D {
 			cam.fovY = camSave.fovY;
 			ctx.scene.editor.cameraController.loadFromCamera();
 			@:privateAccess ctx.scene.editor.showGizmo = true;
-			if( dummy != null ) dummy.remove();
-			if( startFullScreen ) ctx.scene.editor.setFullScreen(false);
+			if (dummy != null)
+				dummy.remove();
+			if (startFullScreen)
+				ctx.scene.editor.setFullScreen(false);
 			selectRec(this, true);
 		}
 
-		var currentAnim = new Map<h3d.scene.Object,String>();
+		var currentAnim = new Map<h3d.scene.Object, String>();
 		var baseZ = obj.z;
 
-		function playAnim( anim : String ) {
-			for( o in getAll(Model,true) ) {
-				if( o.source == null ) continue;
+		function playAnim(anim:String) {
+			for (o in getAll(Model, true)) {
+				if (o.source == null)
+					continue;
 				var octx = ctx.getContext(o);
-				if( octx == null ) continue;
-
-				if( currentAnim.get(octx.local3d) == anim )
+				if (octx == null)
 					continue;
 
-				var animList = try ctx.scene.listAnims(o.source) catch(e: Dynamic) [];
-				for( a2 in animList ) {
-					if( ctx.scene.animationName(a2).toLowerCase() == anim.toLowerCase() ) {
+				if (currentAnim.get(octx.local3d) == anim)
+					continue;
+
+				var animList = try ctx.scene.listAnims(o.source) catch (e:Dynamic) [];
+				for (a2 in animList) {
+					if (ctx.scene.animationName(a2).toLowerCase() == anim.toLowerCase()) {
 						octx.local3d.playAnimation(octx.loadAnimation(a2));
-						if( animSmooth > 0 )
-							octx.local3d.switchToAnimation(new h3d.anim.SmoothTarget(octx.local3d.currentAnimation,animSmooth));
+						if (animSmooth > 0)
+							octx.local3d.switchToAnimation(new h3d.anim.SmoothTarget(octx.local3d.currentAnimation, animSmooth));
 						currentAnim.set(octx.local3d, anim);
 						break;
 					}
@@ -115,16 +118,21 @@ class GameController extends Object3D {
 			}
 		}
 
-		function onUpdate( dt : Float ) {
+		function onUpdate(dt:Float) {
 			var pad = ctx.ide.gamePad;
 			var force = false;
-			if( pad.isPressed(pad.config.start) ) {
+			if (pad.isPressed(pad.config.start)) {
 				active = !active;
-				if( !active ) {
+				if (!active) {
 					restore();
 				} else {
 					@:privateAccess ctx.scene.editor.showGizmo = false;
-					camSave = { pos : cam.pos.clone(), target : cam.target.clone(), fovY : cam.fovY, zFar : cam.zFar };
+					camSave = {
+						pos: cam.pos.clone(),
+						target: cam.target.clone(),
+						fovY: cam.fovY,
+						zFar: cam.zFar
+					};
 
 					obj.setTransform(getTransform());
 					var delta = cam.pos.sub(cam.target);
@@ -134,34 +142,34 @@ class GameController extends Object3D {
 					startCamRot.w = delta.length();
 					camRot = startCamRot.clone();
 
-					if( obj.numChildren == 0 )
+					if (obj.numChildren == 0)
 						dummy = new h3d.scene.Box(obj);
-					if( startFullScreen )
+					if (startFullScreen)
 						ctx.scene.editor.setFullScreen(true);
 					force = true;
 					selectRec(this, false);
 				}
-
 			}
-			if( !active )
+			if (!active)
 				return;
 
-			inline function rotateVector(v : h3d.Vector, x, y, z) {
+			inline function rotateVector(v:h3d.Vector, x, y, z) {
 				var m = new h3d.Matrix();
 				m.initRotation(x, y, z);
 				v.transform(m);
 			}
 
-			if( pad.isDown(pad.config.Y) ) dt *= 10;
-			if( pad.isDown(pad.config.X) ) {
+			if (pad.isDown(pad.config.Y))
+				dt *= 10;
+			if (pad.isDown(pad.config.X)) {
 				camRot = startCamRot.clone();
 			}
 
-			if( pad.isDown(pad.config.A) ) {
-				if( zSpeed == 0 ) {
+			if (pad.isDown(pad.config.A)) {
+				if (zSpeed == 0) {
 					zSpeed = -jumpPower;
 					startJumpTime = haxe.Timer.stamp();
-				} else if( zSpeed < 0 && haxe.Timer.stamp() - startJumpTime < jumpPowerHoldTime )
+				} else if (zSpeed < 0 && haxe.Timer.stamp() - startJumpTime < jumpPowerHoldTime)
 					zSpeed -= (jumpPowerHold / jumpPowerHoldTime) * dt;
 			}
 
@@ -169,14 +177,14 @@ class GameController extends Object3D {
 			zSpeed += gravity * dt;
 
 			// Rotate cam
-			if(hxd.Math.abs(pad.rxAxis) > 0.2 || hxd.Math.abs(pad.ryAxis) > 0.2) {
+			if (hxd.Math.abs(pad.rxAxis) > 0.2 || hxd.Math.abs(pad.ryAxis) > 0.2) {
 				camRot.z += pad.rxAxis * dt * 2.0;
 				camRot.y -= pad.ryAxis * dt * 1.0;
 			}
 
 			// Zoom
 			var z = pad.values[pad.config.LT] - pad.values[pad.config.RT];
-			if(z != 0.0)
+			if (z != 0.0)
 				camRot.w *= Math.exp(1.0 * z * dt);
 
 			var camDelta = new h3d.Vector(camRot.w);
@@ -187,8 +195,8 @@ class GameController extends Object3D {
 
 			// Move
 			var moving = hxd.Math.abs(pad.xAxis) > 0.2 || hxd.Math.abs(pad.yAxis) > 0.2;
-			if( force || moving ) {
-				var delta = new h3d.Vector(pad.yAxis,-pad.xAxis,0);
+			if (force || moving) {
+				var delta = new h3d.Vector(pad.yAxis, -pad.xAxis, 0);
 				rotateVector(delta, 0, 0, camRot.z);
 				delta.scale(dt * moveSpeed);
 				obj.x += delta.x;
@@ -196,23 +204,23 @@ class GameController extends Object3D {
 				obj.setRotation(0, 0, Math.atan2(delta.y, delta.x));
 			}
 
-			if( obj.z < groundZ ) {
+			if (obj.z < groundZ) {
 				zSpeed = 0;
 				obj.z = groundZ;
 			}
 			cam.target.set(obj.x, obj.y, (cameraFollowGround ? obj.z : 0) + zOffset);
 
-			if( zSpeed < 0 )
+			if (zSpeed < 0)
 				playAnim(animJump);
-			else if( zSpeed > 0 )
+			else if (zSpeed > 0)
 				playAnim(animFall)
-			else if( moving )
+			else if (moving)
 				playAnim(animMove);
 			else
 				playAnim(animIdle);
 
 			cam.pos = cam.target.add(camDelta);
-			if( followGround )
+			if (followGround)
 				cam.pos.z = hxd.Math.max(cam.pos.z, gz);
 			cam.update();
 			ctx.scene.editor.cameraController.loadFromCamera();
@@ -220,12 +228,13 @@ class GameController extends Object3D {
 
 		ctx.scene.addListener(onUpdate);
 		ctx.cleanups.push(() -> {
-			if( active ) restore();
+			if (active)
+				restore();
 			ctx.scene.removeListener(onUpdate);
 		});
 	}
 	#end
 
 	static var _ = Library.register("gamectrl", GameController);
-
 }
+#end

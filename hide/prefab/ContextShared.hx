@@ -28,7 +28,7 @@ class ContextShared extends hrt.prefab.ContextShared {
 	}
 
 	override function loadShader( path : String ) {
-		return hide.Ide.inst.shaderLoader.loadSharedShader(path);
+		return null; // hide.Ide.inst.shaderLoader.loadSharedShader(path);
 	}
 
 	override function loadModel( path : String ) {

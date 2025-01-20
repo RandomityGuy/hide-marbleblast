@@ -2,59 +2,58 @@ package hide;
 
 @:expose
 class Ide {
+	public var currentConfig(get, never):Config;
+	public var projectDir(get, never):String;
+	public var resourceDir(get, never):String;
+	public var initializing(default, null):Bool;
+	public var appPath(get, null):String;
 
-	public var currentConfig(get,never) : Config;
-	public var projectDir(get,never) : String;
-	public var resourceDir(get,never) : String;
-	public var initializing(default,null) : Bool;
-	public var appPath(get, null): String;
+	public var mouseX:Int = 0;
+	public var mouseY:Int = 0;
 
-	public var mouseX : Int = 0;
-	public var mouseY : Int = 0;
+	public var isWindows(get, never):Bool;
+	public var isFocused(get, never):Bool;
 
-	public var isWindows(get, never) : Bool;
-	public var isFocused(get, never) : Bool;
-
-	public var shaderLoader : hide.tools.ShaderLoader;
-	public var fileWatcher : hide.tools.FileWatcher;
+	public var fileWatcher:hide.tools.FileWatcher;
 	public var isCDB = false;
 	public var isDebugger = false;
 
-	public var gamePad(default,null) : hxd.Pad;
+	public var gamePad(default, null):hxd.Pad;
 
-	var databaseFile : String;
-	var databaseDiff : String;
-	var pakFile : hxd.fmt.pak.FileSystem;
-	var dbWatcher : hide.tools.FileWatcher.FileWatchEvent;
+	var databaseFile:String;
+	var databaseDiff:String;
+	var pakFile:hxd.fmt.pak.FileSystem;
+	var dbWatcher:hide.tools.FileWatcher.FileWatchEvent;
 
-	var config : {
-		global : Config,
-		project : Config,
-		user : Config,
-		current : Config,
+	var config:{
+		global:Config,
+		project:Config,
+		user:Config,
+		current:Config,
 	};
-	public var ideConfig(get, never) : hide.Config.HideGlobalConfig;
-	public var projectConfig(get, never) : hide.Config.HideProjectConfig;
 
-	var window : nw.Window;
-	var saveMenu : nw.Menu;
-	var layout : golden.Layout;
+	public var ideConfig(get, never):hide.Config.HideGlobalConfig;
+	public var projectConfig(get, never):hide.Config.HideProjectConfig;
 
-	var currentLayout : { name : String, state : Config.LayoutState };
-	var defaultLayout : { name : String, state : Config.LayoutState };
-	var currentFullScreen(default,set) : hide.ui.View<Dynamic>;
-	var maximized : Bool;
-	var fullscreen : Bool;
-	var updates : Array<Void->Void> = [];
-	var views : Array<hide.ui.View<Dynamic>> = [];
+	var window:nw.Window;
+	var saveMenu:nw.Menu;
+	var layout:golden.Layout;
 
-	var renderers : Array<h3d.mat.MaterialSetup>;
-	var subView : { component : String, state : Dynamic, events : {} };
-	var scripts : Map<String,Array<Void->Void>> = new Map();
+	var currentLayout:{name:String, state:Config.LayoutState};
+	var defaultLayout:{name:String, state:Config.LayoutState};
+	var currentFullScreen(default, set):hide.ui.View<Dynamic>;
+	var maximized:Bool;
+	var fullscreen:Bool;
+	var updates:Array<Void->Void> = [];
+	var views:Array<hide.ui.View<Dynamic>> = [];
+
+	var renderers:Array<h3d.mat.MaterialSetup>;
+	var subView:{component:String, state:Dynamic, events:{}};
+	var scripts:Map<String, Array<Void->Void>> = new Map();
 	var hasReloaded = false;
 
 	public var show3DIcons = true;
-	public var show3DIconsCategory : Map<hrt.impl.EditorTools.IconCategory, Bool> = new Map();
+	public var show3DIconsCategory:Map<hrt.impl.EditorTools.IconCategory, Bool> = new Map();
 
 	static var firstInit = true;
 
@@ -63,7 +62,7 @@ class Ide {
 		isCDB = Sys.getEnv("HIDE_START_CDB") == "1" || nw.App.manifest.name == "CDB";
 		isDebugger = Sys.getEnv("HIDE_DEBUG") == "1";
 		function wait() {
-			if( monaco.ScriptEditor == null ) {
+			if (monaco.ScriptEditor == null) {
 				haxe.Timer.delay(wait, 10);
 				return;
 			}
@@ -81,44 +80,45 @@ class Ide {
 		inst = this;
 		window = nw.Window.get();
 		var cwd = Sys.getCwd();
-		config = Config.loadForProject(cwd, cwd+"/res");
+		config = Config.loadForProject(cwd, cwd + "/res");
 		var current = ideConfig.currentProject;
-		if( StringTools.endsWith(cwd,"package.nw") && sys.FileSystem.exists(cwd.substr(0,-10)+"res") )
-			cwd = cwd.substr(0,-11);
-		if( current == "" ) cwd;
+		if (StringTools.endsWith(cwd, "package.nw") && sys.FileSystem.exists(cwd.substr(0, -10) + "res"))
+			cwd = cwd.substr(0, -11);
+		if (current == "")
+			cwd;
 
 		var args = js.Browser.document.URL.split("?")[1];
-		if( args != null ) {
+		if (args != null) {
 			var parts = args.split("&");
 			var vars = new Map();
-			for( p in parts ) {
+			for (p in parts) {
 				var p = p.split("=");
-				vars.set(p[0],StringTools.urlDecode(p[1]));
+				vars.set(p[0], StringTools.urlDecode(p[1]));
 			}
 			var sub = vars.get("subView");
-			if( sub != null ) {
+			if (sub != null) {
 				var obj = untyped global.sharedRefs.get(Std.parseInt(vars.get("sid")));
-				subView = { component : sub, state : obj.state, events : obj.events };
+				subView = {component: sub, state: obj.state, events: obj.events};
 			}
 		}
 
 		nw.Screen.Init();
 		var xMax = 1;
 		var yMax = 1;
-		for( s in nw.Screen.screens ) {
-			if( s.work_area.x + s.work_area.width > xMax )
+		for (s in nw.Screen.screens) {
+			if (s.work_area.x + s.work_area.width > xMax)
 				xMax = s.work_area.x + s.work_area.width;
-			if( s.work_area.y + s.work_area.height > yMax )
+			if (s.work_area.y + s.work_area.height > yMax)
 				yMax = s.work_area.y + s.work_area.height;
 		}
-		if( subView == null ) {
+		if (subView == null) {
 			var wp = ideConfig.windowPos;
-			if( wp != null ) {
-				if( wp.w > 400 && wp.h > 300 )
+			if (wp != null) {
+				if (wp.w > 400 && wp.h > 300)
 					window.resizeBy(wp.w - Std.int(window.window.outerWidth), wp.h - Std.int(window.window.outerHeight));
-				if( wp.x >= 0 && wp.y >= 0 && wp.x < xMax && wp.y < yMax)
+				if (wp.x >= 0 && wp.y >= 0 && wp.x < xMax && wp.y < yMax)
 					window.moveTo(wp.x, wp.y);
-				if( wp.max ) {
+				if (wp.max) {
 					window.maximize();
 					maximized = true;
 				}
@@ -126,13 +126,14 @@ class Ide {
 		}
 		window.show(true);
 
-		if( config.global.get("hide") == null )
+		if (config.global.get("hide") == null)
 			error("Failed to load defaultProps.json");
 
 		fileWatcher = new hide.tools.FileWatcher();
 
-		if( !sys.FileSystem.exists(current) || !sys.FileSystem.isDirectory(current) ) {
-			if( current != "" ) js.Browser.alert(current+" no longer exists");
+		if (!sys.FileSystem.exists(current) || !sys.FileSystem.isDirectory(current)) {
+			if (current != "")
+				js.Browser.alert(current + " no longer exists");
 			current = cwd;
 		}
 
@@ -146,33 +147,41 @@ class Ide {
 			mouseY = e.y;
 		});
 		window.on('maximize', function() {
-			if(fullscreen) return;
+			if (fullscreen)
+				return;
 			maximized = true;
 			onWindowChange();
 		});
 		window.on('restore', function() {
-			if(fullscreen) return;
+			if (fullscreen)
+				return;
 			maximized = false;
 			onWindowChange();
 		});
-		window.on('move', function() haxe.Timer.delay(onWindowChange,100));
-		window.on('resize', function() haxe.Timer.delay(onWindowChange,100));
+		window.on('move', function() haxe.Timer.delay(onWindowChange, 100));
+		window.on('resize', function() haxe.Timer.delay(onWindowChange, 100));
 		window.on('close', function() {
-			if( hasReloaded ) return;
-			if( !isDebugger )
-				for( v in views )
-					if( !v.onBeforeClose() )
+			if (hasReloaded)
+				return;
+			if (!isDebugger)
+				for (v in views)
+					if (!v.onBeforeClose())
 						return;
 			window.close(true);
 		});
-		window.on("blur", function() { if( h3d.Engine.getCurrent() != null && !hasReloaded ) hxd.Key.initialize(); });
+		window.on("blur", function() {
+			if (h3d.Engine.getCurrent() != null && !hasReloaded)
+				hxd.Key.initialize();
+		});
 
 		// handle commandline parameters
 		nw.App.on("open", function(cmd) {
-			if( hasReloaded ) return;
+			if (hasReloaded)
+				return;
 			~/"([^"]+)"/g.map(cmd, function(r) {
 				var file = r.matched(1);
-				if( sys.FileSystem.exists(file) ) openFile(file);
+				if (sys.FileSystem.exists(file))
+					openFile(file);
 				return "";
 			});
 		});
@@ -182,14 +191,14 @@ class Ide {
 			// handle cancel on type=file
 			haxe.Timer.delay(function() new Element(body).find("input[type=file]").change().remove(), 200);
 		});
-		function dragFunc(drop : Bool, e:js.html.DragEvent) {
+		function dragFunc(drop:Bool, e:js.html.DragEvent) {
 			syncMousePosition(e);
 			var view = getViewAt(mouseX, mouseY);
-			var items : Array<String> = [for(f in e.dataTransfer.files) Reflect.field(f, "path")];
+			var items:Array<String> = [for (f in e.dataTransfer.files) Reflect.field(f, "path")];
 			var txt = e.dataTransfer.getData("text/plain");
 			if (txt != null && txt != "")
 				items.push(txt);
-			if(view != null && view.onDragDrop(items, drop)) {
+			if (view != null && view.onDragDrop(items, drop)) {
 				e.preventDefault();
 				e.stopPropagation();
 				return true;
@@ -201,72 +210,83 @@ class Ide {
 			return false;
 		};
 		body.ondrop = function(e:js.html.DragEvent) {
-			if(!dragFunc(true, e)) {
-				for( f in e.dataTransfer.files )
-					openFile(Reflect.field(f,"path"));
+			if (!dragFunc(true, e)) {
+				for (f in e.dataTransfer.files)
+					openFile(Reflect.field(f, "path"));
 				e.preventDefault();
 			}
 			return false;
 		}
 
-		if( subView != null ) body.className +=" hide-subview";
+		if (subView != null)
+			body.className += " hide-subview";
 
 		// Listen to FileTree dnd
-		function treeDragFun(data,drop) {
-			var nodeIds : Array<String> = cast data.data.nodes;
-			if(data.data.jstree == null) return false;
-			for( ft in getViews(hide.view.FileTree) ) {
+		function treeDragFun(data, drop) {
+			var nodeIds:Array<String> = cast data.data.nodes;
+			if (data.data.jstree == null)
+				return false;
+			for (ft in getViews(hide.view.FileTree)) {
 				var paths = [];
 				@:privateAccess {
-					if (ft.tree == null || data.data.origin == null) continue;
-					if(ft.tree.element[0] != data.data.origin.element[0]) continue;
-					for(id in nodeIds) {
+					if (ft.tree == null || data.data.origin == null)
+						continue;
+					if (ft.tree.element[0] != data.data.origin.element[0])
+						continue;
+					for (id in nodeIds) {
 						var item = ft.tree.map.get(id);
-						if(item != null)
+						if (item != null)
 							paths.push(item.value);
 					}
 				}
-				if(paths.length == 0)
+				if (paths.length == 0)
 					continue;
 				var view = getViewAt(mouseX, mouseY);
-				if(view != null)
+				if (view != null)
 					return view.onDragDrop(paths, drop);
 			}
 			return false;
 		}
 		new Element(window.window.document).on("dnd_move.vakata.jstree", function(e, data:Dynamic) {
-			var el = (data.helper:hide.Element);
-			var drag = treeDragFun(data,false);
+			var el = (data.helper : hide.Element);
+			var drag = treeDragFun(data, false);
 			trace(drag);
 			var icon = el.find(new Element(".jstree-icon"));
-			el.css(drag ? { filter : "brightness(120%)", opacity : 1 } : { filter : "", opacity : 0.5 });
+			el.css(drag ? {filter: "brightness(120%)", opacity: 1} : {filter: "", opacity: 0.5});
 			icon.toggleClass("jstree-er", !drag);
 			icon.toggleClass("jstree-ok", drag);
 		});
 		new Element(window.window.document).on("dnd_stop.vakata.jstree", function(e, data) {
-			treeDragFun(data,true);
+			treeDragFun(data, true);
 		});
 
 		// dispatch global keys based on mouse position
 		new Element(body).keydown(function(e) {
 			var view = getViewAt(mouseX, mouseY);
-			if(view != null) view.processKeyEvent(e);
+			if (view != null)
+				view.processKeyEvent(e);
 		});
 
 		hrt.impl.EditorTools.setupIconCategories();
 	}
 
-	public function getViews<K,T:hide.ui.View<K>>( cl : Class<T> ) {
-		return [for( v in views ) { var t = Std.downcast(v,cl); if( t != null ) t; }];
+	public function getViews<K, T:hide.ui.View<K>>(cl:Class<T>) {
+		return [
+			for (v in views) {
+				var t = Std.downcast(v, cl);
+				if (t != null) t;
+			}
+		];
 	}
 
-	function getViewAt(x : Float, y : Float) {
+	function getViewAt(x:Float, y:Float) {
 		var pickedEl = js.Browser.document.elementFromPoint(x, y);
-		for( v in views ) {
+		for (v in views) {
 			var viewEl = v.element[0];
 			var el = pickedEl;
-			while(el != null) {
-				if(el == viewEl) return v;
+			while (el != null) {
+				if (el == viewEl)
+					return v;
 				el = el.parentElement;
 			}
 		}
@@ -276,9 +296,10 @@ class Ide {
 	function syncMousePosition(e:js.html.MouseEvent) {
 		mouseX = e.clientX;
 		mouseY = e.clientY;
-		for( c in new Element("canvas") ) {
-			var s : hide.comp.Scene = (c:Dynamic).__scene;
-			if( s != null ) @:privateAccess {
+		for (c in new Element("canvas")) {
+			var s:hide.comp.Scene = (c : Dynamic).__scene;
+			if (s != null)
+				@:privateAccess {
 				s.window.curMouseX = mouseX;
 				s.window.curMouseY = mouseY;
 			}
@@ -294,83 +315,100 @@ class Ide {
 	}
 
 	function onWindowChange() {
-		if( hasReloaded )
+		if (hasReloaded)
 			return;
-		if( ideConfig.windowPos == null ) ideConfig.windowPos = { x : 0, y : 0, w : 0, h : 0, max : false };
+		if (ideConfig.windowPos == null)
+			ideConfig.windowPos = {
+				x: 0,
+				y: 0,
+				w: 0,
+				h: 0,
+				max: false
+			};
 		ideConfig.windowPos.max = maximized;
-		if( !maximized ) {
+		if (!maximized) {
 			ideConfig.windowPos.x = window.x;
 			ideConfig.windowPos.y = window.y;
 			ideConfig.windowPos.w = Std.int(window.window.outerWidth);
 			ideConfig.windowPos.h = Std.int(window.window.outerHeight);
 		}
-		if( subView == null )
+		if (subView == null)
 			config.global.save();
 	}
 
-	function initLayout( ?state : { name : String, state : Config.LayoutState } ) {
+	function initLayout(?state:{name:String, state:Config.LayoutState}) {
 		initializing = true;
 
-		if( layout != null ) {
+		if (layout != null) {
 			layout.destroy();
 			layout = null;
 		}
 
 		defaultLayout = null;
 		var layoutName = isCDB ? "CDB" : "Default";
-		var emptyLayout : Config.LayoutState = { content : [], fullScreen : null };
-		for( p in projectConfig.layouts )
-			if( p.name == layoutName ) {
-				if( p.state.content == null ) continue; // old version
+		var emptyLayout:Config.LayoutState = {content: [], fullScreen: null};
+		for (p in projectConfig.layouts)
+			if (p.name == layoutName) {
+				if (p.state.content == null)
+					continue; // old version
 				defaultLayout = p;
 				break;
 			}
-		if( defaultLayout == null ) {
-			defaultLayout = { name : layoutName, state : emptyLayout };
+		if (defaultLayout == null) {
+			defaultLayout = {name: layoutName, state: emptyLayout};
 			projectConfig.layouts.push(defaultLayout);
 			config.current.sync();
 			config.user.save();
 		}
-		if( state == null )
+		if (state == null)
 			state = defaultLayout;
 
-		if( subView != null )
-			state = { name : "SubView", state : emptyLayout };
+		if (subView != null)
+			state = {name: "SubView", state: emptyLayout};
 
 		this.currentLayout = state;
 
-		var config : golden.Config = {
+		var config:golden.Config = {
 			content: state.state.content,
 			settings: {
 				// Default to false
-				reorderEnabled : config.user.get('layout.reorderEnabled') == true,
-				showPopoutIcon : config.user.get('layout.showPopoutIcon') == true,
-				showMaximiseIcon : config.user.get('layout.showMaximiseIcon') == true
+				reorderEnabled: config.user.get('layout.reorderEnabled') == true,
+				showPopoutIcon: config.user.get('layout.showPopoutIcon') == true,
+				showMaximiseIcon: config.user.get('layout.showMaximiseIcon') == true
 			}
 		};
 		var comps = new Map();
-		for( vcl in hide.ui.View.viewClasses )
+		for (vcl in hide.ui.View.viewClasses)
 			comps.set(vcl.name, true);
 		function checkRec(i:golden.Config.ItemConfig) {
-			if( i.componentName != null && !comps.exists(i.componentName) ) {
+			if (i.componentName != null && !comps.exists(i.componentName)) {
 				i.componentState.deletedComponent = i.componentName;
 				i.componentName = "hide.view.Unknown";
 			}
-			if( i.content != null ) for( i in i.content ) checkRec(i);
+			if (i.content != null)
+				for (i in i.content)
+					checkRec(i);
 		}
-		for( i in config.content ) checkRec(i);
+		for (i in config.content)
+			checkRec(i);
 
 		layout = new golden.Layout(config);
 
 		var initViews = [];
 		function initView(view:hide.ui.View<Dynamic>) {
-			if( isDebugger ) view.rebuild() else try view.rebuild() catch( e : Dynamic ) error(view+":"+e);
+			if (isDebugger)
+				view.rebuild()
+			else
+				try
+					view.rebuild()
+				catch (e:Dynamic)
+					error(view + ":" + e);
 		}
-		for( vcl in hide.ui.View.viewClasses )
-			layout.registerComponent(vcl.name,function(cont,state) {
-				var view = Type.createInstance(vcl.cl,[state]);
+		for (vcl in hide.ui.View.viewClasses)
+			layout.registerComponent(vcl.name, function(cont, state) {
+				var view = Type.createInstance(vcl.cl, [state]);
 				view.setContainer(cont);
-				if( initializing )
+				if (initializing)
 					initViews.push(view);
 				else
 					initView(view);
@@ -382,8 +420,8 @@ class Ide {
 		var waitCount = 0;
 		function waitInit() {
 			waitCount++;
-			if( !layout.isInitialised ) {
-				if( waitCount > 20 ) {
+			if (!layout.isInitialised) {
+				if (waitCount > 20) {
 					// timeout : error recovery if invalid component
 					state.state = emptyLayout;
 					initLayout();
@@ -392,34 +430,35 @@ class Ide {
 				haxe.Timer.delay(waitInit, 50);
 				return;
 			}
-			if( state.state.fullScreen != null ) {
+			if (state.state.fullScreen != null) {
 				var fs = state.state.fullScreen;
-				var found = [for( v in views ) if( v.viewClass == fs.name ) v];
-				if( found.length == 1 )
+				var found = [for (v in views) if (v.viewClass == fs.name) v];
+				if (found.length == 1)
 					found[0].fullScreen = true;
 				else {
-					for( f in found )
-						if( haxe.Json.stringify(f.state) == haxe.Json.stringify(fs.state) ) {
+					for (f in found)
+						if (haxe.Json.stringify(f.state) == haxe.Json.stringify(fs.state)) {
 							f.fullScreen = true;
 							break;
 						}
 				}
 			}
 			initializing = false;
-			for( v in initViews )
+			for (v in initViews)
 				initView(v);
 			initViews = null;
-			if( subView == null && views.length == 0 ) {
-				open("hide.view.FileTree",{path:""});
+			if (subView == null && views.length == 0) {
+				open("hide.view.FileTree", {path: ""});
 			}
 			open("hide.view.Welcome", {});
-			if( firstInit ) {
+			if (firstInit) {
 				firstInit = false;
-				for( file in nw.App.argv ) {
-					if( !sys.FileSystem.exists(file) ) continue;
+				for (file in nw.App.argv) {
+					if (!sys.FileSystem.exists(file))
+						continue;
 					openFile(file);
 				}
-				if( subView != null )
+				if (subView != null)
 					open(subView.component, subView.state);
 			}
 		};
@@ -431,11 +470,11 @@ class Ide {
 	function mainLoop() {
 		hxd.Timer.update();
 		@:privateAccess hxd.Pad.syncPads();
-		for( f in updates )
+		for (f in updates)
 			f();
 	}
 
-	public function setFullscreen(b : Bool) {
+	public function setFullscreen(b:Bool) {
 		if (b) {
 			fullscreen = true;
 			window.maximize();
@@ -449,7 +488,7 @@ class Ide {
 			// NWJS bug: changing fullscreen triggers spurious "restore" events
 			haxe.Timer.delay(function() {
 				fullscreen = false;
-				if(maximized)
+				if (maximized)
 					window.maximize();
 			}, 150);
 		}
@@ -458,42 +497,49 @@ class Ide {
 	function set_currentFullScreen(v) {
 		var old = currentFullScreen;
 		currentFullScreen = v;
-		if( old != null ) old.fullScreen = false;
+		if (old != null)
+			old.fullScreen = false;
 		onLayoutChanged();
 		return v;
 	}
 
 	function onLayoutChanged() {
-		if( initializing || !ideConfig.autoSaveLayout || isCDB )
+		if (initializing || !ideConfig.autoSaveLayout || isCDB)
 			return;
 		defaultLayout.state = saveLayout();
-		if( subView == null ) this.config.user.save();
+		if (subView == null)
+			this.config.user.save();
 	}
 
-	function saveLayout() : Config.LayoutState {
+	function saveLayout():Config.LayoutState {
 		return {
-			content : layout.toConfig().content,
-			fullScreen : currentFullScreen == null ? null : { name : currentFullScreen.viewClass, state : currentFullScreen.state }
+			content: layout.toConfig().content,
+			fullScreen: currentFullScreen == null ? null : {name: currentFullScreen.viewClass, state: currentFullScreen.state}
 		};
 	}
 
-	function get_ideConfig() return cast config.global.source.hide;
-	function get_projectConfig() return cast config.user.source.hide;
-	function get_currentConfig() return config.user;
+	function get_ideConfig()
+		return cast config.global.source.hide;
+
+	function get_projectConfig()
+		return cast config.user.source.hide;
+
+	function get_currentConfig()
+		return config.user;
 
 	function get_appPath() {
-		if( appPath != null )
+		if (appPath != null)
 			return appPath;
 		var path = js.Node.process.argv[0].split("\\").join("/").split("/");
 		path.pop();
 		var hidePath = path.join("/");
-		if( !sys.FileSystem.exists(hidePath + "/package.json") ) {
+		if (!sys.FileSystem.exists(hidePath + "/package.json")) {
 			var prevPath = new haxe.io.Path(hidePath).dir;
-			if( sys.FileSystem.exists(prevPath + "/hide.js") )
+			if (sys.FileSystem.exists(prevPath + "/hide.js"))
 				return appPath = prevPath;
 			// nwjs launch
 			var path = Sys.getCwd().split("\\").join("/");
-			if( sys.FileSystem.exists(path+"/hide.js") )
+			if (sys.FileSystem.exists(path + "/hide.js"))
 				return appPath = path;
 			message("Hide application path was not found");
 			Sys.exit(0);
@@ -501,7 +547,7 @@ class Ide {
 		return appPath = hidePath;
 	}
 
-	public function setClipboard( text : String ) {
+	public function setClipboard(text:String) {
 		nw.Clipboard.get().set(text, Text);
 	}
 
@@ -509,37 +555,37 @@ class Ide {
 		return nw.Clipboard.get().get(Text);
 	}
 
-	public function registerUpdate( updateFun ) {
+	public function registerUpdate(updateFun) {
 		updates.push(updateFun);
 	}
 
-	public function unregisterUpdate( updateFun ) {
-		for( u in updates )
-			if( Reflect.compareMethods(u,updateFun) ) {
+	public function unregisterUpdate(updateFun) {
+		for (u in updates)
+			if (Reflect.compareMethods(u, updateFun)) {
 				updates.remove(u);
 				return true;
 			}
 		return false;
 	}
 
-	public function makeSignature( content : String ) {
+	public function makeSignature(content:String) {
 		var sign = js.node.Crypto.createHash(js.node.Crypto.CryptoAlgorithm.MD5);
 		return sign.update(content).digest("base64");
 	}
 
-	public function cleanObject( v : Dynamic ) {
-		for( f in Reflect.fields(v) )
-			if( Reflect.field(v, f) == null )
+	public function cleanObject(v:Dynamic) {
+		for (f in Reflect.fields(v))
+			if (Reflect.field(v, f) == null)
 				Reflect.deleteField(v, f);
 	}
 
-	public function getPath( relPath : String ) {
-		if( relPath == null )
+	public function getPath(relPath:String) {
+		if (relPath == null)
 			return null;
 		relPath = relPath.split("${HIDE}").join(appPath);
-		if( haxe.io.Path.isAbsolute(relPath) )
+		if (haxe.io.Path.isAbsolute(relPath))
 			return relPath;
-		return resourceDir+"/"+relPath;
+		return resourceDir + "/" + relPath;
 	}
 
 	static var textureCacheKey = "TextureCache";
@@ -549,13 +595,13 @@ class Ide {
 	}
 
 	// Get a texture from a file on disk. Cache the results
-    public function getTexture(fullPath:String) {
+	public function getTexture(fullPath:String) {
 		if (fullPath == null)
 			return null;
 
 		var engine = h3d.Engine.getCurrent();
-		var cache : Map<String, h3d.mat.Texture> = @:privateAccess engine.resCache.get(textureCacheKey);
-		if(cache == null) {
+		var cache:Map<String, h3d.mat.Texture> = @:privateAccess engine.resCache.get(textureCacheKey);
+		if (cache == null) {
 			cache = new Map();
 			@:privateAccess engine.resCache.set(textureCacheKey, cache);
 		}
@@ -564,7 +610,7 @@ class Ide {
 		if (tex != null)
 			return tex;
 
-        var data = sys.io.File.getBytes(fullPath);
+		var data = sys.io.File.getBytes(fullPath);
 		var res = hxd.res.Any.fromBytes(fullPath, data);
 		tex = res.toImage().toTexture();
 
@@ -573,70 +619,77 @@ class Ide {
 	}
 
 	var showErrors = true;
-	public function error( e : Dynamic ) {
-		if( showErrors && !js.Browser.window.confirm(e) )
+
+	public function error(e:Dynamic) {
+		if (showErrors && !js.Browser.window.confirm(e))
 			showErrors = false;
 		js.Browser.console.error(e);
 	}
 
-	public function quickError( e : Dynamic ) {
+	public function quickError(e:Dynamic) {
 		var e = new Element('<div class="globalErrorMessage">${StringTools.htmlEscape(Std.string(e))}</div>');
 		e.appendTo(window.window.document.body);
 		haxe.Timer.delay(() -> e.remove(), 5000);
 	}
 
-	function get_projectDir() return ideConfig.currentProject.split("\\").join("/");
-	function get_resourceDir() return projectDir;
+	function get_projectDir()
+		return ideConfig.currentProject.split("\\").join("/");
 
-	function setProject( dir : String ) {
+	function get_resourceDir()
+		return projectDir;
+
+	function setProject(dir:String) {
 		fileWatcher.dispose();
 
-		if( dir != ideConfig.currentProject ) {
+		if (dir != ideConfig.currentProject) {
 			ideConfig.currentProject = dir;
 			ideConfig.recentProjects.remove(dir);
 			ideConfig.recentProjects.unshift(dir);
-			if( ideConfig.recentProjects.length > 10 ) ideConfig.recentProjects.pop();
+			if (ideConfig.recentProjects.length > 10)
+				ideConfig.recentProjects.pop();
 			config.global.save();
 		}
 		try {
 			config = Config.loadForProject(projectDir, resourceDir);
-		} catch( e : Dynamic ) {
+		} catch (e:Dynamic) {
 			js.Browser.alert(e);
 			return;
 		}
 
 		setProgress();
-		shaderLoader = new hide.tools.ShaderLoader();
+		// shaderLoader = new hide.tools.ShaderLoader();
 		hxsl.Cache.clear();
 
 		var localDir = sys.FileSystem.exists(resourceDir) ? resourceDir : projectDir;
 		var fsconf = config.current.get("fs.config", "default");
-		hxd.res.Loader.currentInstance = new CustomLoader(new hxd.fs.LocalFileSystem(localDir,fsconf));
+		hxd.res.Loader.currentInstance = new CustomLoader(new hxd.fs.LocalFileSystem(localDir, fsconf));
 		hxd.res.Image.ASYNC_LOADER = new hxd.impl.AsyncLoader.NodeLoader();
-		renderers = [
-			new hide.Renderer.MaterialSetup("Default"),
-		];
+		renderers = [new hide.Renderer.MaterialSetup("Default"),];
 
-		var plugins : Array<String> = config.current.get("plugins");
-		for ( plugin in plugins )
+		var plugins:Array<String> = config.current.get("plugins");
+		for (plugin in plugins)
 			loadPlugin(plugin, function() {});
 
 		var pak = config.project.get("pak.dataFile");
 		pakFile = null;
-		if( pak != null ) {
+		if (pak != null) {
 			pakFile = new hxd.fmt.pak.FileSystem();
 			try {
 				pakFile.loadPak(getPath(pak));
-			} catch( e : Dynamic ) {
-				error(""+e);
+			} catch (e:Dynamic) {
+				error("" + e);
 			}
 		}
 
-		if( config.project.get("debug.displayErrors")  ) {
+		if (config.project.get("debug.displayErrors")) {
 			js.Browser.window.onerror = function(msg, url, line, col, error) {
 				var e = error.stack;
-				e = ~/\(?chrome-extension:\/\/[a-z0-9\-\.\/]+.js:[0-9]+:[0-9]+\)?/g.replace(e,"");
-				e = ~/at ([A-Za-z0-9_\.\$]+)/g.map(e,function(r) { var path = r.matched(1); path = path.split("$hx_exports.").pop().split("$hxClasses.").pop(); return path; });
+				e = ~/\(?chrome-extension:\/\/[a-z0-9\-\.\/]+.js:[0-9]+:[0-9]+\)?/g.replace(e, "");
+				e = ~/at ([A-Za-z0-9_\.\$]+)/g.map(e, function(r) {
+					var path = r.matched(1);
+					path = path.split("$hx_exports.").pop().split("$hxClasses.").pop();
+					return path;
+				});
 				e = e.split("\t").join("    ");
 				this.error(e);
 				return true;
@@ -646,22 +699,22 @@ class Ide {
 
 		waitScripts(function() {
 			var extraRenderers = config.current.get("renderers");
-			for( name in Reflect.fields(extraRenderers) ) {
+			for (name in Reflect.fields(extraRenderers)) {
 				var clName = Reflect.field(extraRenderers, name);
-				var cl = try js.Lib.eval(clName) catch( e : Dynamic ) null;
-				if( cl == null  ) {
-					error(clName+" could not be found");
+				var cl = try js.Lib.eval(clName) catch (e:Dynamic) null;
+				if (cl == null) {
+					error(clName + " could not be found");
 					return;
 				}
-				renderers.push(Type.createInstance(cl,[]));
+				renderers.push(Type.createInstance(cl, []));
 			}
 
 			var render = renderers[0];
-			if( projectConfig.renderer == null )
+			if (projectConfig.renderer == null)
 				projectConfig.renderer = config.current.get("defaultRenderer");
-			for( r in renderers ) {
+			for (r in renderers) {
 				var name = r.displayName == null ? r.name : r.displayName;
-				if( name == projectConfig.renderer ) {
+				if (name == projectConfig.renderer) {
 					render = r;
 					break;
 				}
@@ -674,31 +727,31 @@ class Ide {
 		});
 	}
 
-	function waitScripts( f : Void -> Void ) {
-		if( !isScriptLoading() ) {
+	function waitScripts(f:Void->Void) {
+		if (!isScriptLoading()) {
 			f();
 			return;
 		}
 		var wait = scripts.get("");
-		if( wait == null ) {
+		if (wait == null) {
 			wait = [];
-			scripts.set("",wait);
+			scripts.set("", wait);
 		}
 		wait.push(f);
 	}
 
 	function isScriptLoading() {
-		for( s in scripts.keys() )
-			if( s != "" && scripts.get(s).length > 0 )
+		for (s in scripts.keys())
+			if (s != "" && scripts.get(s).length > 0)
 				return true;
 		return false;
 	}
 
-	function loadPlugin( file : String, callb : Void -> Void, ?forceType : String ) {
+	function loadPlugin(file:String, callb:Void->Void, ?forceType:String) {
 		file = getPath(file);
 		var wait = scripts.get(file);
-		if( wait != null ) {
-			if( wait.length == 0 )
+		if (wait != null) {
+			if (wait.length == 0)
 				callb();
 			else
 				wait.push(callb);
@@ -708,26 +761,27 @@ class Ide {
 		scripts.set(file, wait);
 		function onLoad() {
 			scripts.set(file, []);
-			for( w in wait )
+			for (w in wait)
 				w();
-			if( !isScriptLoading() ) {
+			if (!isScriptLoading()) {
 				wait = scripts.get("");
-				scripts.set("",[]);
-				for( w in wait ) w();
+				scripts.set("", []);
+				for (w in wait)
+					w();
 			}
 		}
 		function onError() {
-			error("Error while loading "+file);
+			error("Error while loading " + file);
 		}
 		var type = forceType == null ? haxe.io.Path.extension(file).toLowerCase() : forceType;
-		switch ( type ) {
+		switch (type) {
 			case "js":
 				var e = js.Browser.document.createScriptElement();
 				e.addEventListener("load", onLoad);
 				e.addEventListener("error", onError);
 				e.async = false;
 				e.type = "text/javascript";
-				e.src = "file://"+file.split("\\").join("/");
+				e.src = "file://" + file.split("\\").join("/");
 				js.Browser.document.body.appendChild(e);
 			case "css":
 				var e = js.Browser.document.createLinkElement();
@@ -737,12 +791,13 @@ class Ide {
 				e.type = "text/css";
 				e.href = "file://" + file.split("\\").join("/");
 				js.Browser.document.body.appendChild(e);
-			default: error('Unknown plugin type $type for file $file');
+			default:
+				error('Unknown plugin type $type for file $file');
 		}
-		fileWatcher.register(file,reload);
+		fileWatcher.register(file, reload);
 	}
 
-	inline function loadScript( file : String, callb : Void -> Void ) {
+	inline function loadScript(file:String, callb:Void->Void) {
 		loadPlugin(file, callb);
 	}
 
@@ -752,29 +807,31 @@ class Ide {
 		js.Browser.location.reload();
 	}
 
-	public function fileExists( path : String ) {
-		if( sys.FileSystem.exists(getPath(path)) ) return true;
-		if( pakFile != null && pakFile.exists(path) ) return true;
+	public function fileExists(path:String) {
+		if (sys.FileSystem.exists(getPath(path)))
+			return true;
+		if (pakFile != null && pakFile.exists(path))
+			return true;
 		return false;
 	}
 
-	public function getFile( path : String ) {
+	public function getFile(path:String) {
 		var fullPath = getPath(path);
 		try {
 			return sys.io.File.getBytes(fullPath);
-		} catch( e : Dynamic ) {
-			if( pakFile != null )
+		} catch (e:Dynamic) {
+			if (pakFile != null)
 				return pakFile.get(path).getBytes();
 			throw e;
 		}
 	}
 
-	public function getFileText( path : String ) {
+	public function getFileText(path:String) {
 		var fullPath = getPath(path);
 		try {
 			return sys.io.File.getContent(fullPath);
-		} catch( e : Dynamic ) {
-			if( pakFile != null )
+		} catch (e:Dynamic) {
+			if (pakFile != null)
 				return pakFile.get(path).getText();
 			throw e;
 		}
@@ -782,23 +839,23 @@ class Ide {
 
 	var lastDBContent = null;
 
-	public function makeRelative( path : String ) {
+	public function makeRelative(path:String) {
 		path = path.split("\\").join("/");
-		if( StringTools.startsWith(path.toLowerCase(), resourceDir.toLowerCase()+"/") )
-			return path.substr(resourceDir.length+1);
+		if (StringTools.startsWith(path.toLowerCase(), resourceDir.toLowerCase() + "/"))
+			return path.substr(resourceDir.length + 1);
 
 		// is already a relative path
-		if( path.charCodeAt(0) != "/".code && path.charCodeAt(1) != ":".code )
+		if (path.charCodeAt(0) != "/".code && path.charCodeAt(1) != ":".code)
 			return path;
 
 		var resParts = resourceDir.split("/");
 		var pathParts = path.split("/");
-		for( i in 0...resParts.length ) {
-			if( pathParts[i].toLowerCase() != resParts[i].toLowerCase() ) {
-				if( pathParts[i].charCodeAt(pathParts[i].length-1) == ":".code )
+		for (i in 0...resParts.length) {
+			if (pathParts[i].toLowerCase() != resParts[i].toLowerCase()) {
+				if (pathParts[i].charCodeAt(pathParts[i].length - 1) == ":".code)
 					return path; // drive letter change
 				var newPath = pathParts.splice(i, pathParts.length - i);
-				for( k in 0...resParts.length - i )
+				for (k in 0...resParts.length - i)
 					newPath.unshift("..");
 				return newPath.join("/");
 			}
@@ -806,27 +863,29 @@ class Ide {
 		return path;
 	}
 
-	public function getUnCachedUrl( path : String ) {
+	public function getUnCachedUrl(path:String) {
 		return "file://" + getPath(path) + "?t=" + fileWatcher.getVersion(path);
 	}
 
 	public static var IMG_EXTS = ["jpg", "jpeg", "gif", "png", "raw", "dds", "hdr", "tga"];
-	public function chooseImage( onSelect, allowNull=false ) {
+
+	public function chooseImage(onSelect, allowNull = false) {
 		chooseFile(IMG_EXTS, onSelect, allowNull);
 	}
 
-	public function chooseFiles( exts : Array<String>, onSelect : Array<String> -> Void, allowNull=false ) {
-		var e = new Element('<input type="file" style="visibility:hidden" value="" accept="${[for( e in exts ) "."+e].join(",")}" multiple="multiple"/>');
+	public function chooseFiles(exts:Array<String>, onSelect:Array<String>->Void, allowNull = false) {
+		var e = new Element('<input type="file" style="visibility:hidden" value="" accept="${[for (e in exts) "." + e].join(",")}" multiple="multiple"/>');
 		e.change(function(_) {
-			var files = [for( f in (""+e.val()).split(";") ) f];
-			if( files.length == 1 && files[0] == "" ) files.pop();
-			var files = [for( f in files ) makeRelative(f)];
+			var files = [for (f in ("" + e.val()).split(";")) f];
+			if (files.length == 1 && files[0] == "")
+				files.pop();
+			var files = [for (f in files) makeRelative(f)];
 			e.remove();
 			onSelect(files);
 		}).appendTo(window.window.document.body).click();
 	}
 
-	public function chooseFile( exts : Array<String>, onSelect : Null<String> -> Void, allowNull = false, workingdir:String = null) {
+	public function chooseFile(exts:Array<String>, onSelect:Null<String>->Void, allowNull = false, workingdir:String = null) {
 		var path = "";
 		if (workingdir != null && workingdir != "#MISSING") {
 			var pathArray = getPath(workingdir).split("/");
@@ -834,16 +893,17 @@ class Ide {
 			path = pathArray.join(c);
 		}
 
-		var e = new Element('<input type="file" style="visibility:hidden" value="" nwworkingdir="$path" accept="${[for( e in exts ) "."+e].join(",")}"/>');
+		var e = new Element('<input type="file" style="visibility:hidden" value="" nwworkingdir="$path" accept="${[for (e in exts) "." + e].join(",")}"/>');
 		e.change(function(_) {
 			var file = e.val();
-			if( file == "" && !allowNull ) return;
+			if (file == "" && !allowNull)
+				return;
 			e.remove();
 			onSelect(file == "" ? null : makeRelative(file));
 		}).appendTo(window.window.document.body).click();
 	}
 
-	public function chooseFileSave( defaultPath : String, onSelect : String -> Void, allowNull=false ) {
+	public function chooseFileSave(defaultPath:String, onSelect:String->Void, allowNull = false) {
 		var path = getPath(defaultPath).split("/");
 		var file = path.pop();
 		var c = isWindows ? "\\" : "/";
@@ -851,103 +911,111 @@ class Ide {
 		var e = new Element('<input type="file" style="visibility:hidden" value="" nwworkingdir="$path" nwsaveas="$file"/>');
 		e.change(function(_) {
 			var file = e.val();
-			if( file == "" && !allowNull ) return;
+			if (file == "" && !allowNull)
+				return;
 			e.remove();
 			onSelect(file == "" ? null : makeRelative(file));
 		}).appendTo(window.window.document.body).click();
 	}
 
-	public function chooseDirectory( onSelect : String -> Void, ?isAbsolute = false, allowNull=false ) {
+	public function chooseDirectory(onSelect:String->Void, ?isAbsolute = false, allowNull = false) {
 		var e = new Element('<input type="file" style="visibility:hidden" value="" nwdirectory/>');
 		e.change(function(ev) {
 			var dir = ev.getThis().val();
-			if( dir == "" && !allowNull ) return;
+			if (dir == "" && !allowNull)
+				return;
 			onSelect(dir == "" ? null : (isAbsolute ? dir : makeRelative(dir)));
 			e.remove();
 		}).appendTo(window.window.document.body).click();
 	}
 
-	public function parseJSON( str : String ) : Dynamic {
+	public function parseJSON(str:String):Dynamic {
 		// remove comments
 		str = ~/^[ \t]+\/\/[^\n]*/gm.replace(str, "");
 		return haxe.Json.parse(str);
 	}
 
-	public function toJSON( v : Dynamic ) {
+	public function toJSON(v:Dynamic) {
 		var str = haxe.Json.stringify(v, "\t");
 		str = ~/,\n\t+"__id__": [0-9]+/g.replace(str, "");
 		str = ~/\t+"__id__": [0-9]+,\n/g.replace(str, "");
 		return str;
 	}
 
-	public function loadPrefab<T:hrt.prefab.Prefab>( file : String, ?cl : Class<T>, ?checkExists ) : T {
-		if( file == null )
+	public function loadPrefab<T:hrt.prefab.Prefab>(file:String, ?cl:Class<T>, ?checkExists):T {
+		if (file == null)
 			return null;
 		var l = hrt.prefab.Library.create(file.split(".").pop().toLowerCase());
 		if (!l.loadFromPath(file)) {
 			try {
 				var path = getPath(file);
-				if( checkExists && !sys.FileSystem.exists(path) )
+				if (checkExists && !sys.FileSystem.exists(path))
 					return null;
 				l.loadData(parseJSON(sys.io.File.getContent(path)));
-			} catch( e : Dynamic ) {
-				error("Invalid prefab "+file+" ("+e+")");
+			} catch (e:Dynamic) {
+				error("Invalid prefab " + file + " (" + e + ")");
 				throw e;
 			}
 		}
-		if( cl == null )
+		if (cl == null)
 			return cast l;
 		return l.get(cl);
 	}
 
-	public function savePrefab( file : String, f : hrt.prefab.Prefab ) {
+	public function savePrefab(file:String, f:hrt.prefab.Prefab) {
 		var content = f.saveData();
 		sys.io.File.saveContent(getPath(file), toJSON(content));
 	}
 
-	public function filterPrefabs( callb : hrt.prefab.Prefab -> Bool ) {
-		var exts = Lambda.array({iterator : @:privateAccess hrt.prefab.Library.registeredExtensions.keys });
+	public function filterPrefabs(callb:hrt.prefab.Prefab->Bool) {
+		var exts = Lambda.array({iterator: @:privateAccess hrt.prefab.Library.registeredExtensions.keys});
 		exts.push("prefab");
 		var todo = [];
 		browseFiles(function(path) {
 			var ext = path.split(".").pop();
-			if( exts.indexOf(ext) < 0 ) return;
+			if (exts.indexOf(ext) < 0)
+				return;
 			var prefab = loadPrefab(path);
 			var changed = false;
 			function filterRec(p) {
-				if( callb(p) ) changed = true;
-				for( ps in p.children )
+				if (callb(p))
+					changed = true;
+				for (ps in p.children)
 					filterRec(ps);
 			}
 			filterRec(prefab);
-			if( !changed ) return;
+			if (!changed)
+				return;
 			todo.push(function() sys.io.File.saveContent(getPath(path), toJSON(prefab.saveData())));
 		});
-		for( t in todo )
+		for (t in todo)
 			t();
 	}
 
-	public function filterProps( callb : Dynamic -> Bool ) {
+	public function filterProps(callb:Dynamic->Bool) {
 		var exts = ["props", "json"];
 		var todo = [];
 		browseFiles(function(path) {
 			var ext = path.split(".").pop();
-			if( exts.indexOf(ext) < 0 ) return;
+			if (exts.indexOf(ext) < 0)
+				return;
 			var content = parseJSON(sys.io.File.getContent(getPath(path)));
 			var changed = callb(content);
-			if( !changed ) return;
+			if (!changed)
+				return;
 			todo.push(function() sys.io.File.saveContent(getPath(path), toJSON(content)));
 		});
-		for( t in todo )
+		for (t in todo)
 			t();
 	}
 
-	function browseFiles( callb : String -> Void ) {
+	function browseFiles(callb:String->Void) {
 		function browseRec(path) {
-			if( path == ".tmp" ) return;
-			for( p in sys.FileSystem.readDirectory(resourceDir + "/" + path) ) {
+			if (path == ".tmp")
+				return;
+			for (p in sys.FileSystem.readDirectory(resourceDir + "/" + path)) {
 				var p = path == "" ? p : path + "/" + p;
-				if( sys.FileSystem.isDirectory(resourceDir+"/"+p) ) {
+				if (sys.FileSystem.isDirectory(resourceDir + "/" + p)) {
 					browseRec(p);
 					continue;
 				}
@@ -957,8 +1025,8 @@ class Ide {
 		browseRec("");
 	}
 
-	public function setProgress( ?text : String ) {
-		if( text != null ) {
+	public function setProgress(?text:String) {
+		if (text != null) {
 			window.title = text;
 			return;
 		}
@@ -974,30 +1042,31 @@ class Ide {
 	}
 
 	public function initMenu() {
+		if (subView != null)
+			return;
 
-		if( subView != null ) return;
-
-		var menuHTML = "<content>"+new Element("#mainmenu").html() + config.project.get("menu.extra")+"</content>";
+		var menuHTML = "<content>" + new Element("#mainmenu").html() + config.project.get("menu.extra") + "</content>";
 		var menu = new Element(menuHTML);
 
 		// project
-		if( ideConfig.recentProjects.length > 0 )
+		if (ideConfig.recentProjects.length > 0)
 			menu.find(".project .recents").html("");
-		for( v in ideConfig.recentProjects.copy() ) {
-			if( !sys.FileSystem.exists(v) ) {
+		for (v in ideConfig.recentProjects.copy()) {
+			if (!sys.FileSystem.exists(v)) {
 				ideConfig.recentProjects.remove(v);
 				config.global.save();
 				continue;
 			}
-			new Element("<menu>").attr("label",v).appendTo(menu.find(".project .recents")).click(function(_){
+			new Element("<menu>").attr("label", v).appendTo(menu.find(".project .recents")).click(function(_) {
 				setProject(v);
 			});
 		}
 		menu.find(".project .open").click(function(_) {
 			chooseDirectory(function(dir) {
-				if( dir == null ) return;
-				if( StringTools.endsWith(dir,"/res") || StringTools.endsWith(dir,"\\res") )
-					dir = dir.substr(0,-4);
+				if (dir == null)
+					return;
+				if (StringTools.endsWith(dir, "/res") || StringTools.endsWith(dir, "\\res"))
+					dir = dir.substr(0, -4);
 				if (sys.FileSystem.exists(haxe.io.Path.join([dir, "datablocks.json"])))
 					setProject(dir);
 				else
@@ -1015,7 +1084,9 @@ class Ide {
 		menu.find(".project .clear-local").click(function(_) {
 			js.Browser.window.localStorage.clear();
 			nw.App.clearCache();
-			try sys.FileSystem.deleteFile(Ide.inst.appPath + "/props.json") catch( e : Dynamic ) {};
+			try
+				sys.FileSystem.deleteFile(Ide.inst.appPath + "/props.json")
+			catch (e:Dynamic) {};
 			untyped chrome.runtime.reload();
 		});
 		menu.find(".build-files").click(function(_) {
@@ -1023,28 +1094,32 @@ class Ide {
 			var all = [""];
 			var done = 0;
 			function loop() {
-				while( true ) {
-					if( all.length == 0 ) {
+				while (true) {
+					if (all.length == 0) {
 						setProgress();
 						return;
 					}
-					if( haxe.Timer.stamp() - lastTime > 0.1 ) {
+					if (haxe.Timer.stamp() - lastTime > 0.1) {
 						lastTime = haxe.Timer.stamp();
-						setProgress('(${Std.int(done*1000/(done+all.length))/10}%) '+all[0]);
-						haxe.Timer.delay(loop,0);
+						setProgress('(${Std.int(done * 1000 / (done + all.length)) / 10}%) ' + all[0]);
+						haxe.Timer.delay(loop, 0);
 						return;
 					}
 					var path = all.shift();
-					var e = try hxd.res.Loader.currentInstance.load(path).entry catch( e : hxd.res.NotFound ) null;
-					if( e == null && path == "" ) e = hxd.res.Loader.currentInstance.fs.getRoot();
-					if( e != null ) done++;
-					if( e != null && e.isDirectory ) {
+					var e = try hxd.res.Loader.currentInstance.load(path).entry catch (e:hxd.res.NotFound) null;
+					if (e == null && path == "")
+						e = hxd.res.Loader.currentInstance.fs.getRoot();
+					if (e != null)
+						done++;
+					if (e != null && e.isDirectory) {
 						var base = path;
-						if( base != "" ) base += "/";
-						for( f in sys.FileSystem.readDirectory(getPath(path)) ) {
+						if (base != "")
+							base += "/";
+						for (f in sys.FileSystem.readDirectory(getPath(path))) {
 							var path = base + f;
-							if( path == ".tmp" ) continue;
-							if( sys.FileSystem.isDirectory(getPath(path)) )
+							if (path == ".tmp")
+								continue;
+							if (sys.FileSystem.isDirectory(getPath(path)))
 								all.unshift(path);
 							else
 								all.push(path);
@@ -1055,28 +1130,36 @@ class Ide {
 			loop();
 		});
 
-		for( r in renderers ) {
+		for (r in renderers) {
 			var name = r.displayName != null ? r.displayName : r.name;
-			new Element("<menu type='checkbox'>").attr("label", name).prop("checked",r == h3d.mat.MaterialSetup.current).appendTo(menu.find(".project .renderers")).click(function(_) {
-				if( r != h3d.mat.MaterialSetup.current ) {
-					projectConfig.renderer = name;
-					config.user.save();
-					setProject(ideConfig.currentProject);
-				}
-			});
+			new Element("<menu type='checkbox'>").attr("label", name)
+				.prop("checked", r == h3d.mat.MaterialSetup.current)
+				.appendTo(menu.find(".project .renderers"))
+				.click(function(_) {
+					if (r != h3d.mat.MaterialSetup.current) {
+						projectConfig.renderer = name;
+						config.user.save();
+						setProject(ideConfig.currentProject);
+					}
+				});
 		}
 
 		// view
-		if( !sys.FileSystem.exists(resourceDir) )
+		if (!sys.FileSystem.exists(resourceDir))
 			menu.find(".view").remove();
 		menu.find(".debug").click(function(_) window.showDevTools());
 		var comps = menu.find("[component]");
-		for( c in comps.elements() ) {
+		for (c in comps.elements()) {
 			var cname = c.attr("component");
 			var cl = Type.resolveClass(cname);
-			if( cl == null ) error("Missing component class "+cname);
+			if (cl == null)
+				error("Missing component class " + cname);
 			var state = c.attr("state");
-			if( state != null ) try haxe.Json.parse(state) catch( e : Dynamic ) error("Invalid state "+state+" ("+e+")");
+			if (state != null)
+				try
+					haxe.Json.parse(state)
+				catch (e:Dynamic)
+					error("Invalid state " + state + " (" + e + ")");
 			c.click(function(_) {
 				open(cname, state == null ? null : haxe.Json.parse(state));
 			});
@@ -1085,23 +1168,25 @@ class Ide {
 		// layout
 		var layouts = menu.find(".layout .content");
 		layouts.html("");
-		if(projectConfig.layouts == null)
+		if (projectConfig.layouts == null)
 			projectConfig.layouts = [];
-		for( l in projectConfig.layouts ) {
-			if( l.name == "Default" ) continue;
-			new Element("<menu>").attr("label",l.name).addClass(l.name).appendTo(layouts).click(function(_) {
+		for (l in projectConfig.layouts) {
+			if (l.name == "Default")
+				continue;
+			new Element("<menu>").attr("label", l.name).addClass(l.name).appendTo(layouts).click(function(_) {
 				initLayout(l);
 			});
 		}
 		menu.find(".layout .autosave").click(function(_) {
 			ideConfig.autoSaveLayout = !ideConfig.autoSaveLayout;
 			config.global.save();
-		}).prop("checked",ideConfig.autoSaveLayout);
+		}).prop("checked", ideConfig.autoSaveLayout);
 
 		menu.find(".layout .saveas").click(function(_) {
 			var name = ask("Please enter a layout name:");
-			if( name == null || name == "" ) return;
-			projectConfig.layouts.push({ name : name, state : saveLayout() });
+			if (name == null || name == "")
+				return;
+			projectConfig.layouts.push({name: name, state: saveLayout()});
 			config.user.save();
 			initMenu();
 		});
@@ -1113,70 +1198,75 @@ class Ide {
 		window.menu = new hide.ui.Menu(menu).root;
 	}
 
-	public function openFile( file : String, ?onCreate ) {
+	public function openFile(file:String, ?onCreate) {
 		var ext = @:privateAccess hide.view.FileTree.getExtension(file);
-		if( ext == null ) return;
+		if (ext == null)
+			return;
 		// look if already open
 		var path = makeRelative(file);
-		for( v in views )
-			if( Type.getClassName(Type.getClass(v)) == ext.component && v.state.path == path ) {
-				if( v.container.tab != null )
+		for (v in views)
+			if (Type.getClassName(Type.getClass(v)) == ext.component && v.state.path == path) {
+				if (v.container.tab != null)
 					v.container.parent.parent.setActiveContentItem(v.container.parent);
 				return;
 			}
-		open(ext.component, { path : path }, onCreate);
+		open(ext.component, {path: path}, onCreate);
 	}
 
-	public function openSubView<T>( component : Class<hide.ui.View<T>>, state : T, events : {} ) {
-		var sharedRefs : Map<Int,Dynamic> = untyped global.sharedRefs;
-		if( sharedRefs == null ) {
+	public function openSubView<T>(component:Class<hide.ui.View<T>>, state:T, events:{}) {
+		var sharedRefs:Map<Int, Dynamic> = untyped global.sharedRefs;
+		if (sharedRefs == null) {
 			sharedRefs = new Map();
 			untyped global.sharedRefs = sharedRefs;
 		}
 		var id = 0;
-		while( sharedRefs.exists(id) ) id++;
-		sharedRefs.set(id,{ state : state, events : events });
+		while (sharedRefs.exists(id))
+			id++;
+		sharedRefs.set(id, {state: state, events: events});
 		var compName = Type.getClassName(component);
-		nw.Window.open("app.html?subView="+compName+"&sid="+id,{ id : compName });
+		nw.Window.open("app.html?subView=" + compName + "&sid=" + id, {id: compName});
 	}
 
-	public function callParentView( name : String, param : Dynamic ) {
-		if( subView != null ) Reflect.callMethod(subView.events,Reflect.field(subView.events,name),[param]);
+	public function callParentView(name:String, param:Dynamic) {
+		if (subView != null)
+			Reflect.callMethod(subView.events, Reflect.field(subView.events, name), [param]);
 	}
 
-	public function open( component : String, state : Dynamic, ?onCreate : hide.ui.View<Dynamic> -> Void ) {
-		if( state == null ) state = {};
+	public function open(component:String, state:Dynamic, ?onCreate:hide.ui.View<Dynamic>->Void) {
+		if (state == null)
+			state = {};
 
 		var c = hide.ui.View.viewClasses.get(component);
-		if( c == null )
+		if (c == null)
 			throw "Unknown component " + component;
 
 		state.componentName = component;
-		for( v in views ) {
-			if( v.viewClass == component && haxe.Json.stringify(v.state) == haxe.Json.stringify(state) ) {
+		for (v in views) {
+			if (v.viewClass == component && haxe.Json.stringify(v.state) == haxe.Json.stringify(state)) {
 				v.activate();
-				if( onCreate != null ) onCreate(v);
+				if (onCreate != null)
+					onCreate(v);
 				return;
 			}
 		}
 
 		var options = c.options;
 
-		var bestTarget : golden.Container = null;
-		for( v in views )
-			if( v.defaultOptions.position == options.position ) {
-				if( bestTarget == null || bestTarget.width * bestTarget.height < v.container.width * v.container.height )
+		var bestTarget:golden.Container = null;
+		for (v in views)
+			if (v.defaultOptions.position == options.position) {
+				if (bestTarget == null || bestTarget.width * bestTarget.height < v.container.width * v.container.height)
 					bestTarget = v.container;
 			}
 
-		var index : Null<Int> = null;
+		var index:Null<Int> = null;
 		var target;
-		if( bestTarget != null )
+		if (bestTarget != null)
 			target = bestTarget.parent.parent;
 		else {
 			target = layout.root.contentItems[0];
-			if( target == null ) {
-				layout.root.addChild({ type : Row, isClosable: false });
+			if (target == null) {
+				layout.root.addChild({type: Row, isClosable: false});
 				target = layout.root.contentItems[0];
 			}
 			target.config.isClosable = false;
@@ -1184,81 +1274,79 @@ class Ide {
 		var needResize = options.width != null;
 		target.on("componentCreated", function(c) {
 			target.off("componentCreated");
-			var view : hide.ui.View<Dynamic> = untyped c.origin.__view;
-			if( onCreate != null ) onCreate(view);
-			if( needResize ) {
+			var view:hide.ui.View<Dynamic> = untyped c.origin.__view;
+			if (onCreate != null)
+				onCreate(view);
+			if (needResize) {
 				// when opening restricted size after free size
 				haxe.Timer.delay(function() {
 					view.container.setSize(options.width, view.container.height);
-				},0);
+				}, 0);
 			} else {
 				// when opening free size after restricted size
 				var v0 = views[0];
-				if( views.length == 2 && views[1] == view && v0.defaultOptions.width != null )
+				if (views.length == 2 && views[1] == view && v0.defaultOptions.width != null)
 					haxe.Timer.delay(function() {
 						v0.container.setSize(v0.defaultOptions.width, v0.container.height);
-					},0);
+					}, 0);
 			}
 		});
-		var config : golden.Config.ItemConfig = {
-			type : Component,
-			componentName : component,
-			componentState : state
+		var config:golden.Config.ItemConfig = {
+			type: Component,
+			componentName: component,
+			componentState: state
 		};
 
-		if( options.position == Left ) index = 0;
+		if (options.position == Left)
+			index = 0;
 
-		if( index == null )
+		if (index == null)
 			target.addChild(config);
 		else
 			target.addChild(config, index);
 	}
 
-	public function message( text : String ) {
+	public function message(text:String) {
 		js.Browser.window.alert(text);
 	}
 
-	public function confirm( text : String ) {
+	public function confirm(text:String) {
 		return js.Browser.window.confirm(text);
 	}
 
-	public function ask( text : String, ?defaultValue = "" ) {
+	public function ask(text:String, ?defaultValue = "") {
 		return js.Browser.window.prompt(text, defaultValue);
 	}
 
-	public static var inst : Ide;
+	public static var inst:Ide;
 
 	static function main() {
 		h3d.pass.ShaderManager.STRICT = false; // prevent errors with bad renderer
-		hide.tools.Macros.include(["hide.view","h3d.prim","h3d.scene","h3d.pass","hide.prefab","hrt"]);
+		hide.tools.Macros.include(["hide.view", "h3d.prim", "h3d.scene", "h3d.pass", "hide.prefab", "hrt"]);
 		new Ide();
 	}
-
 }
 
-
 class CustomLoader extends hxd.res.Loader {
+	var pathKeys = new Map<String, {}>();
 
-	var pathKeys = new Map<String,{}>();
-
-	function getKey( path : String ) {
+	function getKey(path:String) {
 		var k = pathKeys.get(path);
-		if( k == null ) {
+		if (k == null) {
 			k = {};
 			pathKeys.set(path, k);
 		}
 		return k;
 	}
 
-	override function loadCache<T:hxd.res.Resource>( path : String, c : Class<T> ) : T {
+	override function loadCache<T:hxd.res.Resource>(path:String, c:Class<T>):T {
 		var engine = h3d.Engine.getCurrent();
 		var i = Std.downcast(@:privateAccess engine.resCache.get(getKey(path)), c);
-		if( i == null ) {
+		if (i == null) {
 			i = Type.createInstance(c, [fs.get(path)]);
 			// i = new hxd.res.Image(fs.get(path));
 			@:privateAccess engine.resCache.set(getKey(path), i);
 		}
 		return i;
 	}
-
 }

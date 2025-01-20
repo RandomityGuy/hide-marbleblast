@@ -1,15 +1,15 @@
 package hrt.prefab.l3d;
 
+#if savehide
 class Trail extends Object3D {
-
-	@:s var data : Dynamic;
+	@:s var data:Dynamic;
 
 	function new(?parent) {
 		super(parent);
 		data = new h3d.scene.Trail().save();
 	}
 
-	public function create( ?parent : h3d.scene.Object ) {
+	public function create(?parent:h3d.scene.Object) {
 		var tr = new h3d.scene.Trail(parent);
 		tr.load(data);
 		applyTransform(tr);
@@ -25,9 +25,8 @@ class Trail extends Object3D {
 	}
 
 	#if editor
-
 	override function getHideProps():HideProps {
-		return { icon : "toggle-on", name : "Trail" };
+		return {icon: "toggle-on", name: "Trail"};
 	}
 
 	override public function edit(ctx:EditContext) {
@@ -40,7 +39,7 @@ class Trail extends Object3D {
 		</div>
 		<div class="group" name="Trail Properties">
 			<dl>
-				<dt>Angle</dt><dd><input type="range" field="angle" scale="${180/Math.PI}" min="0" max="${Math.PI*2}"/></dd>
+				<dt>Angle</dt><dd><input type="range" field="angle" scale="${180 / Math.PI}" min="0" max="${Math.PI * 2}"/></dd>
 				<dt>Duration</dt><dd><input type="range" field="duration" min="0" max="1"/></dd>
 				<dt>Size Start</dt><dd><input type="range" field="sizeStart" min="0" max="10"/></dd>
 				<dt>Size End</dt><dd><input type="range" field="sizeEnd" min="0" max="10"/></dd>
@@ -50,14 +49,13 @@ class Trail extends Object3D {
 				<dt>Texture</dt><dd><input type="texture" field="texture"/></dd>
 			</dl>
 		</div>
-		'),trail, function(_) {
+		'), trail, function(_) {
 			data = trail.save();
 		});
-		ctx.properties.addMaterial( trail.material, props.find("[name=Material] > .content"), function(_) data = trail.save());
+		ctx.properties.addMaterial(trail.material, props.find("[name=Material] > .content"), function(_) data = trail.save());
 	}
-
 	#end
 
 	static var _ = Library.register("trail", Trail);
-
 }
+#end

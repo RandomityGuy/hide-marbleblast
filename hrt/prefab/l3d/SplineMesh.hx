@@ -1,29 +1,24 @@
 package hrt.prefab.l3d;
 
+#if savehide
 import h3d.scene.MeshBatch;
 import h3d.scene.Mesh;
 import hrt.prefab.l3d.Spline.SplinePoint;
 
 class SplineMeshShader extends hxsl.Shader {
-
 	static var SRC = {
 		@:import h3d.shader.BaseMesh;
-
 		// Spline Infos
-		@const(4096) var POINT_COUNT : Int;
-		@const var SPLINE_UV_X : Bool;
-		@const var SPLINE_UV_Y : Bool;
-		@param var stepSize : Float;
-		@param var points : Buffer<Vec4, POINT_COUNT>;
-
+		@const(4096) var POINT_COUNT:Int;
+		@const var SPLINE_UV_X:Bool;
+		@const var SPLINE_UV_Y:Bool;
+		@param var stepSize:Float;
+		@param var points:Buffer<Vec4, POINT_COUNT>;
 		// Instance Infos
-		@param var modelMat : Mat4;
-		@param var splinePos : Float;
-
-		var calculatedUV : Vec2;
-
+		@param var modelMat:Mat4;
+		@param var splinePos:Float;
+		var calculatedUV:Vec2;
 		function vertex() {
-
 			var modelPos = relativePosition * modelMat.mat3x4();
 			var pos = splinePos + modelPos.y;
 			pos = clamp(pos, 0.0, POINT_COUNT * stepSize);
@@ -37,29 +32,23 @@ class SplineMeshShader extends hxsl.Shader {
 			var tangent = mix(points[s1 * 2 + 1], points[s2 * 2 + 1], t).xyz;
 
 			// Construct the new transform
-			var worldUp = vec3(0,0,1);
+			var worldUp = vec3(0, 0, 1);
 			var front = -tangent;
 			var right = -front.cross(worldUp).normalize();
 			var up = front.cross(right).normalize();
 
-			var rotation = mat4(	vec4(right.x, front.x, up.x, 0),
-									vec4(right.y, front.y, up.y, 0),
-									vec4(right.z, front.z, up.z, 0),
-									vec4(0,0,0,1));
+			var rotation = mat4(vec4(right.x, front.x, up.x, 0), vec4(right.y, front.y, up.y, 0), vec4(right.z, front.z, up.z, 0), vec4(0, 0, 0, 1));
 
-			var translation = mat4(	vec4(1,0,0, point.x ),
-									vec4(0,1,0, point.y ),
-									vec4(0,0,1, point.z ),
-									vec4(0,0,0,1));
+			var translation = mat4(vec4(1, 0, 0, point.x), vec4(0, 1, 0, point.y), vec4(0, 0, 1, point.z), vec4(0, 0, 0, 1));
 
 			var transform = rotation * translation;
 			var localPos = (modelPos - vec3(0, offsetY, 0));
 			transformedPosition = localPos * transform.mat3x4();
 			transformedNormal = transformedNormal * modelMat.mat3x4() * rotation.mat3x4();
 
-			if( SPLINE_UV_X )
+			if (SPLINE_UV_X)
 				calculatedUV.x = pos;
-			if( SPLINE_UV_Y )
+			if (SPLINE_UV_Y)
 				calculatedUV.y = pos;
 		}
 	}
@@ -73,13 +62,12 @@ enum SplineMeshMode {
 
 // Need to dipose the GPU buffer manually
 class SplineMeshBatch extends h3d.scene.MeshBatch {
-
-	public var splineData : Spline.SplineData;
+	public var splineData:Spline.SplineData;
 
 	override function onRemove() {
 		super.onRemove();
 		var splinemeshShader = material.mainPass.getShader(SplineMeshShader);
-		if( splinemeshShader != null ) {
+		if (splinemeshShader != null) {
 			splinemeshShader.points.dispose();
 		}
 	}
@@ -87,60 +75,64 @@ class SplineMeshBatch extends h3d.scene.MeshBatch {
 	override function sync(ctx) {
 		super.sync(ctx);
 		var s = material.mainPass.getShader(SplineMeshShader);
-		if( s != null && s.points == null || s.points.isDisposed() ) {
+		if (s != null && s.points == null || s.points.isDisposed()) {
 			var bufferData = new hxd.FloatBuffer(s.POINT_COUNT * 4 * 2);
-			for( i in 0 ... splineData.samples.length ) {
+			for (i in 0...splineData.samples.length) {
 				var index = i * 2 * 4;
 				var s = splineData.samples[i];
-				bufferData[index] = s.pos.x; bufferData[index + 1] = s.pos.y; bufferData[index + 2] = s.pos.z; bufferData[index + 3] = 0.0;
-				bufferData[index + 4] = s.tangent.x; bufferData[index + 5] = s.tangent.y; bufferData[index + 6] = s.tangent.z; bufferData[index + 7] = 0.0;
+				bufferData[index] = s.pos.x;
+				bufferData[index + 1] = s.pos.y;
+				bufferData[index + 2] = s.pos.z;
+				bufferData[index + 3] = 0.0;
+				bufferData[index + 4] = s.tangent.x;
+				bufferData[index + 5] = s.tangent.y;
+				bufferData[index + 6] = s.tangent.z;
+				bufferData[index + 7] = 0.0;
 			}
-			s.points = new h3d.Buffer(s.POINT_COUNT * 2, @:privateAccess SplineMesh.SPLINE_FMT, [UniformBuffer,Dynamic]);
+			s.points = new h3d.Buffer(s.POINT_COUNT * 2, @:privateAccess SplineMesh.SPLINE_FMT, [UniformBuffer, Dynamic]);
 			s.points.uploadFloats(bufferData, 0, s.points.vertices, 0);
 		}
 	}
-
 }
 
 class SplineMesh extends Spline {
+	static var SPLINE_FMT = hxd.BufferFormat.make([{name: "position", type: DVec4}, {name: "tangent", type: DVec4}]);
 
-	static var SPLINE_FMT = hxd.BufferFormat.make([{ name : "position", type : DVec4 },{ name : "tangent", type : DVec4 }]);
+	@:s var meshPath:String;
+	var meshes:Array<h3d.scene.Mesh> = [];
 
-	@:s var meshPath : String;
-	var meshes : Array<h3d.scene.Mesh> = [];
+	@:s var splineUVx:Bool = false;
+	@:s var splineUVy:Bool = false;
 
-	@:s var splineUVx : Bool = false;
-	@:s var splineUVy : Bool = false;
-
-	@:s var spacing: Float = 0.0;
-	@:c var meshScale = new h3d.Vector(1,1,1);
-	@:c var meshRotation = new h3d.Vector(0,0,0);
+	@:s var spacing:Float = 0.0;
+	@:c var meshScale = new h3d.Vector(1, 1, 1);
+	@:c var meshRotation = new h3d.Vector(0, 0, 0);
 	var modelMat = new h3d.Matrix();
 
-	var meshBatch : SplineMeshBatch = null;
-	var meshPrimitive : h3d.prim.MeshPrimitive = null;
-	var meshMaterial : h3d.mat.Material = null;
-	@:s var customPass : String;
+	var meshBatch:SplineMeshBatch = null;
+	var meshPrimitive:h3d.prim.MeshPrimitive = null;
+	var meshMaterial:h3d.mat.Material = null;
+	@:s var customPass:String;
 
 	override function save() {
-		var obj : Dynamic = super.save();
+		var obj:Dynamic = super.save();
 		obj.meshScale = meshScale;
 		obj.meshRotation = meshRotation;
 		return obj;
 	}
 
-	override function load( obj : Dynamic ) {
+	override function load(obj:Dynamic) {
 		super.load(obj);
-		meshScale = obj.meshScale == null ? new h3d.Vector(1,1,1) : new h3d.Vector(obj.meshScale.x, obj.meshScale.y, obj.meshScale.z);
-		meshRotation = obj.meshRotation == null ? new h3d.Vector(0,0,0) : new h3d.Vector(obj.meshRotation.x, obj.meshRotation.y, obj.meshRotation.z);
+		meshScale = obj.meshScale == null ? new h3d.Vector(1, 1, 1) : new h3d.Vector(obj.meshScale.x, obj.meshScale.y, obj.meshScale.z);
+		meshRotation = obj.meshRotation == null ? new h3d.Vector(0, 0, 0) : new h3d.Vector(obj.meshRotation.x, obj.meshRotation.y, obj.meshRotation.z);
 	}
 
-	override function make(ctx: Context) {
+	override function make(ctx:Context) {
 		// Don't make children, which are used to setup the material
 		return makeInstance(ctx);
 	}
 
-	override function updateInstance( ctx : hrt.prefab.Context , ?propName : String ) {
+	override function updateInstance(ctx:hrt.prefab.Context, ?propName:String) {
 		super.updateInstance(ctx, propName);
 
 		var rot = new h3d.Matrix();
@@ -154,52 +146,48 @@ class SplineMesh extends Spline {
 		createBatches(ctx);
 
 		// Remake the material
-		if( meshBatch != null ) {
+		if (meshBatch != null) {
 			var emptyCtx = new hrt.prefab.Context();
 			emptyCtx.local3d = meshBatch;
 			emptyCtx.shared = ctx.shared;
-			for( c in @:privateAccess children ) {
+			for (c in @:privateAccess children) {
 				var mat = Std.downcast(c, Material);
-				if( mat != null && mat.enabled )
+				if (mat != null && mat.enabled)
 					@:privateAccess mat.makeInstance(emptyCtx);
-				var shader = Std.downcast(c, Shader);
-				if( shader != null && shader.enabled )
-					shader.makeInstance(emptyCtx);
 			}
 		}
 	}
 
-	function createMeshPrimitive( ctx : Context ) {
+	function createMeshPrimitive(ctx:Context) {
 		meshPrimitive = null;
 		meshMaterial = null;
-		if( meshPath != null ) {
-			var meshTemplate : h3d.scene.Mesh = ctx.loadModel(meshPath).toMesh();
-			if( meshTemplate != null ) {
+		if (meshPath != null) {
+			var meshTemplate:h3d.scene.Mesh = ctx.loadModel(meshPath).toMesh();
+			if (meshTemplate != null) {
 				meshPrimitive = cast meshTemplate.primitive;
 				meshMaterial = cast meshTemplate.material.clone();
 			}
 		}
 	}
 
-	function createMeshBatch( ctx : Context ) {
-
-		if( meshBatch != null ) {
+	function createMeshBatch(ctx:Context) {
+		if (meshBatch != null) {
 			meshBatch.remove();
 			meshBatch = null;
 		}
 
-		if( meshPrimitive == null || (meshBatch != null && meshBatch.primitive == meshPrimitive) )
+		if (meshPrimitive == null || (meshBatch != null && meshBatch.primitive == meshPrimitive))
 			return;
 
-		if( meshBatch == null ) {
-			var splineMaterial : h3d.mat.Material = meshMaterial;
+		if (meshBatch == null) {
+			var splineMaterial:h3d.mat.Material = meshMaterial;
 			var splineMeshShader = createShader();
 			splineMaterial.mainPass.addShader(splineMeshShader);
 			splineMaterial.castShadows = false;
 
-			if( customPass != null ) {
-				for( p in customPass.split(",") ) {
-					if( ctx.local3d.getScene().renderer.getPassByName(p) != null )
+			if (customPass != null) {
+				for (p in customPass.split(",")) {
+					if (ctx.local3d.getScene().renderer.getPassByName(p) != null)
 						splineMaterial.allocPass(p);
 				}
 			}
@@ -210,9 +198,8 @@ class SplineMesh extends Spline {
 		}
 	}
 
-	function createBatches( ctx : Context ) {
-
-		if( meshBatch == null )
+	function createBatches(ctx:Context) {
+		if (meshBatch == null)
 			return;
 
 		var localBounds = meshPrimitive.getBounds().clone();
@@ -221,26 +208,25 @@ class SplineMesh extends Spline {
 		var step = (hxd.Math.abs(localBounds.yMax) + hxd.Math.abs(localBounds.yMin)) + spacing;
 		var stepCount = hxd.Math.ceil((getLength() - minOffset) / step);
 
-		if( stepCount > 4096 )
+		if (stepCount > 4096)
 			return;
 
 		meshBatch.begin(stepCount);
 		var splinemeshShader = meshBatch.material.mainPass.getShader(SplineMeshShader);
-		for( i in 0 ... stepCount ) {
-			if( splinemeshShader != null )
+		for (i in 0...stepCount) {
+			if (splinemeshShader != null)
 				splinemeshShader.splinePos = i * step + minOffset;
 			meshBatch.emitInstance();
 		}
 	}
 
-	function createMultiMeshes( ctx : Context ) {
-
-		for( m in meshes )
+	function createMultiMeshes(ctx:Context) {
+		for (m in meshes)
 			m.remove();
 
 		meshes = [];
 
-		if( meshPrimitive == null )
+		if (meshPrimitive == null)
 			return;
 
 		var localBounds = meshPrimitive.getBounds().clone();
@@ -250,7 +236,7 @@ class SplineMesh extends Spline {
 
 		var length = getLength();
 		var stepCount = hxd.Math.ceil((length - minOffset) / step);
-		for( i in 0 ... stepCount ) {
+		for (i in 0...stepCount) {
 			var m = new h3d.scene.Mesh(meshPrimitive, cast meshMaterial.clone());
 			m.material.castShadows = false;
 			m.ignoreParentTransform = true;
@@ -269,13 +255,19 @@ class SplineMesh extends Spline {
 		s.stepSize = step;
 		s.modelMat = modelMat;
 		var bufferData = new hxd.FloatBuffer(s.POINT_COUNT * 4 * 2);
-		for( i in 0 ... data.samples.length ) {
+		for (i in 0...data.samples.length) {
 			var index = i * 2 * 4;
 			var s = data.samples[i];
-			bufferData[index] = s.pos.x; bufferData[index + 1] = s.pos.y; bufferData[index + 2] = s.pos.z; bufferData[index + 3] = 0.0;
-			bufferData[index + 4] = s.tangent.x; bufferData[index + 5] = s.tangent.y; bufferData[index + 6] = s.tangent.z; bufferData[index + 7] = 0.0;
+			bufferData[index] = s.pos.x;
+			bufferData[index + 1] = s.pos.y;
+			bufferData[index + 2] = s.pos.z;
+			bufferData[index + 3] = 0.0;
+			bufferData[index + 4] = s.tangent.x;
+			bufferData[index + 5] = s.tangent.y;
+			bufferData[index + 6] = s.tangent.z;
+			bufferData[index + 7] = 0.0;
 		}
-		s.points = new h3d.Buffer(s.POINT_COUNT * 2, SPLINE_FMT, [UniformBuffer,Dynamic]);
+		s.points = new h3d.Buffer(s.POINT_COUNT * 2, SPLINE_FMT, [UniformBuffer, Dynamic]);
 		s.points.uploadFloats(bufferData, 0, s.points.vertices, 0);
 		s.SPLINE_UV_X = splineUVx;
 		s.SPLINE_UV_Y = splineUVy;
@@ -283,8 +275,7 @@ class SplineMesh extends Spline {
 	}
 
 	#if editor
-
-	override function edit( ctx : EditContext ) {
+	override function edit(ctx:EditContext) {
 		super.edit(ctx);
 
 		var props = new hide.Element('
@@ -310,15 +301,19 @@ class SplineMesh extends Spline {
 			</div>
 			');
 
-		props.find(".refresh").click(function(_) { ctx.onChange(this, null); });
-		ctx.properties.add(props, this, function(pname) { ctx.onChange(this, pname); });
+		props.find(".refresh").click(function(_) {
+			ctx.onChange(this, null);
+		});
+		ctx.properties.add(props, this, function(pname) {
+			ctx.onChange(this, pname);
+		});
 	}
 
-	override function getHideProps() : HideProps {
-		return { icon : "arrows-v", name : "SplineMesh" };
+	override function getHideProps():HideProps {
+		return {icon: "arrows-v", name: "SplineMesh"};
 	}
-
 	#end
 
 	static var _ = hrt.prefab.Library.register("splineMesh", SplineMesh);
 }
+#end

@@ -1,29 +1,27 @@
 package hrt.prefab.l3d;
 
+#if savehide
 import h3d.Vector;
 import hxd.Key as K;
 
 typedef Source = {
-	var path: String;
-	var isRef: Bool;
+	var path:String;
+	var isRef:Bool;
 }
 
 #if !editor
-
-class SprayObject extends h3d.scene.Object {
-}
+class SprayObject extends h3d.scene.Object {}
 
 class Spray extends Object3D {
+	@:s var sources:Array<{path:String}> = [];
 
-	@:s var sources : Array<{ path : String }> = [];
-
-	override function createObject( ctx : Context ) {
+	override function createObject(ctx:Context) {
 		var spray = new SprayObject(ctx.local3d);
 		return spray;
 	}
 
-	override function make( ctx : Context ) {
-		if( !enabled )
+	override function make(ctx:Context) {
+		if (!enabled)
 			return ctx;
 		children.sort(function(c1, c2) {
 			return Std.isOfType(c1, Object3D) ? -1 : 1;
@@ -31,77 +29,75 @@ class Spray extends Object3D {
 		return super.make(ctx);
 	}
 }
-
 #else
-
 typedef Set = {
-	var name: String;
-	var sources: Array<Source>;
-	var config: SprayConfig;
+	var name:String;
+	var sources:Array<Source>;
+	var config:SprayConfig;
 }
 
 typedef SetGroup = {
-	var name: String;
-	var sets: Array<Set>;
+	var name:String;
+	var sets:Array<Set>;
 }
 
 typedef SprayConfig = {
-	var density : Int;
-	var step : Float;
-	var densityOffset : Int;
-	var radius : Float;
-	var deleteRadius : Float;
-	var scale : Float;
-	var scaleOffset : Float;
-	var rotation : Float;
-	var rotationOffset : Float;
-	var zOffset: Float;
-	var dontRepeatItem : Bool;
-	var enableBrush : Bool;
-	var orientTerrain : Float;
-	var tiltAmount : Float;
+	var density:Int;
+	var step:Float;
+	var densityOffset:Int;
+	var radius:Float;
+	var deleteRadius:Float;
+	var scale:Float;
+	var scaleOffset:Float;
+	var rotation:Float;
+	var rotationOffset:Float;
+	var zOffset:Float;
+	var dontRepeatItem:Bool;
+	var enableBrush:Bool;
+	var orientTerrain:Float;
+	var tiltAmount:Float;
 }
-
 
 @:access(hrt.prefab.l3d.MeshSpray)
 class SprayObject extends h3d.scene.Object {
+	var spray:Spray;
 
-	var spray : Spray;
-
-	public function new(spray,?parent) {
+	public function new(spray, ?parent) {
 		this.spray = spray;
 		super(parent);
 	}
 
-
-	public function redraw(updateShaders=false) {
+	public function redraw(updateShaders = false) {
 		getBounds(); // force absBos calculus on children
-		for( c in children ) {
+		for (c in children) {
 			c.culled = false;
-			if( c.alwaysSyncAnimation ) continue;
+			if (c.alwaysSyncAnimation)
+				continue;
 		}
 	}
-
 }
 
 class Spray extends Object3D {
+	@:s var sources:Array<Source> = []; // specific set for this spray
+	@:s var defaultConfig:SprayConfig;
+	@:s var currentPresetName:String = null;
+	@:s var currentSetName:String = null;
 
-	@:s var sources : Array<Source> = []; // specific set for this spray
-	@:s var defaultConfig: SprayConfig;
-	@:s var currentPresetName : String = null;
-	@:s var currentSetName : String = null;
-
-	var sceneEditor : hide.comp.SceneEditor;
+	var sceneEditor:hide.comp.SceneEditor;
 
 	var undo(get, null):hide.ui.UndoHistory;
-	function get_undo() { return sceneEditor.view.undo; }
+
+	function get_undo() {
+		return sceneEditor.view.undo;
+	}
 
 	var lastIndexItem = -1;
-	var allSetGroups : Array<SetGroup>;
-	var setGroup : SetGroup;
-	var currentSet : Set;
+	var allSetGroups:Array<SetGroup>;
+	var setGroup:SetGroup;
+	var currentSet:Set;
 
-	var currentSources(get, null) : Array<Source>;
+	var currentSources(get, null):Array<Source>;
+
 	function get_currentSources() {
 		if (currentSet != null)
 			return currentSet.sources;
@@ -109,37 +105,39 @@ class Spray extends Object3D {
 			return sources;
 	}
 
-	var currentConfig(get, null) : SprayConfig;
+	var currentConfig(get, null):SprayConfig;
+
 	function get_currentConfig() {
 		var config = (currentSet != null) ? currentSet.config : defaultConfig;
-		if (config == null) config = getDefaultConfig();
+		if (config == null)
+			config = getDefaultConfig();
 		return config;
 	}
 
-	var sprayEnable : Bool = false;
-	var interactive : h2d.Interactive;
-	var gBrushes : Array<h3d.scene.Mesh>;
+	var sprayEnable:Bool = false;
+	var interactive:h2d.Interactive;
+	var gBrushes:Array<h3d.scene.Mesh>;
 
-	var timerCicle : haxe.Timer;
+	var timerCicle:haxe.Timer;
 
-	var lastSpray : Float = 0;
-	var lastItemPos : h3d.col.Point;
-	var invParent : h3d.Matrix;
+	var lastSpray:Float = 0;
+	var lastItemPos:h3d.col.Point;
+	var invParent:h3d.Matrix;
 
-	var shared : ContextShared;
+	var shared:ContextShared;
 
 	function clearPreview() {
 		// prevent saving preview
-		if( previewItems.length > 0 ) {
-			sceneEditor.deleteElements(previewItems, () -> { }, false, false);
+		if (previewItems.length > 0) {
+			sceneEditor.deleteElements(previewItems, () -> {}, false, false);
 			previewItems = [];
 		}
 	}
 
-	function getDefaultConfig() : SprayConfig {
+	function getDefaultConfig():SprayConfig {
 		return {
 			density: 1,
-			step : 0.,
+			step: 0.,
 			densityOffset: 0,
 			radius: 0.1,
 			deleteRadius: 5,
@@ -150,23 +148,30 @@ class Spray extends Object3D {
 			zOffset: 0,
 			dontRepeatItem: true,
 			enableBrush: true,
-			orientTerrain : 0,
-			tiltAmount : 0,
+			orientTerrain: 0,
+			tiltAmount: 0,
 		};
 	}
 
-	function extractItemName( path : String ) : String {
-		if( path == null ) return "None";
+	function extractItemName(path:String):String {
+		if (path == null)
+			return "None";
 		var childParts = path.split("/");
 		return childParts[childParts.length - 1].split(".")[0];
 	}
 
-
-	function setGroundPos( ectx : EditContext, obj : Object3D = null, absPos : h3d.col.Point = null ) : { mz : Float, rotX : Float, rotY : Float, rotZ : Float } {
+	function setGroundPos(ectx:EditContext, obj:Object3D = null, absPos:h3d.col.Point = null):{
+		mz:Float,
+		rotX:Float,
+		rotY:Float,
+		rotZ:Float
+	} {
 		if (absPos == null && obj == null)
 			throw "setGroundPos should use either object or absPos";
-		var tx : Float; var ty : Float; var tz : Float;
-		if ( absPos != null ) {
+		var tx:Float;
+		var ty:Float;
+		var tz:Float;
+		if (absPos != null) {
 			tx = absPos.x;
 			ty = absPos.y;
 			tz = absPos.z;
@@ -178,57 +183,62 @@ class Spray extends Object3D {
 		var config = currentConfig;
 		var groundZ = ectx.positionToGroundZ(tx, ty);
 		var mz = config.zOffset + groundZ - tz;
-		if ( obj != null )
+		if (obj != null)
 			obj.z += mz;
 		var orient = config.orientTerrain;
 		var tilt = config.tiltAmount;
 
-		inline function getPoint(dx,dy) {
+		inline function getPoint(dx, dy) {
 			var dz = ectx.positionToGroundZ(tx + 0.1 * dx, ty + 0.1 * dy) - groundZ;
-			return new h3d.col.Point(dx*0.1, dy*0.1, dz * orient);
+			return new h3d.col.Point(dx * 0.1, dy * 0.1, dz * orient);
 		}
 
-		var px = getPoint(1,0);
-		var py = getPoint(0,1);
+		var px = getPoint(1, 0);
+		var py = getPoint(0, 1);
 		var n = px.cross(py).normalized();
 		var q = new h3d.Quat();
 		q.initNormal(n);
 		var m = q.toMatrix();
-		m.prependRotation(Math.random()*tilt*Math.PI/8,0,  (config.rotation + (Std.random(2) == 0 ? -1 : 1) * Math.round(Math.random() * config.rotationOffset)) * Math.PI / 180);
+		m.prependRotation(Math.random() * tilt * Math.PI / 8, 0,
+			(config.rotation + (Std.random(2) == 0 ? -1 : 1) * Math.round(Math.random() * config.rotationOffset)) * Math.PI / 180);
 		var a = m.getEulerAngles();
 		var rotX = hxd.Math.fmt(a.x * 180 / Math.PI);
 		var rotY = hxd.Math.fmt(a.y * 180 / Math.PI);
 		var rotZ = hxd.Math.fmt(a.z * 180 / Math.PI);
-		if ( obj != null ) {
+		if (obj != null) {
 			obj.rotationX = rotX;
 			obj.rotationY = rotY;
 			obj.rotationZ = rotZ;
 		}
-		return { mz : mz, rotX : rotX, rotY : rotY, rotZ : rotZ };
+		return {
+			mz: mz,
+			rotX: rotX,
+			rotY: rotY,
+			rotZ: rotZ
+		};
 	}
 
 	var wasEdited = false;
-	var previewItems : Array<hrt.prefab.Prefab> = [];
-	var sprayedItems : Array<hrt.prefab.Prefab> = [];
-	var selectElement : hide.Element;
+	var previewItems:Array<hrt.prefab.Prefab> = [];
+	var sprayedItems:Array<hrt.prefab.Prefab> = [];
+	var selectElement:hide.Element;
 
-	function createInteractiveBrush(ectx : EditContext) {
-		if (!enabled) return;
+	function createInteractiveBrush(ectx:EditContext) {
+		if (!enabled)
+			return;
 		var ctx = ectx.getContext(this);
 		var s2d = ctx.shared.root2d.getScene();
 		interactive = new h2d.Interactive(10000, 10000, s2d);
 		interactive.propagateEvents = true;
 		interactive.cancelEvents = false;
 
-		interactive.onWheel = function(e) {
-
-		};
+		interactive.onWheel = function(e) {};
 
 		interactive.onKeyUp = function(e) {
 			if (e.keyCode == K.R) {
 				lastItemId = -1;
 				if (lastSpray < Date.now().getTime() - 100) {
-					if( !K.isDown( K.SHIFT) ) {
+					if (!K.isDown(K.SHIFT)) {
 						clearPreview();
 						var worldPos = ectx.screenToGround(s2d.mouseX, s2d.mouseY);
 						previewItemsAround(ectx, ctx, worldPos);
@@ -260,7 +270,7 @@ class Spray extends Object3D {
 			e.propagate = false;
 			sprayEnable = true;
 			var worldPos = ectx.screenToGround(s2d.mouseX, s2d.mouseY);
-			if( K.isDown( K.SHIFT) )
+			if (K.isDown(K.SHIFT))
 				removeItemsAround(ctx, worldPos);
 			else {
 				lastItemPos = worldPos.clone();
@@ -274,14 +284,13 @@ class Spray extends Object3D {
 			var addedModels = sprayedItems.copy();
 			if (sprayedItems.length > 0) {
 				undo.change(Custom(function(undo) {
-					if(undo) {
+					if (undo) {
 						sceneEditor.deleteElements(addedModels, () -> removeInteractiveBrush(), true, false);
 						clearPreview();
-					}
-					else {
+					} else {
 						sceneEditor.addElements(addedModels, false, true, false);
 					}
-					cast(ctx.local3d,SprayObject).redraw();
+					cast(ctx.local3d, SprayObject).redraw();
 				}));
 				sprayedItems = [];
 			}
@@ -291,35 +300,35 @@ class Spray extends Object3D {
 		interactive.onMove = function(e) {
 			var worldPos = ectx.screenToGround(s2d.mouseX, s2d.mouseY);
 
-			var shiftPressed = K.isDown( K.SHIFT);
+			var shiftPressed = K.isDown(K.SHIFT);
 
-			if( worldPos == null ) {
+			if (worldPos == null) {
 				clearBrushes();
 				return;
 			}
 
-			drawCircle(ctx, worldPos.x, worldPos.y, worldPos.z, (shiftPressed) ? currentConfig.deleteRadius : currentConfig.radius, 5, (shiftPressed) ? 9830400 : 38400);
+			drawCircle(ctx, worldPos.x, worldPos.y, worldPos.z, (shiftPressed) ? currentConfig.deleteRadius : currentConfig.radius, 5,
+				(shiftPressed) ? 9830400 : 38400);
 
 			if (lastSpray < Date.now().getTime() - 100) {
 				clearPreview();
-				if( !shiftPressed ) {
+				if (!shiftPressed) {
 					previewItemsAround(ectx, ctx, worldPos);
 				}
 
-				if( K.isDown( K.MOUSE_LEFT) ) {
+				if (K.isDown(K.MOUSE_LEFT)) {
 					e.propagate = false;
 
 					if (sprayEnable) {
-						if( shiftPressed ) {
+						if (shiftPressed) {
 							removeItemsAround(ctx, worldPos);
 						} else {
 							if (currentConfig.density == 1) {
-								if(lastItemPos.distance(worldPos) > currentConfig.step) {
+								if (lastItemPos.distance(worldPos) > currentConfig.step) {
 									lastItemPos = worldPos.clone();
 									addItems(ctx);
 								}
-							}
-							else {
+							} else {
 								lastItemPos = worldPos.clone();
 								addItems(ctx);
 							}
@@ -329,49 +338,51 @@ class Spray extends Object3D {
 				lastSpray = Date.now().getTime();
 			}
 		};
-
 	}
 
-	override function removeInstance(ctx : Context):Bool {
+	override function removeInstance(ctx:Context):Bool {
 		removeInteractiveBrush();
 		return super.removeInstance(ctx);
 	}
-	override function setSelected( ctx : Context, b : Bool ) {
-		if( !b )
+
+	override function setSelected(ctx:Context, b:Bool) {
+		if (!b)
 			removeInteractiveBrush();
 		return false;
 	}
 
 	function removeInteractiveBrush() {
-		if( interactive != null ) interactive.remove();
+		if (interactive != null)
+			interactive.remove();
 		clearPreview();
 		if (wasEdited)
-			sceneEditor.refresh(Partial, () -> { });
+			sceneEditor.refresh(Partial, () -> {});
 		wasEdited = false;
 		clearBrushes();
 	}
 
 	function clearBrushes() {
-		if( gBrushes != null ) {
-			for (g in gBrushes) g.remove();
+		if (gBrushes != null) {
+			for (g in gBrushes)
+				g.remove();
 			gBrushes = null;
 		}
 	}
 
-	function addSourcePath(path : String) {
-	}
+	function addSourcePath(path:String) {}
 
-	function removeSourcePath(path : String) {
+	function removeSourcePath(path:String) {
 		var source = currentSources.filter(m -> m.path == path);
 		if (source.length > 0)
 			currentSources.remove(source[0]);
 	}
 
 	var localMat = new h3d.Matrix();
-	var lastPos : h3d.col.Point;
+	var lastPos:h3d.col.Point;
 	var lastItemId = -1;
-	var lastSprayedObj : h3d.scene.Object;
-	function previewItemsAround(ectx : hide.prefab.EditContext, ctx : Context, point : h3d.col.Point) {
+	var lastSprayedObj:h3d.scene.Object;
+
+	function previewItemsAround(ectx:hide.prefab.EditContext, ctx:Context, point:h3d.col.Point) {
 		if (currentSources.length == 0) {
 			return;
 		}
@@ -382,18 +393,21 @@ class Spray extends Object3D {
 
 		final CONFIG = currentConfig;
 
-		var computedDensity = CONFIG.density + Std.random(CONFIG.densityOffset+1);
+		var computedDensity = CONFIG.density + Std.random(CONFIG.densityOffset + 1);
 
 		var minDistanceBetweenMeshesSq = (CONFIG.radius * CONFIG.radius / computedDensity);
 
-		var currentPivots : Array<h2d.col.Point> = [];
-		inline function distance(x1 : Float, y1 : Float, x2 : Float, y2 : Float) return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+		var currentPivots:Array<h2d.col.Point> = [];
+		inline function distance(x1:Float, y1:Float, x2:Float, y2:Float)
+			return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
 		var fakeRadius = CONFIG.radius * CONFIG.radius + minDistanceBetweenMeshesSq;
 		for (child in children) {
 			var item = child.to(hrt.prefab.Object3D);
-			if( item == null ) continue;
+			if (item == null)
+				continue;
 			if (distance(point2d.x, point2d.y, item.x, item.y) < fakeRadius) {
-				if (previewItems.indexOf(item) != -1) continue;
+				if (previewItems.indexOf(item) != -1)
+					continue;
 				nbItemsInZone++;
 				currentPivots.push(new h2d.col.Point(item.x, item.y));
 			}
@@ -405,12 +419,12 @@ class Spray extends Object3D {
 		if (nbItemsToPlace > 0) {
 			while (nbItemsToPlace-- > 0) {
 				var nbTry = 5;
-				var position : h3d.col.Point;
+				var position:h3d.col.Point;
 				do {
-					var randomRadius = CONFIG.radius*Math.sqrt(Math.random());
-					var angle = Math.random() * 2*Math.PI;
+					var randomRadius = CONFIG.radius * Math.sqrt(Math.random());
+					var angle = Math.random() * 2 * Math.PI;
 
-					position = new h3d.col.Point(point.x + randomRadius*Math.cos(angle), point.y + randomRadius*Math.sin(angle), 0);
+					position = new h3d.col.Point(point.x + randomRadius * Math.cos(angle), point.y + randomRadius * Math.sin(angle), 0);
 					var vecRelat = position.toVector();
 					vecRelat.transform3x4(invParent);
 
@@ -438,18 +452,15 @@ class Spray extends Object3D {
 					}
 				}
 				if (selectedItems.length > 0) {
-					if(selectedItems.length > 1) {
+					if (selectedItems.length > 1) {
 						do
-							itemId = Std.random(selectedItems.length)
-						while(CONFIG.dontRepeatItem && itemId == lastItemId);
+							itemId = Std.random(selectedItems.length) while (CONFIG.dontRepeatItem && itemId == lastItemId);
 					}
 					itemUsed = selectedItems[itemId];
-				}
-				else {
-					if(currentSources.length > 1) {
+				} else {
+					if (currentSources.length > 1) {
 						do
-							itemId = Std.random(currentSources.length)
-						while(CONFIG.dontRepeatItem && itemId == lastItemId);
+							itemId = Std.random(currentSources.length) while (CONFIG.dontRepeatItem && itemId == lastItemId);
 					}
 					itemUsed = currentSources[itemId];
 				}
@@ -459,8 +470,7 @@ class Spray extends Object3D {
 				else
 					lastItemId = -1;
 
-
-				var newPrefab : hrt.prefab.Object3D = null;
+				var newPrefab:hrt.prefab.Object3D = null;
 
 				if (itemUsed.isRef) {
 					var refPrefab = new hrt.prefab.Reference(this);
@@ -501,24 +511,25 @@ class Spray extends Object3D {
 		}
 	}
 
-	function addItems(ctx : Context) {
+	function addItems(ctx:Context) {
 		lastItemId = -1;
 		if (previewItems.length > 0) {
 			wasEdited = true;
 			sprayedItems = sprayedItems.concat(previewItems);
 			previewItems = [];
 			clearBrushes();
-			cast(ctx.local3d,SprayObject).redraw();
+			cast(ctx.local3d, SprayObject).redraw();
 		}
 	}
 
-	function removeItemsAround(ctx : Context, point : h3d.col.Point) {
+	function removeItemsAround(ctx:Context, point:h3d.col.Point) {
 		var vecRelat = point.toVector();
 		vecRelat.transform3x4(invParent);
 		var point2d = new h2d.col.Point(vecRelat.x, vecRelat.y);
 
 		var childToRemove = [];
-		inline function distance(x1 : Float, y1 : Float, x2 : Float, y2 : Float) return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+		inline function distance(x1:Float, y1:Float, x2:Float, y2:Float)
+			return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
 		var fakeRadius = currentConfig.deleteRadius * currentConfig.deleteRadius;
 		for (child in children) {
 			var item = child.to(hrt.prefab.Object3D);
@@ -531,18 +542,17 @@ class Spray extends Object3D {
 		var needRedraw = false;
 		if (childToRemove.length > 0) {
 			wasEdited = true;
-			sceneEditor.deleteElements(childToRemove, () -> { }, false);
+			sceneEditor.deleteElements(childToRemove, () -> {}, false);
 			needRedraw = true;
 		}
 
-
-		if( needRedraw ) {
+		if (needRedraw) {
 			clearBrushes();
-			cast(ctx.local3d,SprayObject).redraw();
+			cast(ctx.local3d, SprayObject).redraw();
 		}
 	}
 
-	public function drawCircle(ctx : Context, originX : Float, originY : Float, originZ : Float, radius: Float, thickness: Float, color) {
+	public function drawCircle(ctx:Context, originX:Float, originY:Float, originZ:Float, radius:Float, thickness:Float, color) {
 		var newColor = h3d.Vector.fromColor(color);
 		if (gBrushes == null || gBrushes.length == 0 || gBrushes[0].scaleX != radius || gBrushes[0].material.color != newColor) {
 			clearBrushes();
@@ -557,7 +567,7 @@ class Spray extends Object3D {
 			gBrush.material.shadows = false;
 			gBrush.material.color = newColor;
 			gBrushes.push(gBrush);
-			gBrush = new h3d.scene.Mesh(new h3d.prim.Sphere(Math.min(radius*0.05, 0.35)), ctx.local3d);
+			gBrush = new h3d.scene.Mesh(new h3d.prim.Sphere(Math.min(radius * 0.05, 0.35)), ctx.local3d);
 			gBrush.ignoreParentTransform = true;
 			var pass = gBrush.material.mainPass;
 			pass.setPassName("overlay");
@@ -567,7 +577,8 @@ class Spray extends Object3D {
 			gBrush.material.color = newColor;
 			gBrushes.push(gBrush);
 		}
-		for (g in gBrushes) g.visible = true;
+		for (g in gBrushes)
+			g.visible = true;
 		for (g in gBrushes) {
 			g.x = originX;
 			g.y = originY;
@@ -584,37 +595,36 @@ class Spray extends Object3D {
 	}
 
 	override function make(ctx:Context):Context {
-		if( !enabled )
+		if (!enabled)
 			return ctx;
 		return super.make(ctx);
 	}
 
-	override function applyTransform(o : h3d.scene.Object) {
+	override function applyTransform(o:h3d.scene.Object) {
 		super.applyTransform(o);
 		cast(o, SprayObject).redraw();
 	}
 
-
-	static public function makePrimCircle(segments: Int, inner : Float = 0, rings : Int = 0) {
+	static public function makePrimCircle(segments:Int, inner:Float = 0, rings:Int = 0) {
 		var points = [];
 		var uvs = [];
 		var indices = [];
 		++segments;
 		var anglerad = hxd.Math.degToRad(360);
-		for(i in 0...segments) {
+		for (i in 0...segments) {
 			var t = i / (segments - 1);
-			var a = hxd.Math.lerp(-anglerad/2, anglerad/2, t);
+			var a = hxd.Math.lerp(-anglerad / 2, anglerad / 2, t);
 			var ct = hxd.Math.cos(a);
 			var st = hxd.Math.sin(a);
-			for(r in 0...(rings + 2)) {
+			for (r in 0...(rings + 2)) {
 				var v = r / (rings + 1);
 				var r = hxd.Math.lerp(inner, 1.0, v);
 				points.push(new h2d.col.Point(ct * r, st * r));
 				uvs.push(new h2d.col.Point(t, v));
 			}
 		}
-		for(i in 0...segments-1) {
-			for(r in 0...(rings + 1)) {
+		for (i in 0...segments - 1) {
+			for (r in 0...(rings + 1)) {
 				var idx = r + i * (rings + 2);
 				var nxt = r + (i + 1) * (rings + 2);
 				indices.push(idx);
@@ -626,31 +636,30 @@ class Spray extends Object3D {
 			}
 		}
 
-		var verts = [for(p in points) new h3d.col.Point(p.x, p.y, 0.)];
+		var verts = [for (p in points) new h3d.col.Point(p.x, p.y, 0.)];
 		var idx = new hxd.IndexBuffer();
-		for(i in indices)
+		for (i in indices)
 			idx.push(i);
 		var primitive = new h3d.prim.Polygon(verts, idx);
-		primitive.normals = [for(p in points) new h3d.col.Point(0, 0, 1.)];
-		primitive.tangents = [for(p in points) new h3d.col.Point(0., 1., 0.)];
-		primitive.uvs = [for(uv in uvs) new h3d.prim.UV(uv.x, uv.y)];
-		primitive.colors = [for(p in points) new h3d.col.Point(1,1,1)];
+		primitive.normals = [for (p in points) new h3d.col.Point(0, 0, 1.)];
+		primitive.tangents = [for (p in points) new h3d.col.Point(0., 1., 0.)];
+		primitive.uvs = [for (uv in uvs) new h3d.prim.UV(uv.x, uv.y)];
+		primitive.colors = [for (p in points) new h3d.col.Point(1, 1, 1)];
 		return primitive;
 	}
 
-	override function flatten<T:Prefab>( ?cl : Class<T>, ?arr: Array<T> ) : Array<T> {
-		if(arr == null)
+	override function flatten<T:Prefab>(?cl:Class<T>, ?arr:Array<T>):Array<T> {
+		if (arr == null)
 			arr = [];
-		if( cl == null )
+		if (cl == null)
 			arr.push(cast this);
 		else {
 			var i = to(cl);
-			if(i != null)
+			if (i != null)
 				arr.push(i);
 		}
 		return arr;
 	}
-
 }
-
+#end
 #end

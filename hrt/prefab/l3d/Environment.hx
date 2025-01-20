@@ -1,22 +1,21 @@
 package hrt.prefab.l3d;
 
-
+#if savehide
 @:access(h3d.scene.pbr.Environment)
 class Environment extends Object3D {
+	@:s public var power:Float = 1.0;
+	@:s public var hdrMax:Float = 10.0;
+	@:s public var rotation:Float = 0.0;
+	@:s public var sampleBits:Int = 12;
+	@:s public var diffSize:Int = 64;
+	@:s public var specSize:Int = 512;
+	@:s public var ignoredSpecLevels:Int = 1;
 
-	@:s public var power : Float = 1.0;
-	@:s public var hdrMax : Float = 10.0;
-	@:s public var rotation : Float = 0.0;
-	@:s public var sampleBits : Int = 12;
-	@:s public var diffSize : Int = 64;
-	@:s public var specSize : Int = 512;
-	@:s public var ignoredSpecLevels : Int = 1;
+	@:s var sourceMapPath:String;
+	@:s var configName:String;
+	var env:h3d.scene.pbr.Environment;
 
-	@:s var sourceMapPath : String;
-	@:s var configName : String;
-	var env : h3d.scene.pbr.Environment;
-
-	public function new( ?parent ) {
+	public function new(?parent) {
 		super(parent);
 		type = "environment";
 	}
@@ -29,14 +28,14 @@ class Environment extends Object3D {
 			env.specular.mipMap = Linear;
 			env.specLevels = env.getMipLevels() - ignoredSpecLevels;
 			return true;
-		} catch( e : hxd.res.NotFound ) {
+		} catch (e:hxd.res.NotFound) {
 			return false;
 		}
 	}
 
-	function getBinaryPath( diffuse : Bool ) {
+	function getBinaryPath(diffuse:Bool) {
 		var path = new haxe.io.Path(sourceMapPath);
-		if( configName != null )
+		if (configName != null)
 			path.file += "-" + configName;
 		path.ext = diffuse ? "envd" : "envs";
 		return path.toString();
@@ -45,52 +44,57 @@ class Environment extends Object3D {
 	function saveToBinary() {
 		#if (hl || hxnodejs)
 		var fs = cast(hxd.res.Loader.currentInstance.fs, hxd.fs.LocalFileSystem);
-		if( fs == null ) return;
-		var diffuse = hxd.Pixels.toDDSLayers([for( i in 0...6 ) env.diffuse.capturePixels(i)],true);
+		if (fs == null)
+			return;
+		var diffuse = hxd.Pixels.toDDSLayers([for (i in 0...6) env.diffuse.capturePixels(i)], true);
 		sys.io.File.saveBytes(fs.baseDir + getBinaryPath(true), diffuse);
-		var specular = hxd.Pixels.toDDSLayers([for( i in 0...6 ) for( mip in 0...env.getMipLevels() ) env.specular.capturePixels(i,mip)],true);
+		var specular = hxd.Pixels.toDDSLayers([
+			for (i in 0...6) for (mip in 0...env.getMipLevels()) env.specular.capturePixels(i, mip)
+		], true);
 		sys.io.File.saveBytes(fs.baseDir + getBinaryPath(false), specular);
 		#end
 	}
 
-	override function makeInstance( ctx : Context ) : Context {
+	override function makeInstance(ctx:Context):Context {
 		super.makeInstance(ctx);
 		updateInstance(ctx);
 		return ctx;
 	}
 
-	override function updateInstance( ctx : Context, ?propName : String ) {
+	override function updateInstance(ctx:Context, ?propName:String) {
 		super.updateInstance(ctx, propName);
 
-		if( sourceMapPath == null )
+		if (sourceMapPath == null)
 			return;
 
 		#if editor
 		var sourceMap = ctx.loadTexture(sourceMapPath);
-		if( sourceMap == null )
+		if (sourceMap == null)
 			return;
-		if( sourceMap.flags.has(Loading) ) {
+		if (sourceMap.flags.has(Loading)) {
 			haxe.Timer.delay(function() {
 				ctx.setCurrent();
-				if( h3d.Engine.getCurrent().driver == null ) return; // was disposed
-				updateInstance(ctx,propName);
-			},100);
+				if (h3d.Engine.getCurrent().driver == null)
+					return; // was disposed
+				updateInstance(ctx, propName);
+			}, 100);
 			return;
 		}
 		#end
 
 		var needLoad = false;
-		if( env == null ) {
+		if (env == null) {
 			env = new h3d.scene.pbr.Environment(null);
 			needLoad = true;
 		}
 
-		if( configName != null ) {
+		if (configName != null) {
 			configName = StringTools.trim(configName);
-			if( configName == "" ) configName = null;
+			if (configName == "")
+				configName = null;
 		}
 
-		if( env.source != null && env.source.name != sourceMapPath )
+		if (env.source != null && env.source.name != sourceMapPath)
 			needLoad = true;
 
 		env.specSize = specSize;
@@ -102,7 +106,7 @@ class Environment extends Object3D {
 		env.rotation = hxd.Math.degToRad(rotation);
 		env.power = power;
 
-		if( propName == "force" || (needLoad && !loadFromBinary()) ) {
+		if (propName == "force" || (needLoad && !loadFromBinary())) {
 			env.dispose();
 			env.specular = null;
 			env.diffuse = null;
@@ -113,23 +117,22 @@ class Environment extends Object3D {
 
 		var scene = ctx.local3d.getScene();
 		// Auto Apply on change
-		if( scene != null )
+		if (scene != null)
 			applyToRenderer(scene.renderer);
 	}
 
-	public function applyToRenderer( r : h3d.scene.Renderer) {
+	public function applyToRenderer(r:h3d.scene.Renderer) {
 		var r = Std.downcast(r, h3d.scene.pbr.Renderer);
-		if( r != null )
+		if (r != null)
 			r.env = env;
 	}
 
 	#if editor
-
-	override function getHideProps() : HideProps {
-		return { icon : "sun-o", name : "Environment" };
+	override function getHideProps():HideProps {
+		return {icon: "sun-o", name: "Environment"};
 	}
 
-	override function edit( ctx : EditContext ) {
+	override function edit(ctx:EditContext) {
 		// super.edit(ctx);
 
 		var props = new hide.Element('
@@ -166,7 +169,7 @@ class Environment extends Object3D {
 		});
 
 		props.find(".compute").click(function(_) {
-			ctx.onChange(this,"force");
+			ctx.onChange(this, "force");
 		});
 
 		props.find(".showDif").click(function(_) {
@@ -181,8 +184,8 @@ class Environment extends Object3D {
 			ctx.onChange(this, pname);
 		});
 	}
-
 	#end
 
 	static var _ = Library.register("environment", Environment);
 }
+#end

@@ -2874,10 +2874,6 @@ class SceneEditor {
 			ref.source = relative;
 			obj3d = ref;
 			obj3d.name = new haxe.io.Path(relative).file;
-		} else if (haxe.io.Path.extension(path).toLowerCase() == "json") {
-			obj3d = new hrt.prefab.l3d.Particles3D(parent);
-			obj3d.source = relative;
-			obj3d.name = new haxe.io.Path(relative).file;
 		} else {
 			obj3d = new hrt.prefab.Model(parent);
 			obj3d.source = relative;

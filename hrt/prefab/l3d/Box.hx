@@ -1,14 +1,12 @@
 package hrt.prefab.l3d;
 
 class Box extends Object3D {
-
-
-	public function setColor(ctx: Context, color: Int) {
+	public function setColor(ctx:Context, color:Int) {
 		#if editor
-		if(ctx.local3d == null)
+		if (ctx.local3d == null)
 			return;
 		var mesh = Std.downcast(ctx.local3d, h3d.scene.Mesh);
-		if(mesh != null) {
+		if (mesh != null) {
 			setDebugColor(color, mesh.material);
 		}
 		#end
@@ -35,21 +33,20 @@ class Box extends Object3D {
 	}
 
 	#if editor
-	static public function setDebugColor(color : Int, mat : h3d.mat.Material) {
+	static public function setDebugColor(color:Int, mat:h3d.mat.Material) {
 		mat.color.setColor(color);
 		var opaque = (color >>> 24) == 0xff;
 		mat.shadows = false;
 
-		if(opaque) {
+		if (opaque) {
 			var alpha = mat.getPass("debuggeom_alpha");
-			if(alpha != null)
+			if (alpha != null)
 				mat.removePass(alpha);
 			mat.mainPass.setPassName("default");
-		 	mat.mainPass.setBlendMode(None);
-		 	mat.mainPass.depthWrite = true;
+			mat.mainPass.setBlendMode(None);
+			mat.mainPass.depthWrite = true;
 			mat.mainPass.culling = None;
-		}
-		else {
+		} else {
 			mat.mainPass.setPassName("debuggeom");
 			mat.mainPass.setBlendMode(Alpha);
 			mat.mainPass.depthWrite = true;
@@ -61,8 +58,8 @@ class Box extends Object3D {
 		}
 	}
 
-	override function getHideProps() : HideProps {
-		return { icon : "square", name : "Box" };
+	override function getHideProps():HideProps {
+		return {icon: "square", name: "Box"};
 	}
 	#end
 

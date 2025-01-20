@@ -1,17 +1,17 @@
 package hrt.prefab.l2d;
 
+#if savehide
 class Atlas extends Object2D {
-
 	// parameters
-	@:s var src : String;
-	@:s var fpsAnimation : Int = 30;
-	@:s var delayStart : Float = 0;
-	@:s var loop : Bool = false;
-	@:s var forcePivotCenter : Bool = false;
+	@:s var src:String;
+	@:s var fpsAnimation:Int = 30;
+	@:s var delayStart:Float = 0;
+	@:s var loop:Bool = false;
+	@:s var forcePivotCenter:Bool = false;
 
-	var atlas : hxd.res.Atlas;
+	var atlas:hxd.res.Atlas;
 
-	override function updateInstance( ctx: Context, ?propName : String ) {
+	override function updateInstance(ctx:Context, ?propName:String) {
 		super.updateInstance(ctx, propName);
 
 		var h2dAnim = (cast ctx.local2d : h2d.Anim);
@@ -22,7 +22,8 @@ class Atlas extends Object2D {
 				atlas = hxd.res.Loader.currentInstance.load(src).to(hxd.res.Atlas);
 				var tiles = atlas.getAnim();
 				if (forcePivotCenter)
-					for (t in tiles) t.setCenterRatio(0.5, 0.5);
+					for (t in tiles)
+						t.setCenterRatio(0.5, 0.5);
 				h2dAnim.play(tiles);
 			} else {
 				h2dAnim.play([]);
@@ -38,11 +39,11 @@ class Atlas extends Object2D {
 		h2dAnim.blendMode = blendMode;
 
 		#if editor
-			var int = Std.downcast(h2dAnim.getChildAt(0),h2d.Interactive);
-			if( int != null ) {
-				int.width = h2dAnim.getFrame().width;
-				int.height = h2dAnim.getFrame().height;
-			}
+		var int = Std.downcast(h2dAnim.getChildAt(0), h2d.Interactive);
+		if (int != null) {
+			int.width = h2dAnim.getFrame().width;
+			int.height = h2dAnim.getFrame().height;
+		}
 		#end
 	}
 
@@ -56,14 +57,13 @@ class Atlas extends Object2D {
 	}
 
 	#if editor
-
 	override function makeInteractive(ctx:Context):h2d.Interactive {
 		var local2d = ctx.local2d;
-		if(local2d == null)
+		if (local2d == null)
 			return null;
 		var h2dAnim = cast(local2d, h2d.Anim);
 		var frame = h2dAnim.getFrame();
-		if( frame == null )
+		if (frame == null)
 			return null;
 		var int = new h2d.Interactive(frame.width, frame.height);
 		h2dAnim.addChildAt(int, 0);
@@ -71,7 +71,7 @@ class Atlas extends Object2D {
 		return int;
 	}
 
-	override function edit( ctx : EditContext ) {
+	override function edit(ctx:EditContext) {
 		super.edit(ctx);
 
 		var parameters = new hide.Element('<div class="group" name="Parameters"></div>');
@@ -83,7 +83,8 @@ class Atlas extends Object2D {
 		var fileInput = new hide.Element('<input type="text" field="src" style="width:165px" />').appendTo(element);
 
 		var tfile = new hide.comp.FileSelect(["atlas"], null, fileInput);
-		if (this.src != null && this.src.length > 0) tfile.path = this.src;
+		if (this.src != null && this.src.length > 0)
+			tfile.path = this.src;
 		tfile.onChange = function() {
 			this.src = tfile.path;
 			updateInstance(ctx.getContext(this), "src");
@@ -93,18 +94,16 @@ class Atlas extends Object2D {
 		new hide.Element('<dt>Loop</dt><dd><input type="checkbox" field="loop"/></dd>').appendTo(gr);
 		new hide.Element('<dt>Force Pivot Center</dt><dd><input type="checkbox" field="forcePivotCenter"/></dd>').appendTo(gr);
 
-
 		ctx.properties.add(parameters, this, function(pname) {
 			ctx.onChange(this, pname);
 		});
 	}
 
-	override function getHideProps() : HideProps {
-		return { icon : "square", name : "Atlas" };
+	override function getHideProps():HideProps {
+		return {icon: "square", name: "Atlas"};
 	}
-
 	#end
 
 	static var _ = Library.register("atlas", Atlas);
-
 }
+#end
