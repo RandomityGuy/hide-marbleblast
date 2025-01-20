@@ -49,6 +49,7 @@ class MissionElementSimGroup extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.SimGroup;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -67,6 +68,7 @@ class MissionElementSimGroup extends MissionElementBase {
 class MissionElementScriptObject extends MissionElementBase {
 	public function new() {
 		_type = MissionElementType.ScriptObject;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -87,6 +89,7 @@ class MissionElementMissionArea extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.MissionArea;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -110,6 +113,7 @@ class MissionElementSky extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.Sky;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -134,6 +138,7 @@ class MissionElementSun extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.Sun;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -158,6 +163,7 @@ class MissionElementInteriorInstance extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.InteriorInstance;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -183,6 +189,7 @@ class MissionElementStaticShape extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.StaticShape;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -207,6 +214,7 @@ class MissionElementSpawnSphere extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.SpawnSphere;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -235,6 +243,7 @@ class MissionElementItem extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.Item;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -260,6 +269,7 @@ class MissionElementPath extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.Path;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -288,6 +298,7 @@ class MissionElementMarker extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.Marker;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -323,6 +334,7 @@ class MissionElementPathedInterior extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.PathedInterior;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -357,6 +369,7 @@ class MissionElementTrigger extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.Trigger;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -382,6 +395,7 @@ class MissionElementAudioProfile extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.AudioProfile;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -400,6 +414,7 @@ class MissionElementAudioProfile extends MissionElementBase {
 class MissionElementMessageVector extends MissionElementBase {
 	public function new() {
 		_type = MissionElementType.MessageVector;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -421,6 +436,7 @@ class MissionElementTSStatic extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.TSStatic;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {
@@ -448,6 +464,7 @@ class MissionElementParticleEmitterNode extends MissionElementBase {
 
 	public function new() {
 		_type = MissionElementType.ParticleEmitterNode;
+		_dynamicFields = [];
 	}
 
 	public function write(mw:MisWriter) {

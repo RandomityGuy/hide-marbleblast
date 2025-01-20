@@ -1,9 +1,9 @@
 package hrt.prefab.l3d;
 
 class Item extends DtsMesh {
-	@:s var collideable:Bool;
-	@:s var isStatic:Bool;
-	@:s var rotate:Bool;
+	@:s var collideable:Bool = true;
+	@:s var isStatic:Bool = true;
+	@:s var rotate:Bool = true;
 
 	#if editor
 	override function edit(ctx:EditContext) {

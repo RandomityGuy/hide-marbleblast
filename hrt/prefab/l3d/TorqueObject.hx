@@ -535,7 +535,8 @@ class TorqueObject extends Object3D {
 			}
 		}
 
-		if (hrt.mis.TorqueConfig.gameType == "PQ") {
+		if (hrt.mis.TorqueConfig.gameType == "PQ"
+			&& (["staticshape", "interiorinstance", "tsstatic", "item", "trigger"].contains(this.type))) {
 			// Path node and parenting config
 
 			// Path

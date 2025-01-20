@@ -394,6 +394,7 @@ class PathedInterior extends TorqueObject {
 		// Offset by the position of the first marker
 		var firstPosition = new Vector(pathObj.markers[0].x, pathObj.markers[0].y, pathObj.markers[0].z);
 		position = position.sub(firstPosition);
+		position.transform3x3(ctxObject.getTransform().getInverse());
 
 		var mat = innerMesh.getTransform().clone();
 		mat.setPosition(position);

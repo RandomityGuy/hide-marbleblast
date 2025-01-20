@@ -11,7 +11,7 @@ class ReaderExtensions {
 		for (i in 0...len) {
 			var name = io.readStr();
 			var value = io.readStr();
-			dict.set(name, value);
+			dict.set(name.toLowerCase(), value);
 		}
 
 		return dict;

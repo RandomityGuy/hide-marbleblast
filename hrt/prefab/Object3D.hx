@@ -80,7 +80,7 @@ class Object3D extends Prefab {
 		rotationX = rot.x;
 		rotationY = rot.y;
 		rotationZ = rot.z;
-		rotationZ = rot.w;
+		rotationW = rot.w;
 	}
 
 	public function getTransform(?m:h3d.Matrix) {
@@ -248,8 +248,7 @@ class Object3D extends Prefab {
 		var colliders = [
 			for (m in visibleMeshes) {
 				var c:h3d.col.Collider = try m.getGlobalCollider() catch (e:Dynamic) null;
-				if (c != null)
-					c;
+				if (c != null) c;
 			}
 		];
 		var meshCollider = colliders.length == 1 ? colliders[0] : new h3d.col.Collider.GroupCollider(colliders);
@@ -306,11 +305,9 @@ class Object3D extends Prefab {
 					y = editCtx.y;
 				case 'z':
 					z = editCtx.z;
-				case 'scaleX':
+				case 'scale':
 					scaleX = editCtx.scaleX;
-				case 'scaleY':
 					scaleY = editCtx.scaleY;
-				case 'scaleZ':
 					scaleZ = editCtx.scaleZ;
 				case 'rotationX' | 'rotationY' | 'rotationZ':
 					rotEul.initRotation(hxd.Math.degToRad(editCtx.rotationX), hxd.Math.degToRad(editCtx.rotationY), hxd.Math.degToRad(editCtx.rotationZ));

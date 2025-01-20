@@ -2882,6 +2882,9 @@ class SceneEditor {
 			obj3d = new hrt.prefab.Model(parent);
 			obj3d.source = relative;
 		}
+
+		@:privateAccess obj3d.type = prefabType;
+
 		return obj3d;
 	}
 

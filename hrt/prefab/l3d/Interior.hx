@@ -3,6 +3,8 @@ package hrt.prefab.l3d;
 import h3d.scene.Mesh;
 import h3d.mat.Material;
 
+using Lambda;
+
 @:publicFields
 class InteriorMeshInstance {
 	var instancer:InteriorMeshInstancer;
@@ -404,13 +406,244 @@ class Interior extends TorqueObject {
 		}
 	}
 
+	function createSubobject(ge:hrt.dif.GameEntity, ctx:EditContext) {
+		var mi = parent.getPrefabByName("MissionGroup");
+		if (mi == null)
+			mi = parent;
+
+		var pmodel = hrt.prefab.Library.getRegistered().get(ge.gameClass.toLowerCase());
+
+		var dbDef = hrt.mis.TorqueConfig.getDataBlock(ge.datablock);
+		if (dbDef == null)
+			return null;
+
+		var skin = ge.properties.get("skin");
+
+		var classLowercase = ge.gameClass.toLowerCase();
+		if (classLowercase == "item" || classLowercase == "staticshape") {
+			var p:hrt.prefab.l3d.DtsMesh = cast Type.createInstance(pmodel.cl, [mi]);
+			@:privateAccess p.type = ge.gameClass.toLowerCase();
+			p.name = "";
+			p.customFieldProvider = ge.datablock.toLowerCase();
+			p.path = StringTools.replace(StringTools.replace(dbDef.shapefile.toLowerCase(), "marble/", ""), "platinum/", "");
+			p.skin = skin == "" ? null : skin;
+
+			var ourTform = getRenderTransform();
+			var ourRot = new h3d.Quat();
+			ourRot.initRotateMatrix(ourTform);
+			var gePos = new h3d.Vector(-ge.position.x, ge.position.y, ge.position.z);
+			gePos.transform(ourTform);
+
+			p.x = gePos.x;
+			p.y = gePos.y;
+			p.z = gePos.z;
+			p.rotationX = ourRot.x;
+			p.rotationY = ourRot.y;
+			p.rotationZ = ourRot.z;
+			p.rotationW = ourRot.w;
+
+			p.customFields = hrt.mis.TorqueConfig.getDataBlock(ge.datablock).fields.filter(x -> x.defaultValue != null).map(x -> {
+				return {field: x.name.toLowerCase(), value: '${x.defaultValue}'};
+			});
+			if (dbDef.fieldMap.exists("skin") && p.skin != null && p.customFields.find(x -> x.field == "skin") == null)
+				p.customFields.push({field: "skin", value: p.skin});
+
+			for (k => v in ge.properties) {
+				var key = k.toLowerCase();
+
+				if (classLowercase == "item") {
+					var itemObj:hrt.prefab.l3d.Item = cast p;
+					if (key == "static") {
+						@:privateAccess itemObj.isStatic = v == "1" || v == "true";
+						continue;
+					}
+					if (key == "rotate") {
+						@:privateAccess itemObj.rotate = v == "1" || v == "true";
+						continue;
+					}
+					if (key == "collideable") {
+						@:privateAccess itemObj.collideable = v == "1" || v == "true";
+						continue;
+					}
+				}
+
+				if (dbDef.fieldMap.exists(key))
+					p.setCustomFieldValue(key, v);
+				else
+					p.dynamicFields.push({field: key, value: v});
+			}
+
+			var skinDef = p.customFields.find(x -> x.field == "skin");
+			if (skinDef != null && p.skin != null && skinDef.value != p.skin)
+				skinDef.value = p.skin;
+			return p;
+		}
+		return null;
+	}
+
 	override function edit(ctx:EditContext) {
 		super.edit(ctx);
 
-		ctx.properties.add(new hide.Element('<div class="group" name="Path">
+		var el = new hide.Element('<div class="group" name="Path">
 			<dl>
 				<dt>File</dt><dd><input type="fileselect" extensions="dif" field="path" /></dd>
-			</dl></div>'), this, function(pname) {
+				<dt></dt><dd><input type="button" value="Create Subs" id="createSubs"/></dd>
+			</dl></div>');
+
+		el.find("#createSubs").click(function(_) {
+			var dif:hrt.dif.Dif = null;
+			try {
+				dif = hrt.dif.Dif.LoadFromBuffer(hxd.res.Loader.currentInstance.fs.get(path).getBytes());
+			} catch (e:Dynamic) {
+				return;
+			}
+			if (dif != null) {
+				// Add the gameEntities first
+				var els:Array<hrt.prefab.Prefab> = [];
+				for (ge in dif.gameEntities) {
+					var p = createSubobject(ge, ctx);
+					if (p != null)
+						els.push(p);
+				}
+
+				var mi = parent.getPrefabByName("MissionGroup");
+				if (mi == null)
+					mi = parent;
+
+				var ourTform = getRenderTransform();
+				var ourRot = new h3d.Quat();
+				ourRot.initRotateMatrix(ourTform);
+
+				var pis = [];
+
+				// now for PathedInteriors
+				for (itr in dif.interiorPathfollowers) {
+					var g = new hrt.prefab.l3d.SimGroup(mi);
+					els.push(g);
+					g.name = '${itr.name}_g';
+					g.type = "simgroup";
+
+					// Create the Markers and path
+
+					var pathObj = new hrt.prefab.l3d.InteriorPath(g);
+					pathObj.name = '${itr.name}_path';
+					pathObj.type = "path";
+					var seqNum = 0;
+					for (wp in itr.wayPoint) {
+						var marker = new hrt.prefab.l3d.InteriorPath.InteriorPathMarker(pathObj);
+						// els.push(marker);
+						marker.seqNum = seqNum;
+						marker.msToNext = wp.msToNext;
+						marker.type = "marker";
+
+						var mPos = new h3d.Vector(-wp.position.x, wp.position.y, wp.position.z);
+						mPos.transform(ourTform);
+
+						marker.x = mPos.x;
+						marker.y = mPos.y;
+						marker.z = mPos.z;
+						marker.name = '${itr.name}_m${seqNum}';
+						marker.smoothingType = hrt.prefab.l3d.InteriorPath.MarkerSmoothing.createByIndex(wp.smoothingType);
+						seqNum++;
+					}
+
+					// Relevant triggers
+					for (triggerIdx in itr.triggerId) {
+						var trigger = dif.triggers[triggerIdx];
+
+						var db = hrt.mis.TorqueConfig.getDataBlock(trigger.datablock.toLowerCase());
+						if (db != null) {
+							var triggerObj = new hrt.prefab.l3d.Trigger(g);
+							triggerObj.type = "trigger";
+							triggerObj.customFieldProvider = trigger.datablock.toLowerCase();
+							triggerObj.name = trigger.name;
+							var trPos = new h3d.Vector(-trigger.offset.x, trigger.offset.y, trigger.offset.z);
+							trPos.transform(ourTform);
+
+							var minPt = new h3d.Vector(1e8, 1e8, 1e8);
+							var maxPt = new h3d.Vector(-1e8, -1e8, -1e8);
+							for (pt in trigger.polyhedron.pointList) {
+								minPt.x = Math.min(-pt.x, minPt.x);
+								minPt.y = Math.min(pt.y, minPt.y);
+								minPt.z = Math.min(pt.z, minPt.z);
+
+								maxPt.x = Math.max(-pt.x, maxPt.x);
+								maxPt.y = Math.max(pt.y, maxPt.y);
+								maxPt.z = Math.max(pt.z, maxPt.z);
+							}
+
+							@:privateAccess triggerObj.origin = {x: minPt.x, y: minPt.y, z: minPt.z};
+							@:privateAccess triggerObj.e1 = {x: maxPt.x - minPt.x, y: 0, z: 0};
+							@:privateAccess triggerObj.e2 = {x: 0, y: maxPt.y - minPt.y, z: 0};
+							@:privateAccess triggerObj.e3 = {x: 0, y: 0, z: maxPt.z - minPt.z};
+
+							triggerObj.x = trPos.x;
+							triggerObj.y = trPos.y;
+							triggerObj.z = trPos.z;
+							triggerObj.rotationX = ourRot.x;
+							triggerObj.rotationY = ourRot.y;
+							triggerObj.rotationZ = ourRot.z;
+							triggerObj.rotationW = ourRot.w;
+							for (k => v in trigger.properties) {
+								if (db.fieldMap.exists(k))
+									triggerObj.setCustomFieldValue(k, v);
+								else
+									triggerObj.dynamicFields.push({field: k, value: v});
+							}
+						}
+					}
+
+					var p = new hrt.prefab.l3d.PathedInterior(g);
+					p.type = "pathedinterior";
+					pis.push(p);
+					p.path = this.path;
+					p.so = itr.interiorResIndex;
+
+					var pPos = new h3d.Vector(-itr.offset.x, itr.offset.y, itr.offset.z);
+					pPos.transform(ourTform);
+
+					p.x = pPos.x;
+					p.y = pPos.y;
+					p.z = pPos.z;
+					p.rotationX = ourRot.x;
+					p.rotationY = ourRot.y;
+					p.rotationZ = ourRot.z;
+					p.rotationW = ourRot.w;
+					p.dynamicFields.push({field: "dataBlock", value: itr.datablock});
+					p.initialPathPosition = itr.properties.exists("initialpathposition") ? Std.parseInt(itr.properties.get("initialpathposition")) : 0;
+					p.initialTargetPosition = itr.properties.exists("initialtargetposition") ? Std.parseInt(itr.properties.get("initialtargetposition")) : 0;
+					p.pathType = switch (p.initialTargetPosition) {
+						case -1:
+							Loop;
+						case -2:
+							LoopReverse;
+						default:
+							Time;
+					};
+					p.name = itr.name;
+
+					// Add the dynamic fields
+					for (k => v in itr.properties) {
+						if (k != "initialpathposition" && k != "initialtargetposition")
+							p.dynamicFields.push({field: k, value: v});
+					}
+				}
+
+				ctx.scene.editor.addElements(els, false, true);
+
+				// Update the pathed interiors
+				for (pi in pis) {
+					pi.updateInstance(ctx.getContext(pi));
+					pi.type = "pathedinterior";
+				}
+				// Update the rest
+				for (el in els) {
+					el.updateInstance(ctx.getContext(el));
+				}
+			}
+		});
+
+		ctx.properties.add(el, this, function(pname) {
 			ctx.onChange(this, pname);
 
 			if (pname == "path") {
