@@ -118,6 +118,8 @@ class Dif {
 		var readGameEntities = io.readInt32();
 		if (readGameEntities == 2)
 			ret.gameEntities = io.readArray(GameEntity.read);
+		else
+			ret.gameEntities = [];
 
 		return ret;
 	}

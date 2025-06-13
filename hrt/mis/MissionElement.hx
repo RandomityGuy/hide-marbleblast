@@ -38,8 +38,45 @@ abstract class MissionElementBase {
 
 	public function writeDynFields(mw:MisWriter) {
 		for (k => v in _dynamicFields) {
-			mw.writeLine('${k} = "${v}";');
+			if (v.toLowerCase() == "true" || v.toLowerCase() == "false") {
+				mw.writeLine('${k} = ${v == "true" ? 1 : 0};');
+			} else {
+				var escaped = escape(v);
+				mw.writeLine('${k} = "${escaped}";');
+			}
 		}
+	}
+
+	public static function escape(s:String) {
+		// var escapeMap = [
+		// 	"\t" => "\\t", "\n" => "\\n", "\r" => "\\r", "\"" => "\\\"", "'" => "\\'", "\\" => "\\\\", "\x01" => "\\c0", "\x02" => "\\c1", "\x03" => "\\c2",
+		// 	"\x04" => "\\c3", "\x05" => "\\c4", "\x06" => "\\c5", "\x07" => "\\c6", "\x0B" => "\\c7", "\x0C" => "\\c8", "\x0E" => "\\c9", "\x0F" => "\\cr",
+		// 	"\x10" => "\\cp", "\x11" => "\\co", "\x08" => "\\x08", "\x12" => "\\x12", "\x13" => "\\x13", "\x14" => "\\x14", "\x15" => "\\x15",
+		// 	"\x16" => "\\x16", "\x17" => "\\x17", "\x18" => "\\x18", "\x19" => "\\x19", "\x1A" => "\\x1A", "\x1B" => "\\x1B", "\x1C" => "\\x1C",
+		// 	"\x1D" => "\\x1D", "\x1E" => "\\x1E", "\x1F" => "\\x1F"
+		// ];
+		var escapeFrom = [
+			"\\", "'", "\"", "\x1F", "\x1E", "\x1D", "\x1C", "\x1B", "\x1A", "\x19", "\x18", "\x17", "\x16", "\x15", "\x14", "\x13", "\x12", "\x11", "\x10",
+			"\x0F", "\x0E", "\r", "\x0C", "\x0B", "\n", "\t", "\x08", "\x07", "\x06", "\x05", "\x04", "\x03", "\x02", "\x01"
+		];
+
+		var escapeTo = [
+			"\\\\", "\\'", "\\\"", "\\x1F", "\\x1E", "\\x1D", "\\x1C", "\\x1B", "\\x1A", "\\x19", "\\x18", "\\x17", "\\x16", "\\x15", "\\x14", "\\x13",
+			"\\x12", "\\co", "\\cp", "\\cr", "\\c9", "\\r", "\\c8", "\\c7", "\\n", "\\t", "\\x08", "\\c6", "\\c5", "\\c4", "\\c3", "\\c2", "\\c1", "\\c0"
+		];
+		var tagged = false;
+
+		if (s.charCodeAt(0) == 0x02 && s.charCodeAt(1) == 0x01) {
+			s = s.substr(1);
+			tagged = true;
+		}
+		for (i in 0...escapeFrom.length) {
+			s = StringTools.replace(s, escapeFrom[i], escapeTo[i]);
+		}
+		if (tagged) {
+			s = "\x01" + s.substr(3);
+		}
+		return s;
 	}
 }
 
