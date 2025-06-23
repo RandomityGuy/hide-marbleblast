@@ -176,7 +176,7 @@ class MisConverter {
 		}
 		angle = (angle * -180.0 / Math.PI) % 360.0;
 		ss.rotation = '${x} ${y} ${z} ${angle}';
-		ss.shapename = '~/' + data.shapePath;
+		ss.shapename = '~/' + data.path;
 		convertDynFields(data, ss);
 
 		return ss;

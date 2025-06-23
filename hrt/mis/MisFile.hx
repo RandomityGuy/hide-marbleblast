@@ -520,7 +520,6 @@ class MisFile {
 			type: 'tsstatic',
 			name: element._name != null ? element._name : "",
 			path: dtsPath,
-			shapePath: dtsPath,
 			skin: null,
 			x: shapePosition.x,
 			y: shapePosition.y,
